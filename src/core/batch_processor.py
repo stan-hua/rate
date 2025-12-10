@@ -1,10 +1,10 @@
-"""Improved batch processing with better error handling and validation."""
+"""Improved batch processing with concurrent requests for high-throughput processing."""
 
 import json
 import time
-from pathlib import Path
-from datetime import datetime
+import random
 from typing import Dict, List, Tuple, Any
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 from .exceptions import BatchProcessingError
@@ -21,21 +21,20 @@ class BatchProcessor:
         self.validator = validator
         self.max_retries = config.get('processing', {}).get('max_retries', 2)
         self.retry_delay = config.get('processing', {}).get('retry_delay', 5)
+        # Number of concurrent requests (default: 512 for high-throughput)
+        self.request_concurrency = config.get('processing', {}).get('request-concurrency', 512)
     
     def process_batch(self, requests: List[Tuple[str, str]], stage_name: str) -> Dict[str, str]:
-        """Process a batch of requests with improved error handling and validation."""
+        """Process a batch of requests using concurrent requests for high throughput."""
         if not requests:
             return {}
         
-        self.logger.info(f"Processing batch of {len(requests)} requests for {stage_name}")
+        self.logger.info(f"Processing batch of {len(requests)} requests for {stage_name} using {self.request_concurrency} concurrent workers")
         
         for attempt in range(self.max_retries + 1):
             try:
-                # Submit batch and wait for completion
-                batch_response = self._submit_and_wait_for_batch(requests, attempt)
-                
-                # Extract and validate results
-                results = self._extract_batch_results(batch_response, requests, stage_name)
+                # Use concurrent requests instead of batch API
+                results = self._run_requests_concurrently(requests)
                 
                 # Validate results
                 validated_results = self.validator.validate_batch_results(results, requests, stage_name)
@@ -56,237 +55,91 @@ class BatchProcessor:
                 self.logger.error(f"Unexpected error in batch processing: {str(e)}")
                 raise BatchProcessingError(f"Unexpected batch processing error: {str(e)}")
     
-    def _submit_and_wait_for_batch(self, requests: List[Tuple[str, str]], attempt: int) -> Any:
-        """Submit batch and wait for completion."""
-        # Create batch requests
-        batch_requests = [
-            {
-                "custom_id": request_id,
-                "method": "POST", 
-                "url": "/chat/completions",
-                "body": {
-                    "model": self.config['model']['name'],
-                    "messages": [
-                        {"role": "system", "content": "You are a helpful assistant. Please output in plain text without any formatting."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    "temperature": self.config['model']['temperature'],
-                    "top_p": self.config['model']['top_p'],
-                    "max_tokens": self.config['model']['max_tokens']
-                }
-            }
-            for request_id, prompt in requests
-        ]
+    def _run_requests_concurrently(self, requests: List[Tuple[str, str]]) -> Dict[str, str]:
+        """Run requests concurrently using ThreadPoolExecutor."""
+        results: Dict[str, str] = {}
+        errors = 0
         
-        # Create and submit batch file
-        temp_file = None
-        try:
-            temp_file = self._create_batch_file(batch_requests, attempt)
-            file_response = self._upload_batch_file(temp_file)
-            batch_response = self._create_batch_request(file_response.id)
-            
-            # Wait for completion with progress tracking
-            return self._wait_for_batch_completion(batch_response)
-            
-        finally:
-            # Clean up temporary file
-            if temp_file and temp_file.exists():
+        def _request_with_retries(custom_id: str, prompt: str) -> Tuple[str, str]:
+            """Make a single request with retries."""
+            for i in range(self.max_retries + 1):
                 try:
-                    temp_file.unlink()
+                    return custom_id, self._request_once(prompt)
                 except Exception as e:
-                    self.logger.warning(f"Could not delete temp file {temp_file}: {e}")
-    
-    def _create_batch_file(self, batch_requests: List[Dict], attempt: int) -> Path:
-        """Create temporary batch file."""
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        temp_file = Path(f"temp_batch_{timestamp}_attempt_{attempt}.jsonl")
+                    if i < self.max_retries:
+                        # Exponential backoff with jitter
+                        backoff = self.retry_delay * (2 ** i) + random.uniform(0, 0.25)
+                        self.logger.debug(f"Request {custom_id} failed (attempt {i+1}): {e}; retrying in {backoff:.2f}s")
+                        time.sleep(backoff)
+                    else:
+                        self.logger.warning(f"Request {custom_id} failed after {self.max_retries + 1} attempts: {e}")
+                        return custom_id, ""
         
-        try:
-            with open(temp_file, "w") as f:
-                for req in batch_requests:
-                    f.write(json.dumps(req) + "\n")
-            return temp_file
-        except Exception as e:
-            if temp_file.exists():
-                temp_file.unlink()
-            raise BatchProcessingError(f"Failed to create batch file: {str(e)}")
-    
-    def _upload_batch_file(self, temp_file: Path) -> Any:
-        """Upload batch file to API."""
-        try:
-            with open(temp_file, "rb") as f:
-                file_response = self.client.files.create(file=f, purpose="batch")
-            return file_response
-        except Exception as e:
-            raise BatchProcessingError(f"Failed to upload batch file: {str(e)}")
-    
-    def _create_batch_request(self, file_id: str) -> Any:
-        """Create batch processing request."""
-        try:
-            batch_response = self.client.batches.create(
-                input_file_id=file_id,
-                endpoint="/v1/chat/completions",
-                completion_window="24h"
-            )
-            return batch_response
-        except Exception as e:
-            raise BatchProcessingError(f"Failed to create batch request: {str(e)}")
-    
-    def _wait_for_batch_completion(self, batch_response: Any) -> Any:
-        """Wait for batch completion with progress tracking."""
-        with tqdm(desc=f"Waiting for batch {batch_response.id[:8]}...", 
-                 unit="check", 
-                 bar_format='{desc}: {elapsed}') as pbar:
+        with ThreadPoolExecutor(max_workers=self.request_concurrency) as pool:
+            futures = [pool.submit(_request_with_retries, rid, prompt) for rid, prompt in requests]
             
-            while batch_response.status not in ["completed", "failed", "cancelled"]:
-                time.sleep(3)
-                try:
-                    batch_response = self.client.batches.retrieve(batch_response.id)
+            with tqdm(total=len(requests), desc="Processing requests", unit="req") as pbar:
+                for fut in as_completed(futures):
+                    rid, content = fut.result()
+                    # Clean up content (remove thinking tags if present)
+                    if content and "</think>" in content:
+                        content = content.split("</think>")[-1]
+                    results[rid] = content.strip() if content else ""
+                    if not results[rid]:
+                        errors += 1
                     pbar.update(1)
-                    pbar.set_description(f"Batch {batch_response.id[:8]} - {batch_response.status}")
-                except Exception as e:
-                    raise BatchProcessingError(f"Failed to check batch status: {str(e)}")
         
-        if batch_response.status != "completed":
-            raise BatchProcessingError(f"Batch failed with status: {batch_response.status}")
+        self.logger.info(f"Concurrent requests completed: {len(results)} total, {errors} empty/failed")
         
-        return batch_response
+        # Log summary statistics
+        non_empty_results = sum(1 for v in results.values() if v.strip())
+        empty_results = len(results) - non_empty_results
+        self.logger.info(f"Results: {non_empty_results} non-empty, {empty_results} empty")
+        
+        return results
     
-    def _extract_batch_results(self, batch_response: Any, requests: List[Tuple[str, str]], stage_name: str) -> Dict[str, str]:
-        """Extract results from completed batch."""
+    def _request_once(self, prompt: str) -> str:
+        """Make a single chat completion request."""
         try:
-            # Download results
-            result_content = self.client.files.content(batch_response.output_file_id).read().decode("utf-8")
+            resp = self.client.chat.completions.create(
+                model=self.config['model']['name'],
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant. Please output in plain text without any formatting."},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=self.config['model']['temperature'],
+                top_p=self.config['model']['top_p'],
+                max_tokens=self.config['model']['max_tokens'],
+            )
             
-            # Log the first few lines for debugging
-            lines = result_content.split("\n")
-            self.logger.debug(f"Batch response has {len([l for l in lines if l.strip()])} lines")
-            if lines and lines[0].strip():
-                self.logger.debug(f"First response line: {lines[0][:200]}...")
-            
-            # Parse results
-            results = {}
-            for line_num, line in enumerate(lines):
-                if line.strip():
-                    try:
-                        result = json.loads(line)
-                        custom_id = result['custom_id']
-                        
-                        # Try parsing the sglang response format
-                        content = ""
-                        parsing_success = False
-                        
-                        # Log full structure for first result to help with debugging
-                        if line_num == 0:
-                            self.logger.debug(f"First result structure: {json.dumps(result, indent=2)}")
-                        
-                        # sglang format: choices is an object, not an array
-                        if 'response' in result and 'body' in result['response']:
-                            try:
-                                choices = result['response']['body']['choices']
-                                # Handle both object and array formats
-                                if isinstance(choices, dict):
-                                    content = choices['message']['content']
-                                elif isinstance(choices, list):
-                                    content = choices[0]['message']['content']
-                                parsing_success = True
-                                if line_num == 0:
-                                    self.logger.debug("Successfully parsed sglang response format")
-                            except (KeyError, IndexError, TypeError) as e:
-                                self.logger.debug(f"Failed to parse expected format: {e}")
-                        
-                        # Handle error responses
-                        if not parsing_success and 'error' in result:
-                            self.logger.warning(f"Error in batch response for {custom_id}: {result['error']}")
-                            content = ""
-                            parsing_success = True
-                        
-                        if not parsing_success:
-                            self.logger.warning(f"Could not parse response for {custom_id}, available keys: {list(result.keys())}")
-                            content = ""
-                        
-                        # Clean up content (remove thinking tags if present)
-                        if content and "</think>" in content:
-                            content = content.split("</think>")[-1]
-                        
-                        results[custom_id] = content.strip() if content else ""
-                        
-                    except json.JSONDecodeError as e:
-                        self.logger.warning(f"Could not parse result line {line_num}: {line[:100]}... Error: {e}")
-                        continue
-                    except Exception as e:
-                        self.logger.warning(f"Unexpected error parsing line {line_num}: {e}")
-                        continue
-            
-            # Clean up API files
+            # Handle response (compatible with different formats)
             try:
-                self.client.files.delete(batch_response.output_file_id)
-                self.client.files.delete(batch_response.input_file_id)
-            except Exception as e:
-                self.logger.warning(f"Could not delete API files: {e}")
+                choices = getattr(resp, "choices", None)
+                if isinstance(choices, list) and choices:
+                    return choices[0].message.content or ""
+                if isinstance(choices, dict):
+                    return choices.get("message", {}).get("content", "") or ""
+            except Exception:
+                pass
             
-            # Check if we got results for all requests
-            request_ids = {req_id for req_id, _ in requests}
-            missing_ids = request_ids - set(results.keys())
+            # If response is dict format
+            if isinstance(resp, dict):
+                ch = resp.get("choices")
+                if isinstance(ch, list) and ch:
+                    return ch[0].get("message", {}).get("content", "") or ""
+                if isinstance(ch, dict):
+                    return ch.get("message", {}).get("content", "") or ""
             
-            if missing_ids:
-                self.logger.warning(f"Missing results for {len(missing_ids)} requests: {list(missing_ids)[:5]}...")
-                # Add empty results for missing IDs to maintain consistency
-                for missing_id in missing_ids:
-                    results[missing_id] = ""
-            
-            # Log summary with detailed breakdown
-            non_empty_results = sum(1 for v in results.values() if v.strip())
-            empty_results = len(results) - non_empty_results
-            self.logger.info(f"Extracted {len(results)} results: {non_empty_results} non-empty, {empty_results} empty")
-            
-            # Log sample results for debugging - include some empty ones
-            sample_results = list(results.items())[:5]
-            empty_samples = [(k, v) for k, v in results.items() if not v.strip()][:3]
-            
-            self.logger.info(f"Sample non-empty results:")
-            for rid, content in sample_results:
-                if content.strip():
-                    self.logger.info(f"  {rid}: '{content[:150]}{'...' if len(content) > 150 else ''}'")
-            
-            if empty_samples:
-                self.logger.warning(f"Sample empty results:")
-                for rid, content in empty_samples:
-                    self.logger.warning(f"  {rid}: EMPTY ('{content}')")
-            
-            # Log response patterns to identify issues
-            response_patterns = {}
-            for content in results.values():
-                content_lower = content.strip().lower()
-                if not content_lower:
-                    key = "EMPTY"
-                elif "no relevant findings" in content_lower:
-                    key = "no_relevant_findings"
-                elif "no findings" in content_lower:
-                    key = "no_findings"  
-                elif "normal" in content_lower:
-                    key = "normal"
-                elif len(content_lower) < 10:
-                    key = "very_short"
-                else:
-                    key = "substantial"
-                
-                response_patterns[key] = response_patterns.get(key, 0) + 1
-            
-            self.logger.info(f"Response patterns: {response_patterns}")
-            
-            return results
+            return ""
             
         except Exception as e:
-            self.logger.error(f"Failed to extract batch results: {str(e)}")
-            # Include more details in the error for debugging
-            self.logger.error(f"Batch response status: {getattr(batch_response, 'status', 'unknown')}")
-            self.logger.error(f"Batch response ID: {getattr(batch_response, 'id', 'unknown')}")
-            raise BatchProcessingError(f"Failed to extract batch results: {str(e)}")
+            self.logger.debug(f"Request failed: {e}")
+            raise
     
     def get_batch_stats(self) -> Dict[str, Any]:
         """Get statistics about batch processing."""
         return {
             "max_retries": self.max_retries,
             "retry_delay": self.retry_delay,
+            "request_concurrency": self.request_concurrency,
         } 

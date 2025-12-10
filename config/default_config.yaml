@@ -15,6 +15,7 @@ processing:
   batch-size: 1024
   max_retries: 2
   retry_delay: 5
+  request-concurrency: 1024  # Number of concurrent requests for high-throughput processing (matches batch-size)
   validation:
     enabled: true
   storage:

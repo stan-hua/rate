@@ -49,6 +49,8 @@ def parse_args():
     parser.add_argument('--debug-sample', type=int, default=5000,
                       help='Max number of reports to sample in debug mode (default: 5000)')
     parser.add_argument('--debug-categories', type=int, default=4,
+
+    
                       help='Number of categories to sample in debug mode (default: 4)')
     parser.add_argument('--debug-num-questions', type=int, default=10,
                       help='Number of questions per category in debug mode (default: 10)')
@@ -218,15 +220,19 @@ def main():
     reports = None
     
     # Construct the complete config dictionary first
+    # Preserve existing processing settings (like request-concurrency) from default config
+    processing_dict = config.get('processing', {}).copy() if 'processing' in config else {}
+    processing_dict.update({
+        'batch-size': args.batch_size,
+        'save-dir': args.save_dir
+    })
+    
     config_dict = {
         'input-files': args.input_files or [],
         'modality-config': args.modality_config,
         'accession-col': args.accession_col,
         'report-col': args.report_col,
-        'processing': {
-            'batch-size': args.batch_size,
-            'save-dir': args.save_dir
-        },
+        'processing': processing_dict,
         'debug': {
             'enabled': args.debug_mode,
             'sample': args.debug_sample,
@@ -241,8 +247,20 @@ def main():
         reports = load_reports_from_files(args.input_files, args.accession_col, args.report_col, config_dict.get('debug'))
         print(f"Loaded {len(reports)} total reports")
 
-    # Merge with default config
-    config.update(config_dict)
+    # Merge with default config (preserve existing processing settings like request-concurrency)
+    # First, update nested dictionaries to preserve default values
+    if 'processing' in config:
+        config['processing'].update(config_dict.get('processing', {}))
+    else:
+        config['processing'] = config_dict.get('processing', {})
+    
+    if 'debug' in config:
+        config['debug'].update(config_dict.get('debug', {}))
+    else:
+        config['debug'] = config_dict.get('debug', {})
+    
+    # Then update top-level config
+    config.update({k: v for k, v in config_dict.items() if k not in ['processing', 'debug']})
     
     # Set debug logging if requested
     if args.debug:
