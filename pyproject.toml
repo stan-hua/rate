@@ -34,7 +34,7 @@ dependencies = [
     "tqdm>=4.66.1",
     "requests>=2.31.0",
     "python-dotenv>=1.0.0",
-    "sglang==0.5.6", # Specific version that might support batch API
+    "sglang[all]==0.5.6", # Specific version that might support batch API
     "transformers>=4.30.0",
     "accelerate>=0.20.0",
     "pydantic>=2.0.0",
