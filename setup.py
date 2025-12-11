@@ -40,7 +40,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/yalalab/rad-report-engine",
-    packages=find_packages(),
+    packages=["rate", "rate.core"],
+    package_dir={"rate": "src", "rate.core": "src/core"},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Healthcare Industry",
@@ -57,9 +58,9 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "rad-report-engine=src.cli:main",
-            "rad-report-qc=src.qc_cli:main",
-            "rad-report-eval=src.eval_cli:main",
+            "rad-report-engine=rate.cli:main",
+            "rad-report-qc=rate.qc_cli:main",
+            "rad-report-eval=rate.eval_cli:main",
         ],
     },
     include_package_data=True,
