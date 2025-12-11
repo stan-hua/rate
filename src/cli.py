@@ -14,7 +14,7 @@ import pandas as pd
 import yaml
 from tqdm import tqdm
 
-from core.engine import Engine
+from .core.engine import Engine
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Process medical reports with configurable settings.')
