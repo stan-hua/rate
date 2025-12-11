@@ -65,7 +65,7 @@ setup(
     },
     include_package_data=True,
     package_data={
-        "": ["config/*.yaml", "config/modalities/*.yaml", "config/modalities/*.yml"],
+        "rate": ["config/*.yaml", "config/modalities/*.yaml", "config/modalities/*.yml"],
     },
     zip_safe=False,
 )
