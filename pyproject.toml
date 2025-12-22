@@ -61,9 +61,9 @@ docs = [
 ]
 
 [project.scripts]
-rad-report-engine = "rate.cli:main"
-rad-report-eval = "rate.eval_cli:main"
-rad-report-qc = "rate.qc_cli:main"
+rad-report-engine = "src.cli:main"
+rad-report-eval = "src.eval_cli:main"
+rad-report-qc = "src.qc_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/yalalab/rad-report-engine"
@@ -73,9 +73,6 @@ Issues = "https://github.com/yalalab/rad-report-engine/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
-
-[tool.hatch.build.targets.wheel.sources]
-"src" = "rate"
 
 [tool.hatch.build.targets.sdist]
 include = [
