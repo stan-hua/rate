@@ -27,7 +27,7 @@ categories:
       - question: "Is the mass margin spiculated?"
       - question: "Are there any fat-containing masses?"
      
-  "Additional findings":
+  Additional findings:
     description: "Associated findings (e.g. skin retraction, nipple retraction, skin thickening, trabecular thickening)"
     questions:
       - question: "Is there skin retraction?"
