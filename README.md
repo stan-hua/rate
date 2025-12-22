@@ -78,7 +78,7 @@ or
 {"123": "text", "123": "text", ...}
 ```
 
-### 2. Process Reports with CLI
+### 3. Process Reports with CLI
 
 The easiest way to process reports is using the command-line interface:
 
