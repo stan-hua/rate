@@ -25,7 +25,7 @@ categories:
     questions:
       - question: "Is heart valve replacement present?"
       - question: "Are there any pace-makers or defibrillators?"
-      - question: "Is Extra Corporeal Membrane Oxygenation (ECMO) debice present?"
+      - question: "Is Extra Corporeal Membrane Oxygenation (ECMO) device present?"
       - question: "Is nasogastric tube present?"
       - question: "Is endotracheal tube present?"
       - question: "Are there any chest tubes?"
