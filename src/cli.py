@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
-import pandas as pd
 import yaml
 from tqdm import tqdm
 
@@ -33,7 +32,7 @@ def parse_args():
     
     # Input data options
     parser.add_argument('--input-files', nargs='+', 
-                      help='Input CSV or JSON files containing reports (required for remove-comparisons and process-questions stages)')
+                      help='Input JSON files containing reports (required for remove-comparisons and process-questions stages)')
     
     # Intermediate file inputs
     parser.add_argument('--input-no-comparisons', type=str,
@@ -62,9 +61,9 @@ def parse_args():
     parser.add_argument('--batch-size', type=int, default=1024,
                       help='Batch size for processing reports (default: 1024)')
     parser.add_argument('--accession-col', default='Accession',
-                      help='Column name for accession numbers in CSV (default: Accession)')
+                      help='Field name for accession numbers in JSON (default: Accession)')
     parser.add_argument('--report-col', default='Report Text',
-                      help='Column name for report text in CSV (default: Report Text)')
+                      help='Field name for report text in JSON (default: Report Text)')
     parser.add_argument('--config', type=str, default="config/default_config.yaml",
                       help='Path to default configuration file (default: "config/default_config.yaml")')
     parser.add_argument('--debug', action='store_true',
@@ -98,7 +97,7 @@ def validate_stage_inputs(stages: list, args) -> dict:
     return input_files
 
 def load_reports_from_files(input_files: list, accession_col: str, report_col: str, debug_config: Optional[dict] = None) -> dict:
-    """Load reports from CSV or JSON files."""
+    """Load reports from JSON files."""
     all_reports = []
     
     for input_file in input_files:
@@ -106,18 +105,7 @@ def load_reports_from_files(input_files: list, accession_col: str, report_col: s
         file_extension = file_path.suffix.lower()
         
         try:
-            if file_extension == '.csv':
-                df = pd.read_csv(input_file)
-                print(f"Loading {len(df)} reports from CSV file: {input_file}")
-                
-                # Collect all (accession_number, report) tuples
-                report_tuples = [
-                    (str(row[accession_col]), row[report_col])
-                    for _, row in df.iterrows()
-                ]
-                all_reports.extend(report_tuples)
-                
-            elif file_extension == '.json':
+            if file_extension == '.json':
                 with open(input_file, 'r') as f:
                     data = json.load(f)
                 
@@ -155,7 +143,7 @@ def load_reports_from_files(input_files: list, accession_col: str, report_col: s
                     raise ValueError(f"Unsupported JSON structure in {input_file}")
                     
             else:
-                raise ValueError(f"Unsupported file format: {file_extension}. Only .csv and .json files are supported.")
+                raise ValueError(f"Unsupported file format: {file_extension}. Only .json files are supported.")
                 
         except Exception as e:
             print(f"Error reading file {input_file}: {str(e)}")

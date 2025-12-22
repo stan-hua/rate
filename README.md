@@ -17,7 +17,7 @@ source .venv/bin/activate
 First, launch the sglang server with the Qwen model:
 
 ```bash
-python -m sglang.launch_server \
+./.venv/bin/python -m sglang.launch_server \
     --model-path Qwen/Qwen3-30B-A3B-FP8 \
     --reasoning-parser qwen3 \
     --port 8000 \
@@ -52,22 +52,50 @@ Expected server output:
 [2025-06-03 17:56:02] The server is fired up and ready to roll!
 ```
 
-### 2. Process Reports with CLI
+If you encounter an error with ninja, perform the following to have it installed:
+```
+cd $HOME
+curl -L https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip -o ninja.zip
+unzip ninja.zip
+chmod +x ninja
+export PATH=$HOME:$PATH
+echo 'export PATH=$HOME:$PATH' >> ~/.bashrc
+```
+Then check:
+```
+which ninja
+ninja --version
+```
+to verify it is loaded.
+
+### 2. Report Schema
+The report should be a json in one of the two formats:
+```python
+[{"Accession": "123", "Report Text": "text"}, {"Accession": "456", "Report Text": "text"}, ...]
+```
+or
+```python
+{"123": "text", "456": "text", ...}
+```
+
+Note: The first format uses the default field names (`Accession` and `Report Text`), which can be customized using the `--accession-col` and `--report-col` CLI arguments. The second format (key-value pairs) treats keys as accession IDs and values as report text directly.
+
+### 3. Process Reports with CLI
 
 The easiest way to process reports is using the command-line interface:
 
 ```bash
 python src/cli.py \
-    --input-files /path/to/your/reports.csv \
+    --input-files /path/to/your/reports.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir output
 ```
 
-If you just want to try the CLI wiring without preparing your own dataset, a tiny sample file lives at `docs/examples/reports_dummy.csv`. It follows the default column names (`Accession`, `Report Text`), so you can run:
+If you just want to try the CLI wiring without preparing your own dataset, a tiny sample file lives at `docs/examples/reports_dummy.json`. It follows the default field names (`Accession`, `Report Text`), so you can run:
 
 ```bash
 python src/cli.py \
-    --input-files docs/examples/reports_dummy.csv \
+    --input-files docs/examples/reports_dummy.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir output
 ```
@@ -83,7 +111,7 @@ python src/cli.py \
   - Choices: `remove-comparisons`, `extract-findings`, `map-categories`, `process-questions`, `all`
 
 **Input Options:**
-- `--input-files`: Path(s) to CSV file(s) containing reports (required for `remove-comparisons` and `process-questions` stages)
+- `--input-files`: Path(s) to JSON file(s) containing reports (required for `remove-comparisons` and `process-questions` stages)
 - `--input-no-comparisons`: Path to `no_comparisons.csv` from previous run
 - `--input-findings`: Path to `findings.csv` from previous run  
 
@@ -96,8 +124,8 @@ python src/cli.py \
 
 **Optional:**
 - `--batch-size`: Number of reports to process per batch (default: 1024)
-- `--accession-col`: Column name for accession numbers in CSV (default: "Accession")
-- `--report-col`: Column name for report text in CSV (default: "Report Text")
+- `--accession-col`: Field name for accession numbers in JSON (default: "Accession")
+- `--report-col`: Field name for report text in JSON (default: "Report Text")
 - `--config`: Path to default configuration file (default: "config/default_config.yaml")
 
 #### Examples
@@ -105,7 +133,7 @@ python src/cli.py \
 **Basic usage:**
 ```bash
 python src/cli.py \
-    --input-files data/mimic_reports.csv \
+    --input-files data/mimic_reports.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir results
 ```
@@ -113,7 +141,7 @@ python src/cli.py \
 **Debug mode for rapid iteration:**
 ```bash
 python src/cli.py \
-    --input-files data/mimic_reports.csv \
+    --input-files data/mimic_reports.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir debug_test \
     --debug-mode \
@@ -126,16 +154,16 @@ python src/cli.py \
 **Process multiple files with custom batch size:**
 ```bash
 python src/cli.py \
-    --input-files data/file1.csv data/file2.csv data/file3.csv \
+    --input-files data/file1.json data/file2.json data/file3.json \
     --modality-config config/modalities/breast_mr.yaml \
     --save-dir results \
     --batch-size 2048
 ```
 
-**Custom column names:**
+**Custom field names:**
 ```bash
 python src/cli.py \
-    --input-files data/reports.csv \
+    --input-files data/reports.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir results \
     --accession-col "Study_ID" \
@@ -195,10 +223,10 @@ When you restart a stage that was previously interrupted:
 Example:
 ```bash
 # Initial run processes 5000 reports, fails at report 3500
-python src/cli.py --stages extract-findings --input-files data.csv
+python src/cli.py --stages extract-findings --input-files data.json
 
 # Restart automatically detects completed reports and continues from report 3501
-python src/cli.py --stages extract-findings --input-files data.csv
+python src/cli.py --stages extract-findings --input-files data.json
 ```
 
 #### Stage-Based Examples
@@ -208,7 +236,7 @@ python src/cli.py --stages extract-findings --input-files data.csv
 # Stage 1: Remove comparisons only
 python src/cli.py \
     --stages remove-comparisons \
-    --input-files data.csv \
+    --input-files data.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir results
 
@@ -224,24 +252,42 @@ python src/cli.py \
 ```bash
 python src/cli.py \
     --stages remove-comparisons extract-findings map-categories \
-    --input-files data.csv \
+    --input-files data.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir results
 ```
 
 
-#### CSV Input Format
+#### JSON Input Format
 
-Your CSV file should contain at least two columns:
-- **Accession column**: Unique identifier for each report
-- **Report column**: The radiology report text
+Your JSON file should use one of the supported formats:
 
-Example CSV structure:
-```csv
-Accession,Report Text
-12345,"FINDINGS: No acute cardiopulmonary abnormality..."
-12346,"IMPRESSION: Mild cardiomegaly. Otherwise normal..."
-12347,"COMPARISON: Prior chest X-ray from 2023..."
+**Format 1: Array of objects**
+```json
+[
+  {"Accession": "12345", "Report Text": "FINDINGS: No acute cardiopulmonary abnormality..."},
+  {"Accession": "12346", "Report Text": "IMPRESSION: Mild cardiomegaly. Otherwise normal..."},
+  {"Accession": "12347", "Report Text": "COMPARISON: Prior chest X-ray from 2023..."}
+]
+```
+
+**Format 2: Object with accession as keys**
+```json
+{
+  "12345": "FINDINGS: No acute cardiopulmonary abnormality...",
+  "12346": "IMPRESSION: Mild cardiomegaly. Otherwise normal...",
+  "12347": "COMPARISON: Prior chest X-ray from 2023..."
+}
+```
+
+**Format 3: Nested object with reports array**
+```json
+{
+  "reports": [
+    {"Accession": "12345", "Report Text": "FINDINGS: No acute cardiopulmonary abnormality..."},
+    {"Accession": "12346", "Report Text": "IMPRESSION: Mild cardiomegaly. Otherwise normal..."}
+  ]
+}
 ```
 
 ### 3. Output Structure
@@ -571,10 +617,10 @@ For an 8x H100 server, I found a batch size of ~24,000 (~3000 per GPU) to be eff
 4. **Batch size optimization examples**:
    ```bash
    # Memory-constrained environments
-   python src/cli.py --batch-size 512 --input-files data.csv
+   python src/cli.py --batch-size 512 --input-files data.json
    
    # High-memory systems (faster processing)
-   python src/cli.py --batch-size 4096 --input-files data.csv
+   python src/cli.py --batch-size 4096 --input-files data.json
    ```
 
 ## Troubleshooting
@@ -585,7 +631,7 @@ For an 8x H100 server, I found a batch size of ~24,000 (~3000 per GPU) to be eff
 
 **Processing errors:**
 - Check logs in `save_dir/logs/`
-- Verify CSV format and column names
+- Verify JSON format and field names
 - Ensure modality config file exists
 
 **Stage-based processing errors:**
@@ -601,7 +647,7 @@ Start with debug mode for rapid iteration using a subset of your dataset:
 ```bash
 # Test with debug mode first - processes 50 reports with 2 categories
 python src/cli.py \
-    --input-files large_dataset.csv \
+    --input-files large_dataset.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir debug \
     --debug-mode \
@@ -611,7 +657,7 @@ python src/cli.py \
 
 # Scale up once you've validated the approach
 python src/cli.py \
-    --input-files large_dataset.csv \
+    --input-files large_dataset.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir production
 ```
@@ -637,7 +683,7 @@ Here's a complete pipeline from debug to production with QC validation:
 ```bash
 # Test configuration with small subset
 python src/cli.py \
-    --input-files data/mimic_reports.csv \
+    --input-files data/mimic_reports.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir debug_test \
     --debug-mode \
@@ -671,7 +717,7 @@ python src/eval_cli.py \
 ```bash
 # Full dataset processing
 python src/cli.py \
-    --input-files data/mimic_reports.csv \
+    --input-files data/mimic_reports.json \
     --modality-config config/modalities/cxr.yaml \
     --save-dir production \
     --batch-size 2048
