@@ -51,7 +51,7 @@ categories:
     questions:
       - question: "Are there any microcalcifications present in the breast?"
       - question: "Are the microcalcifications suspicious in morphology (e.g. amorphous, coarse heterogenous, fine pleomorphic, fine linear or fine linear branching)?"
-      - question: "Are the microcalcifications benign in morphology (e.g. round, rim, punctate, skin, vascular, 'popcorn', large rod-like, dystrophic, milk-of-calcium)?
+      - question: "Are the microcalcifications benign in morphology (e.g. round, rim, punctate, skin, vascular, 'popcorn', large rod-like, dystrophic, milk-of-calcium)?"
       - question: "Are the suspicious microcalcifications in a grouped distribution?"
       - question: "Are the suspicious microcalcifications in a linear distribution?"
       - question: "Are the suspicious microcalcifications in a segmental distribution?"
