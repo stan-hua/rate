@@ -33,7 +33,7 @@ categories:
     questions:
       - question: "Is the cardiac silhouette enlarged or is there cardiomegaly?"
       - question: "Is there mediastinal widening?"
-      - question: "Is there an tortuous aorta?"
+      - question: "Is there a tortuous aorta?"
       - question: "Is aortic enlargement suspected based on the imaging findings?"
       - question: "Is there any calcification of the aorta or aortic atherosclerosis?"
       - question: "Is hiatal hernia suspected based on the imaging findings?"
