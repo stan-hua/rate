@@ -11,7 +11,8 @@ categories:
 
   Cancer:
     description: "Cancer suspected"
-     - question: "Is breast cancer suspected based on imaging findings?"
+    questions:
+      - question: "Is breast cancer suspected based on imaging findings?"
      
   Mass:
     description: "Mass lesions in the breast (descriptors)"
@@ -27,8 +28,9 @@ categories:
       - question: "Is the mass margin spiculated?"
       - question: "Are there any fat-containing masses?"
      
- Additional findings:
-     description: "Associated findings (e.g. skin retraction, nipple retraction, skin thickening, trabecular thickening)"
+  Additional findings:
+    description: "Associated findings (e.g. skin retraction, nipple retraction, skin thickening, trabecular thickening)"
+    questions:
       - question: "Is there skin retraction?"
       - question: "Is there nipple retraction or inversion?"
       - question: "Is there skin thickening?"
@@ -51,7 +53,7 @@ categories:
     questions:
       - question: "Are there any microcalcifications present in the breast?"
       - question: "Are the microcalcifications suspicious in morphology (e.g. amorphous, coarse heterogenous, fine pleomorphic, fine linear or fine linear branching)?"
-      - question: "Are the microcalcifications benign in morphology (e.g. round, rim, punctate, skin, vascular, 'popcorn', large rod-like, dystrophic, milk-of-calcium)?
+      - question: "Are the microcalcifications benign in morphology (e.g. round, rim, punctate, skin, vascular, 'popcorn', large rod-like, dystrophic, milk-of-calcium)?"
       - question: "Are the suspicious microcalcifications in a grouped distribution?"
       - question: "Are the suspicious microcalcifications in a linear distribution?"
       - question: "Are the suspicious microcalcifications in a segmental distribution?"
