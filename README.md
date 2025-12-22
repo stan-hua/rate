@@ -71,12 +71,14 @@ to verify it is loaded.
 ### 2. Report Schema
 The report should be a json in one of the two formats:
 ```python
-[{"accession": "123", "report": "text"}, {"accession": "123", "report": "text"}, ...]
+[{"Accession": "123", "Report Text": "text"}, {"Accession": "456", "Report Text": "text"}, ...]
 ```
 or
 ```python
-{"123": "text", "123": "text", ...}
+{"123": "text", "456": "text", ...}
 ```
+
+Note: The first format uses the default field names (`Accession` and `Report Text`), which can be customized using the `--accession-col` and `--report-col` CLI arguments. The second format (key-value pairs) treats keys as accession IDs and values as report text directly.
 
 ### 3. Process Reports with CLI
 
