@@ -73,7 +73,7 @@ categories:
       - question: "Is there any NG tube (nasogastric tube)?"
       - question: "Is there any chest tube or pigtail catheter?"
       - question: "Is there any breast implant?"
-      - question: "Is there any post-operative metal (arthroplasty, perthesis, surgical clips)?"
+      - question: "Is there any post-operative metal (arthroplasty, prosthesis, surgical clips)?"
       - question: "Is there any CVC (central venous catheter)?"
       - question: "Is there any PICC (peripherally inserted central catheter)?"
       - question: "Is there any foreign body (unrelated to medical device or hardware)?"
