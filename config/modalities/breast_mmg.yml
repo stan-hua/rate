@@ -11,7 +11,8 @@ categories:
 
   Cancer:
     description: "Cancer suspected"
-     - question: "Is breast cancer suspected based on imaging findings?"
+    questions:
+      - question: "Is breast cancer suspected based on imaging findings?"
      
   Mass:
     description: "Mass lesions in the breast (descriptors)"
@@ -27,8 +28,9 @@ categories:
       - question: "Is the mass margin spiculated?"
       - question: "Are there any fat-containing masses?"
      
- Additional findings:
-     description: "Associated findings (e.g. skin retraction, nipple retraction, skin thickening, trabecular thickening)"
+  Additional findings:
+    description: "Associated findings (e.g. skin retraction, nipple retraction, skin thickening, trabecular thickening)"
+    questions:
       - question: "Is there skin retraction?"
       - question: "Is there nipple retraction or inversion?"
       - question: "Is there skin thickening?"
