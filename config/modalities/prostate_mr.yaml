@@ -15,7 +15,7 @@ categories:
       - question: "Is cyst suspected in the prostate (e.g. Mullerian duct cyst, utricle cyst, or ejaculatory duct cyst) or seminal vesicle based on imaging findings?"
 
   Malignancy:
-    description: "Malignant tumours in specific zones of the prostate (e.g. peripheral zone, transitional zone, central, multifocal"
+    description: "Malignant tumours in specific zones of the prostate (e.g. peripheral zone, transitional zone, central, multifocal)"
     questions:
       - question: "Is prostate cancer in the peripheral zone of the prostate probable based on the imaging findings?"
       - question: "Is prostate cancer in the transitional zone of the prostate probable based on the imaging findings?"
