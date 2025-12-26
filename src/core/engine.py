@@ -102,12 +102,34 @@ class Engine:
             result_processor=self._process_category_results
         )
     
-    def run_process_questions(self, reports: Dict[str, str]) -> Dict[str, Dict]:
-        """Run process questions stage."""
+    def run_process_questions(self, reports: Dict[str, str], category_findings: Dict[str, Dict[str, str]] = None) -> Dict[str, Dict]:
+        """Run process questions stage.
+        
+        Args:
+            reports: Raw report data as dict of {report_id: text}
+            category_findings: Dict mapping report_id to dict of {category_name: findings_text}
+                             Only questions for categories with findings will be asked.
+                             Required - will raise error if not provided.
+        """
+        # Load category_findings if not provided
+        if category_findings is None:
+            category_findings = self._load_existing_results('category_findings')
+        
+        # Raise error if category_findings is still not available
+        if not category_findings:
+            raise ValueError(
+                "category_findings is required for process-questions stage. "
+                "Please run map-categories stage first or provide category_findings data."
+            )
+        
+        # Create a request builder that has access to category_findings
+        def request_builder_with_context(reports_data):
+            return self._build_process_questions_requests(reports_data, category_findings)
+        
         return self._process_stage(
             stage_name='questions',
             input_data=reports,
-            request_builder=self._build_process_questions_requests,
+            request_builder=request_builder_with_context,
             result_processor=self._process_question_results
         )
     
@@ -184,7 +206,22 @@ class Engine:
                 elif stage == 'process-questions':
                     if reports is None:
                         raise ValueError("Raw reports required for process-questions stage")
-                    stage_results = self.run_process_questions(reports)
+                    # Determine category_findings source
+                    category_findings_data = None
+                    if 'input-category-findings' in input_files:
+                        # Load from previous stage file
+                        category_findings_data = self.storage.load_category_findings(Path(input_files['input-category-findings']))
+                    elif results['category_findings']:
+                        # Use results from current run/existing data
+                        category_findings_data = results['category_findings']
+                    
+                    if not category_findings_data:
+                        raise ValueError(
+                            "category_findings is required for process-questions stage. "
+                            "Please run map-categories stage first or provide input-category-findings file."
+                        )
+                    
+                    stage_results = self.run_process_questions(reports, category_findings_data)
                     if stage_results:
                         results['questions'].update(stage_results)
             
@@ -311,8 +348,18 @@ class Engine:
         
         return requests, id_mapping
 
-    def _build_process_questions_requests(self, reports_data: Dict[str, str]) -> Tuple[List[Tuple[str, str]], Dict[str, Tuple[str, str, str]]]:
-        """Build requests for process-questions stage."""
+    def _build_process_questions_requests(self, reports_data: Dict[str, str], category_findings: Dict[str, Dict[str, str]]) -> Tuple[List[Tuple[str, str]], Dict[str, Tuple[str, str, str]]]:
+        """Build requests for process-questions stage.
+        
+        Args:
+            reports_data: Dict mapping report_id to raw report text
+            category_findings: Dict mapping report_id to dict of {category_name: findings_text}
+                             Only questions for categories with findings will be asked.
+                             Required - will raise error if not provided or if report_id not found.
+        """
+        if not category_findings:
+            raise ValueError("category_findings is required for building process-questions requests")
+        
         if not self.findings_categories:
             self.findings_categories = self._load_findings_categories()
             
@@ -320,7 +367,29 @@ class Engine:
         id_mapping = {} 
         
         for report_id, raw_text in reports_data.items():
-            for category_name, category in self.findings_categories.items():
+            # Check if report_id exists in category_findings
+            if report_id not in category_findings:
+                # If report_id not in category_findings, create empty findings for all categories
+                report_categories = {cat_name: "" for cat_name in self.findings_categories.keys()}
+                category_findings[report_id] = report_categories
+            
+            # Only ask questions for categories that have findings for this report
+            report_categories = category_findings[report_id]
+            # Filter out empty or invalid category findings
+            valid_categories = {
+                cat_name: findings 
+                for cat_name, findings in report_categories.items()
+                if findings and findings.strip() and findings.strip().lower() not in ["no such section", "no findings section", "error", "failed", "unable to process"]
+            }
+            categories_to_use = valid_categories.keys()
+            
+            # Only ask questions for the relevant categories
+            for category_name in categories_to_use:
+                if category_name not in self.findings_categories:
+                    self.logger.warning(f"Category '{category_name}' found in category_findings but not in modality config. Skipping.")
+                    continue
+                    
+                category = self.findings_categories[category_name]
                 for question in category['questions']:
                     question_text = question['question']
                     question_id = self.storage._generate_question_id(question_text)
