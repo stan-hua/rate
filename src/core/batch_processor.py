@@ -109,7 +109,11 @@ class BatchProcessor:
                 ],
                 temperature=self.config['model']['temperature'],
                 top_p=self.config['model']['top_p'],
-                max_tokens=self.config['model']['max_tokens'],
+                max_completion_tokens=self.config['model']['max_completion_tokens'],
+                extra_body={
+                    "chat_template_kwargs": {"enable_thinking": self.config['model']['enable_thinking']},
+                    "regex": "(Yes|No)"
+                },
             )
             
             # Handle response (compatible with different formats)
