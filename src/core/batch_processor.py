@@ -6,10 +6,13 @@ import random
 from typing import Dict, List, Tuple, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
-
 from .exceptions import BatchProcessingError
 from .validators import ResultValidator
 
+EBNF_GRAMMAR = """
+root ::= yesno
+yesno ::= "Yes" | "No"
+"""
 
 class BatchProcessor:
     """Handles batch processing with improved error handling and validation."""
@@ -81,10 +84,7 @@ class BatchProcessor:
             with tqdm(total=len(requests), desc="Processing requests", unit="req") as pbar:
                 for fut in as_completed(futures):
                     rid, content = fut.result()
-                    # Clean up content (remove thinking tags if present)
-                    if content and "</think>" in content:
-                        content = content.split("</think>")[-1]
-                    results[rid] = content.strip() if content else ""
+                    results[rid] = content # because we already have constrained the output to be Yes or No with regex
                     if not results[rid]:
                         errors += 1
                     pbar.update(1)
@@ -100,6 +100,11 @@ class BatchProcessor:
     
     def _request_once(self, prompt: str) -> str:
         """Make a single chat completion request."""
+        extra_body = {
+            "chat_template_kwargs": {"enable_thinking": self.config['model']['enable_thinking']},
+        }
+        if self.config['processing']['apply-constrained-output']:
+            extra_body["ebnf"] = EBNF_GRAMMAR
         try:
             resp = self.client.chat.completions.create(
                 model=self.config['model']['name'],
@@ -110,10 +115,7 @@ class BatchProcessor:
                 temperature=self.config['model']['temperature'],
                 top_p=self.config['model']['top_p'],
                 max_completion_tokens=self.config['model']['max_completion_tokens'],
-                extra_body={
-                    "chat_template_kwargs": {"enable_thinking": self.config['model']['enable_thinking']},
-                    "regex": "(Yes|No)"
-                },
+                extra_body=extra_body,
             )
             
             # Handle response (compatible with different formats)
