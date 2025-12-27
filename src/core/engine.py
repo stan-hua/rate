@@ -21,6 +21,7 @@ class Engine:
         """Initialize the report processor with configuration."""
         self.config = self._load_config(config)
         self.modality_config_path = self.config['modality-config']
+        self.use_category_segments = self.config.get('processing', {}).get('use-category-segments', False)
         self._findings_categories = None
         self._batch_size = self.config.get('processing', {}).get('batch-size', 1024)
         
@@ -32,7 +33,10 @@ class Engine:
         # Setup logging and storage with proper directories
         self.logger = setup_logging('Engine', save_dir=save_dir, filename=input_filename)
         self.storage = StorageManager(save_dir=save_dir)
-        
+        if self.use_category_segments:
+            self.logger.info("Using category segments for process-questions stage")
+        else:
+            self.logger.info("Using the raw text for process-questions stage")
         # Initialize OpenAI client for sglang
         self.client = OpenAI(
             base_url=f"{self.config['server']['base_url']}:{self.config['server']['port']}/v1",
@@ -102,7 +106,7 @@ class Engine:
             result_processor=self._process_category_results
         )
     
-    def run_process_questions(self, reports: Dict[str, str], category_findings: Dict[str, Dict[str, str]] = None) -> Dict[str, Dict]:
+    def run_process_questions(self, reports: Dict[str, str], category_findings: Dict[str, Dict[str, str]] = None, use_category_segments: bool = False) -> Dict[str, Dict]:
         """Run process questions stage.
         
         Args:
@@ -124,7 +128,7 @@ class Engine:
         
         # Create a request builder that has access to category_findings
         def request_builder_with_context(reports_data):
-            return self._build_process_questions_requests(reports_data, category_findings)
+            return self._build_process_questions_requests(reports_data, category_findings, use_category_segments)
         
         return self._process_stage(
             stage_name='questions',
@@ -221,7 +225,8 @@ class Engine:
                             "Please run map-categories stage first or provide input-category-findings file."
                         )
                     
-                    stage_results = self.run_process_questions(reports, category_findings_data)
+                    stage_results = self.run_process_questions(reports, category_findings_data, 
+                                use_category_segments=self.use_category_segments)
                     if stage_results:
                         results['questions'].update(stage_results)
             
@@ -348,7 +353,8 @@ class Engine:
         
         return requests, id_mapping
 
-    def _build_process_questions_requests(self, reports_data: Dict[str, str], category_findings: Dict[str, Dict[str, str]]) -> Tuple[List[Tuple[str, str]], Dict[str, Tuple[str, str, str]]]:
+    def _build_process_questions_requests(self, reports_data: Dict[str, str], category_findings: Dict[str, Dict[str, str]], 
+        use_category_segments: bool = False) -> Tuple[List[Tuple[str, str]], Dict[str, Tuple[str, str, str]]]:
         """Build requests for process-questions stage.
         
         Args:
@@ -356,6 +362,7 @@ class Engine:
             category_findings: Dict mapping report_id to dict of {category_name: findings_text}
                              Only questions for categories with findings will be asked.
                              Required - will raise error if not provided or if report_id not found.
+            use_category_segments: Whether to use category segments instead of the raw text.
         """
         if not category_findings:
             raise ValueError("category_findings is required for building process-questions requests")
@@ -394,6 +401,10 @@ class Engine:
                     question_text = question['question']
                     question_id = self.storage._generate_question_id(question_text)
                     request_id = f"{report_id}_{category_name}_{question_id}"
+                    if use_category_segments:
+                        raw_text = category_findings[report_id][category_name]
+                    else:
+                        raw_text = reports_data[report_id]
                     prompt = self.config['prompt_templates']['findings_question'].format(
                         report=raw_text, question=question_text
                     )
