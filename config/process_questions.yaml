@@ -3,7 +3,7 @@ model:
   name: "Qwen/Qwen3-30B-A3B-FP8"
   temperature: 0.1
   top_p: 0.1
-  max_completion_tokens: 8
+  max_completion_tokens: 2
   enable_thinking: false
 
 # Server settings
@@ -13,7 +13,10 @@ server:
 
 # Processing settings
 processing:
-  batch-size: 4096
+  batch-size: 8192
+  request-concurrency: 512 # Number of concurrent requests for high-throughput processing (matches batch-size)
+  apply-constrained-output: true
+  use-category-segments: true
   max_retries: 2
   retry_delay: 5
   validation:
