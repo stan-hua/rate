@@ -58,8 +58,8 @@ def parse_args():
 
     
     # Optional settings
-    parser.add_argument('--batch-size', type=int, default=1024,
-                      help='Batch size for processing reports (default: 1024)')
+    parser.add_argument('--batch-size', type=int, default=8192,
+                      help='Batch size for processing reports (default: 8192)')
     parser.add_argument('--accession-col', default='Accession',
                       help='Field name for accession numbers in JSON (default: Accession)')
     parser.add_argument('--report-col', default='Report Text',
@@ -82,12 +82,30 @@ def validate_stage_inputs(stages: list, args) -> dict:
     
     if 'extract-findings' in stages and not ('remove-comparisons' in stages or args.stages == ['all']):
         if not args.input_no_comparisons:
-            raise ValueError("extract-findings stage requires --input-no-comparisons when not running remove-comparisons")
+            # Try to find no_comparisons.csv in the save_dir if provided, otherwise error
+            if hasattr(args, 'save_dir') and args.save_dir:
+                save_dir = Path(args.save_dir)
+            else:
+                raise ValueError("save_dir must be specified to automatically find no_comparisons.csv")
+            no_comparisons_file = save_dir / 'no_comparisons.csv'
+            if no_comparisons_file.exists():
+                args.input_no_comparisons = str(no_comparisons_file)
+            else:
+                raise ValueError(f"no_comparisons.csv not found in {save_dir}")
         input_files['input-no-comparisons'] = args.input_no_comparisons
-    
+
     if 'map-categories' in stages and not ('extract-findings' in stages or args.stages == ['all']):
         if not args.input_findings:
-            raise ValueError("map-categories stage requires --input-findings when not running extract-findings")
+            # Try to find findings.csv in the save_dir if provided, otherwise error
+            if hasattr(args, 'save_dir') and args.save_dir:
+                save_dir = Path(args.save_dir)
+            else:
+                raise ValueError("save_dir must be specified to automatically find findings.csv")
+            findings_file = save_dir / 'findings.csv'
+            if findings_file.exists():
+                args.input_findings = str(findings_file)
+            else:
+                raise ValueError(f"findings.csv not found in {save_dir}")
         input_files['input-findings'] = args.input_findings
     
     # Check if we need input files for reports
@@ -211,7 +229,6 @@ def main():
     # Preserve existing processing settings (like request-concurrency) from default config
     processing_dict = config.get('processing', {}).copy() if 'processing' in config else {}
     processing_dict.update({
-        'batch-size': args.batch_size,
         'save-dir': args.save_dir
     })
     
