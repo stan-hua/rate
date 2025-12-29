@@ -66,9 +66,9 @@ class QCEvaluator:
                 binary_values.append(1 if val > 0 else 0)
             elif isinstance(val, str):
                 val_lower = val.lower().strip()
-                if val_lower in ['yes', 'true', '1', 'correct', 'good']:
+                if val_lower in ['yes', 'true', '1', 'correct', 'good'] or val_lower.startswith('y'):
                     binary_values.append(1)
-                elif val_lower in ['no', 'false', '0', 'incorrect', 'bad', 'wrong']:
+                elif val_lower in ['no', 'false', '0', 'incorrect', 'bad', 'wrong'] or val_lower.startswith('n'):
                     binary_values.append(0)
                 else:
                     binary_values.append(np.nan)
