@@ -6,9 +6,11 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
-from src.eval_cli import QCEvaluator
-from tqdm import tqdm
+
 import pandas as pd
+from tqdm import tqdm
+
+from src.eval_cli import QCEvaluator
 
 
 @dataclass
@@ -25,43 +27,63 @@ class CSVQCEvaluator:
     require_question_text_match: bool = False
 
     def compute_from_csv(self, gt_csv_path: str, pred_csv_path: str) -> Dict[str, Any]:
-        gt = self._load_csv(gt_csv_path, kind="gt")
-        pred = self._load_csv(pred_csv_path, kind="pred")
+        gt = self._load_csv(gt_csv_path)
+        pred = self._load_csv(pred_csv_path)
         merged = self._align(gt, pred)
 
-        y_true = self._to_binary_series(merged["answer_gt"])
-        y_pred = self._to_binary_series(merged["answer_pred"])
-        overall_metrics = self.qc_evaluator._calculate_metrics(y_true, y_pred)
+        # overall
+        yt = self._to_binary_series(merged["answer_gt"])
+        yp = self._to_binary_series(merged["answer_pred"])
+        overall = self.qc_evaluator._calculate_metrics(yt, yp)
 
+        # per-report overall (THIS is what CI script consumes)
         per_report_overall: List[Dict[str, Any]] = []
         report_ids = merged[self.report_id_col].drop_duplicates().tolist()
-        for _, sub in tqdm(merged.groupby(self.report_id_col, sort=False), total=len(report_ids), desc="Computing per-report overall metrics"):
-            yt = self._to_binary_series(sub["answer_gt"])
-            yp = self._to_binary_series(sub["answer_pred"])
-            per_report_overall.append(self.qc_evaluator._calculate_metrics(yt, yp))
 
-        question_metrics: Dict[str, Any] = {}
-        for q, sub in tqdm(merged.groupby(self.question_col, sort=False), total=len(merged[self.question_col].drop_duplicates()), desc="Computing per-question metrics"):
+        for rid, sub in tqdm(
+            merged.groupby(self.report_id_col, sort=False),
+            total=len(report_ids),
+            desc="Per-report metrics",
+        ):
             yt = self._to_binary_series(sub["answer_gt"])
             yp = self._to_binary_series(sub["answer_pred"])
-            question_metrics[str(q)] = self.qc_evaluator._calculate_metrics(yt, yp)
+            m = dict(self.qc_evaluator._calculate_metrics(yt, yp))
+            m["report_id"] = str(rid)
+            m["n_items"] = int(len(sub))
+            per_report_overall.append(m)
 
-        category_metrics: Dict[str, Any] = {}
-        for cat, sub in tqdm(merged.groupby(self.category_col, sort=False), total=len(merged[self.category_col].drop_duplicates()), desc="Computing per-category metrics"):
+        # per-category
+        per_category: Dict[str, Any] = {}
+        for cat, sub in tqdm(
+            merged.groupby(self.category_col, sort=False),
+            total=merged[self.category_col].nunique(),
+            desc="Per-category metrics",
+        ):
             yt = self._to_binary_series(sub["answer_gt"])
             yp = self._to_binary_series(sub["answer_pred"])
-            category_metrics[str(cat)] = self.qc_evaluator._calculate_metrics(yt, yp)
+            per_category[str(cat)] = self.qc_evaluator._calculate_metrics(yt, yp)
+
+        # per-question
+        per_question: Dict[str, Any] = {}
+        for q, sub in tqdm(
+            merged.groupby(self.question_col, sort=False),
+            total=merged[self.question_col].nunique(),
+            desc="Per-question metrics",
+        ):
+            yt = self._to_binary_series(sub["answer_gt"])
+            yp = self._to_binary_series(sub["answer_pred"])
+            per_question[str(q)] = self.qc_evaluator._calculate_metrics(yt, yp)
 
         return {
-            "overall": overall_metrics,
+            "overall": overall,
             "per_report_overall": per_report_overall,
-            "per_category": category_metrics,
-            "per_question": question_metrics,
+            "per_category": per_category,
+            "per_question": per_question,
             "n_rows_aligned": int(len(merged)),
             "n_reports": int(len(report_ids)),
         }
 
-    def _load_csv(self, path: str, kind: str) -> pd.DataFrame:
+    def _load_csv(self, path: str) -> pd.DataFrame:
         df = pd.read_csv(path, dtype={self.report_id_col: str, self.question_id_col: str})
         needed = {
             self.report_id_col,
@@ -72,7 +94,7 @@ class CSVQCEvaluator:
         }
         missing = needed - set(df.columns)
         if missing:
-            raise ValueError(f"{kind} CSV missing columns: {sorted(missing)}")
+            raise ValueError(f"CSV missing columns: {sorted(missing)}")
 
         df = df.copy()
         for c in [self.report_id_col, self.question_id_col, self.question_col, self.category_col]:
@@ -83,12 +105,11 @@ class CSVQCEvaluator:
         if self.require_question_text_match and self.question_col not in key_cols:
             key_cols.append(self.question_col)
 
-        df = (
+        return (
             df.sort_values(key_cols)
-            .drop_duplicates(subset=key_cols, keep="last")
-            .reset_index(drop=True)
+              .drop_duplicates(subset=key_cols, keep="last")
+              .reset_index(drop=True)
         )
-        return df
 
     def _align(self, gt: pd.DataFrame, pred: pd.DataFrame) -> pd.DataFrame:
         on_cols = list(self.join_on)
@@ -97,56 +118,35 @@ class CSVQCEvaluator:
 
         merged = gt.merge(pred, on=on_cols, how="inner", suffixes=("_gt", "_pred"))
 
-        if f"{self.category_col}_gt" in merged.columns:
-            merged[self.category_col] = merged[f"{self.category_col}_gt"]
-        elif self.category_col not in merged.columns:
-            merged[self.category_col] = "unknown"
-
-        if self.question_col not in merged.columns and f"{self.question_col}_gt" in merged.columns:
-            merged[self.question_col] = merged[f"{self.question_col}_gt"]
+        merged[self.category_col] = merged.get(f"{self.category_col}_gt", "unknown")
+        merged[self.question_col] = merged.get(f"{self.question_col}_gt")
 
         merged["answer_gt"] = merged[f"{self.answer_col}_gt"]
         merged["answer_pred"] = merged[f"{self.answer_col}_pred"]
 
-        sort_cols = [c for c in [self.report_id_col, self.question_id_col, self.question_col] if c in merged.columns]
-        merged = merged.sort_values(sort_cols).reset_index(drop=True)
+        merged = merged.sort_values(
+            [c for c in [self.report_id_col, self.question_id_col] if c in merged.columns]
+        ).reset_index(drop=True)
 
         if len(merged) == 0:
-            raise ValueError(
-                "No rows aligned between GT and predictions. "
-                f"Check join keys: {on_cols} and whether report_id/question_id match."
-            )
+            raise ValueError("No aligned rows between GT and predictions.")
 
         return merged
 
     def _to_binary_series(self, answers: pd.Series) -> pd.Series:
-        return self.qc_evaluator._convert_to_binary(pd.Series(list(answers), dtype="object"), "label")
-
-    def _build_raw_answers(self, merged: pd.DataFrame) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
-        raw_ref: List[Dict[str, str]] = []
-        raw_pred: List[Dict[str, str]] = []
-        for _, sub in merged.groupby(self.report_id_col, sort=False):
-            ref_map: Dict[str, str] = {}
-            pred_map: Dict[str, str] = {}
-            for _, row in sub.iterrows():
-                q = str(row[self.question_col])
-                ref_map[q] = str(row["answer_gt"])
-                pred_map[q] = str(row["answer_pred"])
-            raw_ref.append(ref_map)
-            raw_pred.append(pred_map)
-        return raw_ref, raw_pred
+        return self.qc_evaluator._convert_to_binary(
+            pd.Series(list(answers), dtype="object"), "label"
+        )
 
 
 def _parse_join_on(s: str) -> Tuple[str, ...]:
     cols = [c.strip() for c in s.split(",") if c.strip()]
     if not cols:
-        raise argparse.ArgumentTypeError("join_on must be a comma-separated list of columns")
+        raise argparse.ArgumentTypeError("join_on must be non-empty")
     return tuple(cols)
 
 
 def _json_default(o: Any):
-    if isinstance(o, (set, tuple)):
-        return list(o)
     try:
         import numpy as np
         if isinstance(o, (np.integer, np.floating, np.bool_)):
@@ -156,40 +156,39 @@ def _json_default(o: Any):
     return str(o)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Evaluate QC CSVs.")
-    parser.add_argument("--gt", required=True, help="Path to ground truth CSV")
-    parser.add_argument("--pred", required=True, help="Path to prediction CSV")
-    parser.add_argument(
+def main():
+    p = argparse.ArgumentParser(description="Generate eval.json from QC CSVs")
+    p.add_argument("--gt", required=True, help="Ground-truth CSV")
+    p.add_argument("--pred", required=True, help="Prediction CSV")
+    p.add_argument("--save-path", required=True, help="Output eval.json path")
+    p.add_argument(
         "--join-on",
         default="report_id,question_id",
         type=_parse_join_on,
-        help="Comma-separated join keys (default: report_id,question_id). Use report_id,question if needed.",
+        help="Comma-separated join keys",
     )
-    parser.add_argument(
+    p.add_argument(
         "--require-question-text-match",
         action="store_true",
-        help="Also require question text to match when joining.",
-    )
-    parser.add_argument(
-        "--save-dir",
-        required=True,
-        help="Path where the evaluation JSON file should be saved (e.g., /path/to/evaluation.json).",
+        help="Also require question text to match",
     )
 
-    args = parser.parse_args()
+    args = p.parse_args()
 
-    qc_eval_obj = QCEvaluator(qc_dir='.')
-
+    qc_eval = QCEvaluator(qc_dir=".")
     evaluator = CSVQCEvaluator(
-        qc_evaluator=qc_eval_obj,
+        qc_evaluator=qc_eval,
         join_on=args.join_on,
         require_question_text_match=bool(args.require_question_text_match),
     )
+
     result = evaluator.compute_from_csv(args.gt, args.pred)
 
-    # Save to file with pretty printing
-    output_path = Path(args.save_dir)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, 'w') as f:
+    out_path = Path(args.save_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w") as f:
         json.dump(result, f, indent=2, sort_keys=False, default=_json_default)
+
+
+if __name__ == "__main__":
+    main()
