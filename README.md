@@ -2,6 +2,23 @@
 
 A Python-based engine for processing radiology reports using the Qwen3-30B-A3B-FP8 model with sglang for efficient batch inference. Includes quality control file generation and performance evaluation tools for comprehensive validation workflows with debug mode for faster iteration.
 
+## Quick start
+1 (once). on `pillar_post`, do `pip install sglang`  
+2. in a tmux window run `bash fire.sh` to start sglang server  
+3. prepare format of the generated result for evaluation e.g., `process_predictions.sh` and `hash_and_save.py` over `generated_predictions.jsonl` from llama factory  
+4. run `bash run.sh` to pass through all 4 stages (might not need first 3 for future evals)  
+5. run `bash evaluate.sh` to get the metrics  
+6. once finished kill the sglang server
+
+TODO: 
+- A few paths are hardcoded -- this can be changed to integrate into the current pillar_post pipeline
+- I moved all scripts to the scripts folder. You might or might not need to tweak a few launch paths, depending on your setup
+
+--------------
+--------------
+--------------
+--------------
+--------------
 ## Installation with uv
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
