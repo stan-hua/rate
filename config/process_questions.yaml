@@ -16,7 +16,7 @@ processing:
   batch-size: 8192
   request-concurrency: 512 # Number of concurrent requests for high-throughput processing (matches batch-size)
   apply-constrained-output: true
-  use-category-segments: true
+  use-category-segments: false
   max_retries: 2
   retry_delay: 5
   validation:
