@@ -10,6 +10,14 @@ A Python-based engine for processing radiology reports using the Qwen3-30B-A3B-F
 5. run `bash evaluate.sh` to get the metrics  
 6. once finished kill the sglang server
 
+# To use with voio data
+1. Make sure you have sglang router installed `pip install sglang-router`. It helps with performance, but if you don't have it you can remove the router related settings from `scripts/server.sh`
+2. in a tmux window run `bash server.sh` to start sglang server  
+3. from the root of the rate repo, run `scripts/v0.1.3_ct_brain_valid/run_map-categories.sh` and/or `scripts/v0.1.3_ct_brain_valid/run_process-questions.sh`
+4. outputs are in `scripts/v0.1.3_ct_brain_valid/outputs/gt/*.csv`
+5. Edit `bash evaluate.sh` to point to your ground truth and your new output file e.g., `scripts/v0.1.3_ct_brain_valid/outputs/gt/questions.csv`
+6. once finished kill the sglang server
+
 TODO: 
 - A few paths are hardcoded -- this can be changed to integrate into the current pillar_post pipeline
 - I moved all scripts to the scripts folder. You might or might not need to tweak a few launch paths, depending on your setup

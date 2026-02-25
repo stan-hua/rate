@@ -101,7 +101,7 @@ class BatchProcessor:
     def _request_once(self, prompt: str) -> str:
         """Make a single chat completion request."""
         extra_body = {
-            "chat_template_kwargs": {"enable_thinking": self.config['model']['enable_thinking']},
+            "chat_template_kwargs": {"enable_thinking": self.config['model']['enable-thinking']},
         }
         if self.config['processing']['apply-constrained-output']:
             extra_body["ebnf"] = EBNF_GRAMMAR
@@ -114,7 +114,8 @@ class BatchProcessor:
                 ],
                 temperature=self.config['model']['temperature'],
                 top_p=self.config['model']['top_p'],
-                max_completion_tokens=self.config['model']['max_completion_tokens'],
+                seed=self.config['model'].get('seed', 42),
+                max_completion_tokens=self.config['model']['max-completion-tokens'],
                 extra_body=extra_body,
             )
             

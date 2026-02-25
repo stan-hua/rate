@@ -1,20 +1,28 @@
 import json
 import time
-import yaml
-import numpy as np
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union, Any
 from datetime import datetime
-from tqdm import tqdm
-import sglang as sgl
-from sglang.utils import wait_for_server, print_highlight
-from openai import OpenAI
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+import numpy as np
+import yaml
+from openai import OpenAI
+from tqdm import tqdm
+
+from .batch_processor import BatchProcessor
+from .batch_processor_batching_api import BatchProcessorBatchingApi
+from .batch_processor_httpx_async import BatchProcessorHttpxAsync
+from .exceptions import BatchProcessingError, ValidationError
 from .logging_config import setup_logging
 from .storage import StorageManager
-from .exceptions import BatchProcessingError, ValidationError
 from .validators import ResultValidator
-from .batch_processor import BatchProcessor
+
+# Registry of available batch processor classes
+BATCH_PROCESSOR_CLASSES = {
+    "default": BatchProcessor,                  # Version from Colin/Junwei, uses ThreadPoolExecutor to process each batch with a pool of concurrent http requests.
+    "batching_api": BatchProcessorBatchingApi,  # original batching api (before Colin/Junwei's updates). Submits batches as files to the openai endpoint
+    "httpx_async": BatchProcessorHttpxAsync,    # High-performance async with aiohttp
+}
 
 class Engine:
     def __init__(self, config: Union[str, Dict]):
@@ -24,15 +32,23 @@ class Engine:
         self.use_category_segments = self.config.get('processing', {}).get('use-category-segments', False)
         self._findings_categories = None
         self._batch_size = self.config.get('processing', {}).get('batch-size', 1024)
+        self._flush_interval = self.config.get('processing', {}).get('flush-interval', None)
         
         # Get save directory and input filename for logging/storage
         save_dir = self.config.get('processing', {}).get('save-dir', '.')
         input_files = self.config.get('input-files', [])
         input_filename = input_files[0] if input_files else None
-        
+
+        # Get study IDs filter if specified
+        study_ids_filter_list = self.config.get('study-ids-filter')
+        study_ids_filter = set(study_ids_filter_list) if study_ids_filter_list else None
+
         # Setup logging and storage with proper directories
         self.logger = setup_logging('Engine', save_dir=save_dir, filename=input_filename)
-        self.storage = StorageManager(save_dir=save_dir)
+        self.storage = StorageManager(save_dir=save_dir, study_ids_filter=study_ids_filter)
+        
+        if study_ids_filter:
+            self.logger.info(f"Study ID filter active: filtering to {len(study_ids_filter)} study IDs")
         if self.use_category_segments:
             self.logger.info("Using category segments for process-questions stage")
         else:
@@ -40,12 +56,26 @@ class Engine:
         # Initialize OpenAI client for sglang
         self.client = OpenAI(
             base_url=f"{self.config['server']['base_url']}:{self.config['server']['port']}/v1",
-            api_key="None"
+            api_key="None",
+            timeout=60.0,
         )
         
         # Initialize validation and batch processing components
         self.validator = ResultValidator(self.logger)
-        self.batch_processor = BatchProcessor(self.client, self.config, self.logger, self.validator)
+        
+        # Select batch processor class based on config
+        processor_class_name = self.config.get('processing', {}).get('batch-processor-class', 'default')
+        
+        if processor_class_name not in BATCH_PROCESSOR_CLASSES:
+            available = ", ".join(BATCH_PROCESSOR_CLASSES.keys())
+            raise ValueError(
+                f"Unknown batch-processor-class: '{processor_class_name}'. "
+                f"Available options: {available}"
+            )
+        
+        ProcessorClass = BATCH_PROCESSOR_CLASSES[processor_class_name]
+        self.logger.info(f"Using batch processor: {processor_class_name} ({ProcessorClass.__name__})")
+        self.batch_processor = ProcessorClass(self.client, self.config, self.logger, self.validator)
         
         # Apply debug subsampling if enabled
         if self.config.get('debug', {}).get('enabled', False):
@@ -125,7 +155,6 @@ class Engine:
                 "category_findings is required for process-questions stage. "
                 "Please run map-categories stage first or provide category_findings data."
             )
-        
         # Create a request builder that has access to category_findings
         def request_builder_with_context(reports_data):
             return self._build_process_questions_requests(reports_data, category_findings, use_category_segments)
@@ -147,7 +176,7 @@ class Engine:
             input_files: Dict mapping stage names to input file paths
         """
         start_time = time.time()
-        
+        self.logger.info(f"Running stages: {stages}")
         results = {
             'no_comparisons': {},
             'findings': {},
@@ -163,6 +192,7 @@ class Engine:
                     results[stage_name] = existing_results
                     self.logger.info(f"Loaded {len(existing_results)} existing results for {stage_name}")
             
+            self.logger.info(f"Starting to process stages")
             # Process stages in dependency order
             for stage in ['remove-comparisons', 'extract-findings', 'map-categories', 'process-questions']:
                 if stage not in stages:
@@ -194,15 +224,25 @@ class Engine:
                 elif stage == 'map-categories':
                     # Determine input data source
                     findings_data = None
-                    if 'input-findings' in input_files:
+                    use_raw_report = self.config.get('processing', {}).get('use-raw-report')
+                    if use_raw_report:
+                        self.logger.info(f"Using raw report text for map-categories ({len(reports)} reports)")
+                        # Use raw report text instead of extracted findings
+                        if reports is None:
+                            raise ValueError("Raw reports required for map-categories with --use-raw-report")
+                        findings_data = reports
+                        self.logger.info(f"Using raw report text for map-categories ({len(findings_data)} reports)")
+                    elif 'input-findings' in input_files:
                         # Load from previous stage file
+                        self.logger.info(f"Loading findings from input-findings file: {Path(input_files['input-findings']).resolve()}")
                         findings_data = self.storage.load_findings(Path(input_files['input-findings']))
                     elif results['findings']:
                         # Use results from current run/existing data
+                        self.logger.info(f"Using results from current run ({len(results['findings'])} reports)")
                         findings_data = results['findings']
                     else:
                         raise ValueError("No findings data available for map-categories stage")
-                    
+
                     stage_results = self.run_map_categories(findings_data)
                     if stage_results:
                         results['category_findings'].update(stage_results)
@@ -386,7 +426,7 @@ class Engine:
             valid_categories = {
                 cat_name: findings 
                 for cat_name, findings in report_categories.items()
-                if findings and findings.strip() and findings.strip().lower() not in ["no such section", "no findings section", "error", "failed", "unable to process"]
+                if findings and isinstance(findings, str) and findings.strip() and findings.strip().lower() not in ["no such section", "no findings section", "error", "failed", "unable to process"]
             }
             categories_to_use = valid_categories.keys()
             
@@ -441,6 +481,7 @@ class Engine:
         self.logger.info(f"Processing {stage_name}")
         
         # Build all requests first
+        self.logger.info(f"Building requests for {stage_name}")
         builder_result = request_builder(input_data)
         if isinstance(builder_result, tuple):
             requests, id_mapping = builder_result
@@ -448,6 +489,7 @@ class Engine:
             requests, id_mapping = builder_result, None
         
         # Filter out already processed requests
+        self.logger.info(f"Filtering out already processed requests for {stage_name}")
         if stage_name in ['no_comparisons', 'findings']:
             # Simple stages: filter by report IDs
             processed_ids = self.storage.get_processed_report_ids(stage_name)
@@ -463,24 +505,48 @@ class Engine:
                 requests = [(req_id, prompt) for req_id, prompt in requests 
                            if req_id not in processed_request_ids]
         
+        self.logger.info(f"Found {len(requests)} requests to process for {stage_name}")
         # Early return if all work is done
         if not requests:
             self.logger.info(f"All requests already processed for {stage_name}")
             return self._load_existing_results(stage_name)
         
         # Process requests in batches with improved error handling
+        self.logger.info(f"Preparing batches for {stage_name} (batch size: {self._batch_size})")
+        requests = list(sorted(requests, key=lambda x: x[0]))
         all_results = {}
         chunks = [requests[i:i + self._batch_size] for i in range(0, len(requests), self._batch_size)]
-        
+
+        # Build flush callback if periodic flushing is enabled
+        flush_callback = None
+        if self._flush_interval:
+            self.logger.info(
+                f"Using periodic flush (interval={self._flush_interval}) for {stage_name}"
+            )
+
+            def flush_callback(raw_results: Dict[str, str]):
+                """Transform and atomically save a buffer of raw results."""
+                if result_processor:
+                    processed = result_processor(raw_results, id_mapping)
+                else:
+                    processed = raw_results
+                self.storage.save_incremental_results(stage_name, processed)
+                self.logger.info(f"Flushed {len(raw_results)} results to disk for {stage_name}")
+
+        self.logger.info(f"Processing {stage_name} batches ({len(chunks)} batches)")
         for i, chunk in enumerate(tqdm(chunks, desc=f"Processing {stage_name} batches", unit="batch")):
             try:
                 # Use new batch processor with validation
-                chunk_results = self.batch_processor.process_batch(chunk, stage_name)
+                chunk_results = self.batch_processor.process_batch(
+                    chunk, stage_name,
+                    flush_callback=flush_callback,
+                    flush_interval=self._flush_interval,
+                )
                 
                 # Apply result processor if provided
                 if result_processor:
                     chunk_results = result_processor(chunk_results, id_mapping)
-                
+
                 # Skip redundant validation - batch processor already validated individual results
                 # Additional validation here was causing 92% data loss by re-filtering valid responses
                 
@@ -491,7 +557,7 @@ class Engine:
                     self.logger.info(f"Saved {len(chunk_results)} results from batch {i+1}/{len(chunks)}")
                 else:
                     self.logger.warning(f"No valid results from batch {i+1}/{len(chunks)}")
-                
+
             except BatchProcessingError as e:
                 self.logger.error(f"Batch {i+1}/{len(chunks)} failed: {str(e)}")
                 # Continue with next batch rather than failing entire stage
@@ -501,14 +567,41 @@ class Engine:
                 continue
             except Exception as e:
                 self.logger.error(f"Unexpected error in batch {i+1}/{len(chunks)}: {str(e)}")
-                # For unexpected errors, we might want to fail the entire stage
-                raise
+            #     # For unexpected errors, we might want to fail the entire stage
+                raise e
         
         # Validate CSV file integrity after processing
+        self.logger.info(f"Validating CSV file integrity for {stage_name}")
         if not self.storage.validate_csv_file(stage_name):
             self.logger.warning(f"CSV file validation failed for {stage_name}")
         
+        # Log final metrics for this stage and reset stats for next stage
+        self._log_and_reset_stage_stats(stage_name)
+        
         return all_results
+    
+    def _log_and_reset_stage_stats(self, stage_name: str) -> None:
+        """Log batch processor stats for a stage and reset for next stage.
+        
+        This method is safe to call regardless of which batch processor class is used.
+        """
+        # Check if the batch processor supports lifetime stats (only BatchProcessorHttpxAsync does)
+        if hasattr(self.batch_processor, 'log_final_metrics'):
+            self.logger.info(f"=== Stats for stage: {stage_name} ===")
+            self.batch_processor.log_final_metrics()
+
+        # Write stats JSON for post-hoc error rate checking (bench.py reads this)
+        if hasattr(self.batch_processor, 'get_lifetime_stats'):
+            try:
+                stats = self.batch_processor.get_lifetime_stats()
+                stats_path = self.storage.save_dir / f"stats_{stage_name}.json"
+                with open(stats_path, 'w') as f:
+                    json.dump(stats, f, indent=2)
+            except Exception as e:
+                self.logger.warning(f"Failed to write stats file for {stage_name}: {e}")
+
+        if hasattr(self.batch_processor, 'reset_stats'):
+            self.batch_processor.reset_stats()
 
     def _apply_debug_subsampling(self):
         """Apply debug mode subsampling to reduce data for faster iteration."""

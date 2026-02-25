@@ -1,12 +1,14 @@
 import json
+import time
 import pandas as pd
 import fcntl
 import tempfile
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Union, Optional, Any
+from typing import Dict, List, Union, Optional, Any, Set
 import hashlib
 from .exceptions import StorageError
+from .logging_config import setup_logging
 
 # Stage configuration registry
 STAGE_CONFIGS = {
@@ -39,14 +41,25 @@ STAGE_CONFIGS = {
 }
 
 class StorageManager:
-    def __init__(self, save_dir: str = "results"):
+    def __init__(self, save_dir: str = "results", study_ids_filter: Optional[Set[str]] = None):
         """Initialize storage manager.
 
         Args:
             save_dir: Directory for storing processed reports
+            study_ids_filter: Optional set of study IDs to filter by when loading CSVs
         """
         self.save_dir = Path(save_dir)
         self.save_dir.mkdir(parents=True, exist_ok=True)
+        self.study_ids_filter = study_ids_filter
+        self.logger = setup_logging('Storage', save_dir=save_dir)
+        
+    def set_study_ids_filter(self, study_ids_filter: Optional[Set[str]]) -> None:
+        """Set or update the study IDs filter.
+        
+        Args:
+            study_ids_filter: Set of study IDs to filter by, or None to disable filtering
+        """
+        self.study_ids_filter = study_ids_filter
     
     # Generic save/load methods
     def save_stage_results(self, stage_name: str, results: Dict) -> None:
@@ -60,12 +73,14 @@ class StorageManager:
         df = self._format_results_as_df(stage_name, results)
         df.to_csv(self.save_dir / config['filename'], index=False)
     
-    def load_stage_results(self, stage_name: str, file_path: Path = None) -> Dict:
+    def load_stage_results(self, stage_name: str, file_path: Path = None, 
+                           study_ids_filter: Optional[Set[str]] = None) -> Dict:
         """Generic load method for any stage.
         
         Args:
             stage_name: Stage name ('no_comparisons', 'findings', etc.)
             file_path: Optional specific file path, defaults to standard location
+            study_ids_filter: Optional override for study IDs filter (uses instance filter if None)
             
         Returns:
             Dictionary with stage-appropriate structure
@@ -73,9 +88,32 @@ class StorageManager:
         config = self._get_stage_config(stage_name)
         if file_path is None:
             file_path = self.save_dir / config['filename']
-        
+        t0 = time.perf_counter()
         df = self._validate_and_load_csv(file_path, config['columns'])
-        return self._transform_df_to_results(stage_name, df)
+        elapsed = time.perf_counter() - t0
+        self.logger.info(
+            f"StorageManager._validate_and_load_csv() for {stage_name}: `{file_path}` ({len(df)} rows) "
+            f"took {elapsed:.3f}s"
+        )
+
+        # Apply study IDs filter if set
+        filter_to_use = study_ids_filter if study_ids_filter is not None else self.study_ids_filter
+        self.logger.info(f"Study IDs filter for {stage_name}: {len(filter_to_use) if filter_to_use else 'None'}")
+        if filter_to_use:
+            self.logger.info(f"Applying study IDs filter for {stage_name}: {filter_to_use}")
+            original_len = len(df)
+            # Filter by report_id column (all stages use 'report_id' as the key column)
+            df = df[df['report_id'].astype(str).isin(filter_to_use)]
+            print(f"Filtered {stage_name} CSV from {original_len} to {len(df)} rows based on study IDs filter")
+        
+        t0 = time.perf_counter()
+        final_results = self._transform_df_to_results(stage_name, df)
+        elapsed = time.perf_counter() - t0
+        self.logger.info(
+            f"StorageManager._transform_df_to_results() for {stage_name}: ({len(df)} rows ->{len(final_results)} results), "
+            f"took {elapsed:.3f}s"
+        )
+        return final_results
     
     def save_incremental_results(self, stage_name: str, results: Dict) -> None:
         """Save incremental results, appending to existing CSV files.
@@ -90,7 +128,13 @@ class StorageManager:
         config = self._get_stage_config(stage_name)
         file_path = self.save_dir / config['filename']
         new_df = self._format_results_as_df(stage_name, results)
+        t0 = time.perf_counter()
         self._safe_append_to_csv(new_df, file_path)
+        elapsed = time.perf_counter() - t0
+        self.logger.info(
+            f"Atomic write for {stage_name}: {len(new_df)} rows to {file_path.name} "
+            f"took {elapsed:.3f}s"
+        )
 
     def get_processed_ids(self, stage_name: str, id_type: str = 'report') -> set:
         """Get set of IDs already processed for a given stage.
@@ -273,7 +317,7 @@ class StorageManager:
         """Transform DataFrame back to stage-appropriate structure."""
         config = self._get_stage_config(stage_name)
         data_type = config['data_type']
-        
+        self.logger.info(f"Transforming DataFrame to results for {stage_name} ({len(df)} rows). data_type: {data_type}")
         if data_type == 'simple':
             return self._transform_simple_df(df, config)
         elif data_type == 'nested':
@@ -291,44 +335,97 @@ class StorageManager:
             return dict(zip(df["report_id"].astype(str), df["findings"]))
         else:
             raise ValueError(f"Unsupported simple format: {config['columns']}")
-    
-    def _transform_nested_df(self, df: pd.DataFrame) -> Dict[str, Dict[str, str]]:
-        """Transform nested DataFrame back to Dict[str, Dict[str, str]]."""
-        results = {}
-        for _, row in df.iterrows():
-            report_id = str(row["report_id"])
-            category = row["category"]
-            findings = row["findings"]
-            
-            if report_id not in results:
-                results[report_id] = {}
-            results[report_id][category] = findings
-        
+
+    def _transform_nested_df(self, df: pd.DataFrame) -> dict[str, dict[str, str]]:
+        x = df.loc[:, ["report_id", "category", "findings"]]
+
+        rids = x["report_id"].astype(str).to_numpy()
+        cats = x["category"].to_numpy()
+        finds = x["findings"].to_numpy()
+
+        results: dict[str, dict[str, str]] = {}
+
+        # Optimized Loop with Cache
+        # This logic handles UNSORTED data correctly while optimizing for sorted/clustered data
+        # (which is common).
+
+        # We use a mutable list for the 'last seen' cache to avoid variable scope issues
+        # [last_rid, last_dict]
+        cache = [object(), None] 
+
+        for rid, cat, fin in zip(rids, cats, finds):
+            # Optimization: Check if we are still on the same report as the previous row
+            if rid != cache[0]:
+                # Cache Miss: Look it up or create it
+                # We use setdefault or get to handle unsorted data safely
+                current_dict = results.get(rid)
+                if current_dict is None:
+                    current_dict = {}
+                    results[rid] = current_dict
+
+                # Update Cache
+                cache[0] = rid
+                cache[1] = current_dict
+
+            # Now we can safely assign.
+            # This overwrites duplicates (matching original _transform_nested_df behavior).
+            cache[1][cat] = fin
+
         return results
-    
-    def _transform_complex_df(self, df: pd.DataFrame) -> Dict[str, Dict[str, List[Dict]]]:
-        """Transform complex DataFrame back to Dict[str, Dict[str, List[Dict]]]."""
-        # Sort by question_id for consistent ordering
-        df = df.sort_values(['report_id', 'category', 'question_id'])
-        
-        results = {}
-        for _, row in df.iterrows():
-            report_id = str(row["report_id"])
-            category = row["category"]
-            question = row["question"]
-            answer = row["answer"]
-            
-            if report_id not in results:
-                results[report_id] = {}
-            if category not in results[report_id]:
-                results[report_id][category] = []
-            
-            results[report_id][category].append({
-                question: answer
-            })
-        
+
+    def _transform_complex_df(self, df: pd.DataFrame) -> dict[str, dict[str, list[dict]]]:
+        # 1. Filter & Copy
+        x = df.loc[:, ["report_id", "category", "question_id", "question", "answer"]].copy()
+
+        # 2. Type Conversion (Replicates original 'str(row["report_id"])')
+        # This converts NaN -> "nan", matching original behavior.
+        x["report_id"] = x["report_id"].astype(str)
+
+        # 3. Handle NaN Categories
+        # The original code allowed NaNs as keys.
+        # We convert np.nan -> None so the 'if cat != cur_cat' logic
+        # works correctly (since nan != nan is True, which breaks grouping).
+        if x["category"].dtype == object:
+            x["category"] = x["category"].where(x["category"].notna(), None)
+
+        # 4. Sort (Stable)
+        cols_sort = ["report_id", "category", "question_id"]
+        x.sort_values(cols_sort, kind="mergesort", inplace=True)
+
+        # 5. Extract to Numpy
+        rids = x["report_id"].to_numpy()
+        cats = x["category"].to_numpy()
+        qs = x["question"].to_numpy()
+        ans = x["answer"].to_numpy()
+
+        results: dict[str, dict[str, list[dict]]] = {}
+
+        SENTINEL = object()
+        cur_rid = SENTINEL
+        cur_cat = SENTINEL
+
+        current_report_dict = None
+        current_cat_list = None
+
+        for rid, cat, q, a in zip(rids, cats, qs, ans):
+            # Level 1: Report Change
+            if rid != cur_rid:
+                cur_rid = rid
+                current_report_dict = {}
+                results[rid] = current_report_dict
+                cur_cat = SENTINEL
+
+            # Level 2: Category Change
+            if cat != cur_cat:
+                cur_cat = cat
+                current_cat_list = []
+                current_report_dict[cat] = current_cat_list
+
+            # Level 3: Append
+            current_cat_list.append({q: a})
+
         return results
-    
+
     def _reconstruct_request_ids(self, df: pd.DataFrame, config: Dict) -> set:
         """Reconstruct request IDs from DataFrame based on pattern."""
         pattern = config['request_id_pattern']

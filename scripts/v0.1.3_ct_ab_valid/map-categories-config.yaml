@@ -1,0 +1,67 @@
+model:
+  name: Qwen/Qwen3-30B-A3B-FP8
+  temperature: 0.0
+  top_p: 1.0
+  seed: 42
+  max-completion-tokens: 4096
+  enable-thinking: true
+
+server:
+  port: 8006
+  base_url: http://127.0.0.1
+
+processing:
+  batch-processor-class: httpx_async
+  batch-size: 336000000
+  flush-interval: 200000
+  max-in-flight-reports: 2048
+  request-concurrency: 16384
+  apply-constrained-output: false
+  use-category-segments: false
+  max_retries: 10
+  retry_delay: 10
+  validation:
+    enabled: true
+  storage:
+    atomic_writes: true
+    validate_csv: true
+
+prompt_templates:
+  remove_comparison: |
+    The following report might have references to previous reports or scans (i.e., comes with comparisons). 
+    This may be indicated by the presence of a COMPARISON section.  If this is the case, please remove the 
+    comparisons from the report and rewrite the sentences to remove comparisons. Go sentence by sentence.
+    For sentences without comparisons (e.g., no words such as \"newer\"), output them verbatim without
+    changing anything. For sentences with comparisons, minimally rewrite the sentence to remove comparisons.
+    Your output should not include words such as \"newer\", \"increased\", or \"improved\"
+    that indicate comparisons with previous reports or scans. Please output the raw report without adding other comments 
+    in the response. If there are no comparisons in the report, output the raw report without adding other comments.
+
+    {report}
+
+  extract_findings: |
+    This is a radiology report:
+    {report}
+
+    Please extract the following FINDING section verbatim from the report. 
+    It may be called FINDINGS, FINDINGS/IMPRESSIONS, IMPRESSIONS, or not have a section heading. It should give the detailed radiolgist analysis of the contents of the image.
+    This section will generally be after the clinical history, after the technical details of image aqusition and before the final sign-off. 
+    Remove the section heading but do not omit any part of the radioligst analysis. Put all the extracted content verbatim under section heading called FINDINGS. 
+    If there is no findings section, output "No such section". 
+
+  findings_question: |
+    Based on the following radiology report:
+    {report}
+    
+    {question} Answer Yes or No only.
+
+  map_category_findings: |
+    Given the following findings from a radiology report:
+    {findings}
+    
+    Extract and summarize all findings relevant to the {category} category.
+    Category description: {description}
+    
+    If there are no findings relevant to this category, output "No relevant findings".
+    Otherwise, provide a concise summary of the findings specific to this category. 
+    Reuse language from the report verbatim as much as possible.  Do not add any other comments.

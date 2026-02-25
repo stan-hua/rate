@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+INPUT_FILE="${INPUT_FILE:-/mnt/nfs/home/gbiamby/lf_outputs/vlm_datasets/v0.1.3_v0003/ct_chest-v0_1_3-v3-valid.jsonl}"
+OUTPUT_DIR="${OUTPUT_DIR:-scripts/v0.1.3_ct_chest_valid/outputs/gt}"
+
+python -m src.cli \
+    --modality-config config/modalities/chest_ct.yaml \
+    --config scripts/v0.1.3_ct_chest_valid/map-categories-config.yaml \
+    --input-files "$INPUT_FILE" \
+    --save-dir "$OUTPUT_DIR" \
+    --accession-col "study_id" \
+    --report-col "report" \
+    --stages map-categories \
+    --use-raw-report true
