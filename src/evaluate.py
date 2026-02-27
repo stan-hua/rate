@@ -74,8 +74,19 @@ class CSVQCEvaluator:
             yp = self._to_binary_series(sub["answer_pred"])
             per_question[str(q)] = self.qc_evaluator._calculate_metrics(yt, yp)
 
+        MACRO_METRIC_KEYS = ("accuracy", "precision", "recall", "f1_score", "specificity", "npv")
+
+        macro_overall = self._macro_average(
+            list(per_question.values()), MACRO_METRIC_KEYS, drop_zeros=False,
+        )
+        macro_overall_drop_zeros = self._macro_average(
+            list(per_question.values()), MACRO_METRIC_KEYS, drop_zeros=True,
+        )
+
         return {
             "overall": overall,
+            "overall_macro": macro_overall,
+            "overall_macro_drop_zeros": macro_overall_drop_zeros,
             "per_report_overall": per_report_overall,
             "per_category": per_category,
             "per_question": per_question,
@@ -132,6 +143,44 @@ class CSVQCEvaluator:
             raise ValueError("No aligned rows between GT and predictions.")
 
         return merged
+
+    @staticmethod
+    def _macro_average(
+        question_metrics_list: List[Dict[str, Any]],
+        metric_keys: Tuple[str, ...],
+        drop_zeros: bool = False,
+    ) -> Dict[str, Any]:
+        """Macro-average metrics across questions.
+
+        When *drop_zeros* is True, questions where either the positive or
+        negative class has zero samples in the ground truth are excluded
+        before averaging.
+        """
+        filtered = question_metrics_list
+        if drop_zeros:
+            filtered = [
+                m for m in filtered
+                if m.get("confusion_matrix", {}).get("true_positive", 0)
+                + m.get("confusion_matrix", {}).get("false_negative", 0) > 0
+                and m.get("confusion_matrix", {}).get("true_negative", 0)
+                + m.get("confusion_matrix", {}).get("false_positive", 0) > 0
+            ]
+
+        result: Dict[str, Any] = {}
+        if filtered:
+            for key in metric_keys:
+                values = [
+                    m[key] for m in filtered
+                    if key in m and isinstance(m[key], (int, float)) and not pd.isna(m[key])
+                ]
+                result[key] = sum(values) / len(values) if values else float("nan")
+            result["n_questions_averaged"] = len(filtered)
+        else:
+            for key in metric_keys:
+                result[key] = float("nan")
+            result["n_questions_averaged"] = 0
+
+        return result
 
     def _to_binary_series(self, answers: pd.Series) -> pd.Series:
         return self.qc_evaluator._convert_to_binary(
