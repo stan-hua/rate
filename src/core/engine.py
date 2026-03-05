@@ -232,6 +232,7 @@ class Engine:
                             raise ValueError("Raw reports required for map-categories with --use-raw-report")
                         findings_data = reports
                         self.logger.info(f"Using raw report text for map-categories ({len(findings_data)} reports)")
+                        self.logger.info(f"Findings data: {list(findings_data.items())[0]}")
                     elif 'input-findings' in input_files:
                         # Load from previous stage file
                         self.logger.info(f"Loading findings from input-findings file: {Path(input_files['input-findings']).resolve()}")
@@ -359,6 +360,7 @@ class Engine:
             filename, loader = file_mapping[stage_name]
             file_path = self.storage.save_dir / filename
             if file_path.exists():
+                self.logger.info(f"Loading {Path(file_path).resolve()}")
                 return loader(file_path)
         return {}
 
@@ -479,7 +481,7 @@ class Engine:
         """Generic stage processing with incremental saving and resume logic."""
         
         self.logger.info(f"Processing {stage_name}")
-        
+        self.logger.info(f"Input data: {len(input_data)}")
         # Build all requests first
         self.logger.info(f"Building requests for {stage_name}")
         builder_result = request_builder(input_data)

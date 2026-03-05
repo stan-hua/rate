@@ -148,7 +148,7 @@ class StorageManager:
         """
         config = self._get_stage_config(stage_name)
         file_path = self.save_dir / config['filename']
-        
+        self.logger.info(f"Getting processed IDs for {stage_name}: {file_path}")
         if not file_path.exists():
             return set()
         
