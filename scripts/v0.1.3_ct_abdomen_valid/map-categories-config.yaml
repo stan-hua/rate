@@ -7,7 +7,7 @@ model:
   enable-thinking: true
 
 server:
-  port: 8006
+  port: 8000
   base_url: http://127.0.0.1
 
 processing:

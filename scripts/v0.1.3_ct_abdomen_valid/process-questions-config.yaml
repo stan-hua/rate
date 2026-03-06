@@ -7,13 +7,13 @@ model:
   enable-thinking: false
 
 server:
-  port: 8006
+  port: 8000
   base_url: http://127.0.0.1
 
 processing:
   batch-processor-class: httpx_async
   batch-size: 1000000000
-  flush-interval: 600000
+  flush-interval: 2400000
   max-in-flight-reports: 32
   request-concurrency: 16384
   apply-constrained-output: true

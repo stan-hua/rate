@@ -555,8 +555,14 @@ class Engine:
                 # Only save and accumulate if we have valid results
                 if chunk_results:
                     all_results.update(chunk_results)
-                    self.storage.save_incremental_results(stage_name, chunk_results)
-                    self.logger.info(f"Saved {len(chunk_results)} results from batch {i+1}/{len(chunks)}")
+                    if not flush_callback:
+                        # flush_callback already streamed all results to disk incrementally;
+                        # calling save_incremental_results here would trigger a full CSV
+                        # read+write just to deduplicate away data that's already on disk.
+                        self.storage.save_incremental_results(stage_name, chunk_results)
+                        self.logger.info(f"Saved {len(chunk_results)} results from batch {i+1}/{len(chunks)}")
+                    else:
+                        self.logger.info(f"Accumulated {len(chunk_results)} results from batch {i+1}/{len(chunks)} (already flushed to disk)")
                 else:
                     self.logger.warning(f"No valid results from batch {i+1}/{len(chunks)}")
 
