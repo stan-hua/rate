@@ -115,21 +115,23 @@ class StorageManager:
         )
         return final_results
     
-    def save_incremental_results(self, stage_name: str, results: Dict) -> None:
+    def save_incremental_results(self, stage_name: str, results: Dict, skip_dedup: bool = False) -> None:
         """Save incremental results, appending to existing CSV files.
-        
+
         Args:
             stage_name: Stage name ('no_comparisons', 'findings', etc.)
-            results: New results to append 
+            results: New results to append
+            skip_dedup: Passed through to _safe_append_to_csv. Set True for mid-run
+                flush_callback writes where results are guaranteed unique.
         """
         if not results:
             return
-        
+
         config = self._get_stage_config(stage_name)
         file_path = self.save_dir / config['filename']
         new_df = self._format_results_as_df(stage_name, results)
         t0 = time.perf_counter()
-        self._safe_append_to_csv(new_df, file_path)
+        self._safe_append_to_csv(new_df, file_path, skip_dedup=skip_dedup)
         elapsed = time.perf_counter() - t0
         self.logger.info(
             f"Atomic write for {stage_name}: {len(new_df)} rows to {file_path.name} "
@@ -429,12 +431,15 @@ class StorageManager:
     def _reconstruct_request_ids(self, df: pd.DataFrame, config: Dict) -> set:
         """Reconstruct request IDs from DataFrame based on pattern."""
         pattern = config['request_id_pattern']
-        
+
         if pattern == '{report_id}_{category}':
-            return {f"{row['report_id']}_{row['category']}" for _, row in df.iterrows()}
+            return set(df['report_id'].astype(str) + '_' + df['category'].astype(str))
         elif pattern == '{report_id}_{category}_{question_id}':
-            return {f"{row['report_id']}_{row['category']}_{row['question_id']}" 
-                   for _, row in df.iterrows()}
+            return set(
+                df['report_id'].astype(str) + '_' +
+                df['category'].astype(str) + '_' +
+                df['question_id'].astype(str)
+            )
         else:
             raise ValueError(f"Unsupported request ID pattern: {pattern}")
 
@@ -442,22 +447,61 @@ class StorageManager:
         """Generate a hash-based question ID from question text."""
         return hashlib.md5(question_text.encode('utf-8')).hexdigest()[:8]
 
-    def _safe_append_to_csv(self, new_df: pd.DataFrame, file_path: Path) -> None:
-        """Safely append DataFrame to CSV file with atomic operations and file locking."""
+    def _safe_append_to_csv(self, new_df: pd.DataFrame, file_path: Path, skip_dedup: bool = False) -> None:
+        """Safely append DataFrame to CSV file with atomic operations and file locking.
+
+        Args:
+            new_df: DataFrame of new rows to append.
+            file_path: Destination CSV path.
+            skip_dedup: When True, skip reading the existing file and deduplication.
+                Use this for mid-run flush_callback writes where results are guaranteed
+                unique by construction. Only use the default (False) for writes that
+                may overlap with previously saved data (e.g. resume scenarios).
+        """
         if new_df.empty:
             return
-            
+
         # Ensure parent directory exists
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Use atomic write with temporary file
+
+        if skip_dedup:
+            # Fast path: append-only, no read of existing file.
+            # Write new rows to a temp file then atomically append to the CSV.
+            temp_file = None
+            try:
+                write_header = not (file_path.exists() and file_path.stat().st_size > 0)
+                with tempfile.NamedTemporaryFile(
+                    mode='w',
+                    dir=file_path.parent,
+                    prefix=f'.{file_path.name}_',
+                    suffix='.tmp',
+                    delete=False
+                ) as temp_file:
+                    temp_path = Path(temp_file.name)
+                    new_df.to_csv(temp_file, index=False, header=write_header)
+
+                # Atomic append: rename temp into place by appending its bytes
+                with open(file_path, 'ab') as dest, open(temp_path, 'rb') as src:
+                    dest.write(src.read())
+                temp_path.unlink(missing_ok=True)
+            except Exception as e:
+                if temp_file and Path(temp_file.name).exists():
+                    try:
+                        Path(temp_file.name).unlink()
+                    except Exception:
+                        pass
+                raise StorageError(f"Error appending to {file_path}: {e}")
+            return
+
+        # Slow path (default): read existing file, deduplicate, write combined result.
+        # Required for resume safety — avoids duplicate rows if results overlap.
         temp_file = None
         try:
             # Create temporary file in same directory
             with tempfile.NamedTemporaryFile(
-                mode='w', 
-                dir=file_path.parent, 
-                prefix=f'.{file_path.name}_', 
+                mode='w',
+                dir=file_path.parent,
+                prefix=f'.{file_path.name}_',
                 suffix='.tmp',
                 delete=False
             ) as temp_file:
@@ -487,13 +531,13 @@ class StorageManager:
             
             # Atomic move - this is the critical section
             temp_path.replace(file_path)
-            
+
         except Exception as e:
             # Clean up temp file if it exists
             if temp_file and Path(temp_file.name).exists():
                 try:
                     Path(temp_file.name).unlink()
-                except:
+                except Exception:
                     pass
             raise StorageError(f"Error saving to {file_path}: {e}")
     
@@ -530,26 +574,32 @@ class StorageManager:
         """Validate the integrity of a CSV file for a given stage."""
         config = self._get_stage_config(stage_name)
         file_path = self.save_dir / config['filename']
-        
+
         if not file_path.exists():
             return True  # Non-existent file is valid (empty state)
-        
+
         try:
-            df = pd.read_csv(file_path)
+            # Read header row only — no need to load all data just to check column names.
+            DO_EMPTY_ROWS_CHECK = False
+            if DO_EMPTY_ROWS_CHECK:
+                df = pd.read_csv(file_path)
+            else:
+                df = pd.read_csv(file_path, nrows=0)
             
             # Check required columns
             required_columns = set(config['columns'])
             if not required_columns.issubset(set(df.columns)):
                 print(f"CSV validation failed: missing columns in {file_path}")
                 return False
-            
+
             # Check for completely empty rows
-            empty_rows = df.isnull().all(axis=1).sum()
-            if empty_rows > 0:
-                print(f"Warning: Found {empty_rows} empty rows in {file_path}")
+            if DO_EMPTY_ROWS_CHECK:
+                empty_rows = df.isnull().all(axis=1).sum()
+                if empty_rows > 0:
+                    print(f"Warning: Found {empty_rows} empty rows in {file_path}")
             
             return True
-            
+
         except Exception as e:
             print(f"CSV validation failed for {file_path}: {e}")
-            return False 
+            return False

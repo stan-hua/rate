@@ -532,7 +532,7 @@ class Engine:
                     processed = result_processor(raw_results, id_mapping)
                 else:
                     processed = raw_results
-                self.storage.save_incremental_results(stage_name, processed)
+                self.storage.save_incremental_results(stage_name, processed, skip_dedup=True)
                 self.logger.info(f"Flushed {len(raw_results)} results to disk for {stage_name}")
 
         self.logger.info(f"Processing {stage_name} batches ({len(chunks)} batches)")
