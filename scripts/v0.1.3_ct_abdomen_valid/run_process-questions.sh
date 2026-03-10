@@ -6,7 +6,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-scripts/v0.1.3_ct_ab_valid/outputs/gt}"
 
 python -m src.cli \
     --modality-config config/modalities/abdomen_ct.yaml \
-    --config scripts/v0.1.3_ct_ab_valid/process-questions-config.yaml \
+    --config scripts/v0.1.3_ct_abdomen_valid/process-questions-config.yaml \
     --input-files "$INPUT_FILE" \
     --save-dir "$OUTPUT_DIR" \
     --accession-col "study_id" \
