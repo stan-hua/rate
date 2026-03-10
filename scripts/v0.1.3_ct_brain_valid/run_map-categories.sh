@@ -12,4 +12,5 @@ python -m src.cli \
     --accession-col "study_id" \
     --report-col "report" \
     --stages map-categories \
-    --use-raw-report true
+    --use-raw-report true \
+    --save-final-results-json false

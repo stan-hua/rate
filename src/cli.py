@@ -126,6 +126,8 @@ def parse_args():
                       help='Path to default configuration file (default: "config/default_config.yaml")')
     parser.add_argument('--debug', action='store_true',
                       help='Enable debug logging')
+    parser.add_argument('--save-final-results-json', type=str_to_bool, default=True,
+                      help='Whether to generate final_results.json at the end (default: True)')
     
     # Study ID filtering
     parser.add_argument('--study-ids', type=str, default=None,
@@ -392,6 +394,7 @@ def main():
         'modality-config': args.modality_config,
         'accession-col': args.accession_col,
         'report-col': args.report_col,
+        'save-final-results-json': args.save_final_results_json,
         'processing': processing_dict,
         'debug': {
             'enabled': args.debug_mode,

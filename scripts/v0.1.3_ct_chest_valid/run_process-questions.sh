@@ -11,4 +11,5 @@ python -m src.cli \
     --save-dir "$OUTPUT_DIR" \
     --accession-col "study_id" \
     --report-col "report" \
-    --stages process-questions
+    --stages process-questions \
+    --save-final-results-json false

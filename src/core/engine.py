@@ -280,7 +280,10 @@ class Engine:
                         start_time
                     )
             
-            self.storage.save_final_results(final_results)
+            if self.config.get('save-final-results-json', True):
+                self.storage.save_final_results(final_results)
+            else:
+                self.logger.info("Skipping final_results.json generation (save-final-results-json=false)")
             return final_results
             
             
