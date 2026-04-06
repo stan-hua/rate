@@ -30,6 +30,7 @@ class Engine:
         self.config = self._load_config(config)
         self.modality_config_path = self.config['modality-config']
         self.use_category_segments = self.config.get('processing', {}).get('use-category-segments', False)
+        self.all_categories = self.config.get('processing', {}).get('all-categories', False)
         self._findings_categories = None
         self._batch_size = self.config.get('processing', {}).get('batch-size', 1024)
         self._flush_interval = self.config.get('processing', {}).get('flush-interval', None)
@@ -151,10 +152,16 @@ class Engine:
         
         # Raise error if category_findings is still not available
         if not category_findings:
-            raise ValueError(
-                "category_findings is required for process-questions stage. "
-                "Please run map-categories stage first or provide category_findings data."
-            )
+            if self.all_categories:
+                category_findings = {
+                    report_id: {cat: "present" for cat in self.findings_categories}
+                    for report_id in reports
+                }
+            else:
+                raise ValueError(
+                    "category_findings is required for process-questions stage. "
+                    "Please run map-categories stage first or provide category_findings data."
+                )
         # Create a request builder that has access to category_findings
         def request_builder_with_context(reports_data):
             return self._build_process_questions_requests(reports_data, category_findings, use_category_segments)
@@ -261,10 +268,16 @@ class Engine:
                         category_findings_data = results['category_findings']
                     
                     if not category_findings_data:
-                        raise ValueError(
-                            "category_findings is required for process-questions stage. "
-                            "Please run map-categories stage first or provide input-category-findings file."
-                        )
+                        if self.all_categories:
+                            category_findings_data = {
+                                report_id: {cat: "present" for cat in self.findings_categories}
+                                for report_id in reports
+                            }
+                        else:
+                            raise ValueError(
+                                "category_findings is required for process-questions stage. "
+                                "Please run map-categories stage first or provide input-category-findings file."
+                            )
                     
                     stage_results = self.run_process_questions(reports, category_findings_data, 
                                 use_category_segments=self.use_category_segments)

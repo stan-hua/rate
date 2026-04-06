@@ -79,6 +79,10 @@ def parse_args():
                       help='Path to category_findings.csv from previous run')
     parser.add_argument('--use-raw-report', type=str_to_bool, default=False,
                       help='For map-categories stage: use raw report text instead of extracted findings')
+    parser.add_argument('--all-categories', type=str_to_bool, default=False,
+                      help='For process-questions stage: ask questions for all categories regardless of '
+                           'map-categories output. When True, category_findings from stage 3 is not required. '
+                           '(default: False — uses category_findings to filter which categories to ask about)')
     
     # Debug mode options
     parser.add_argument('--debug-mode', action='store_true',
@@ -392,6 +396,8 @@ def main():
         config['processing']['send-tokenized-inputs'] = args.send_tokenized_inputs
     if args.use_raw_report is not None:
         config["processing"]['use-raw-report'] = args.use_raw_report
+    if args.all_categories is not None:
+        config["processing"]['all-categories'] = args.all_categories
 
     
     # Apply batch processor class override (takes precedence over use-async)
