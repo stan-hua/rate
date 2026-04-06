@@ -564,6 +564,12 @@ class BatchProcessorHttpxAsync:
         assert self.tokenizer is not None, "Tokenizer must be set when send_tokenized_inputs=True"
         prompts_processed = []
         for prompt in prompts:
+            # Warn on unusually long prompts (likely runaway model output used as input)
+            if len(prompt) > 25000:
+                self.logger.warning(
+                    f"[BatchProcessor] Long prompt detected in _request_group_async: "
+                    f"{len(prompt):,} chars (stage={stage_name!r})"
+                )
             # if not enable_thinking:
             #     prompt = prompt.strip() + " /no_think"
             # Build the full prompt with chat template
@@ -873,6 +879,13 @@ class BatchProcessorHttpxAsync:
         cache_salt: Optional[str] = None,
     ) -> str:
         """Make a single async chat completion request."""
+
+        # Warn on unusually long prompts (likely runaway model output used as input)
+        if len(prompt) > 20000:
+            self.logger.warning(
+                f"[BatchProcessor] Long prompt detected in _request_once_async: "
+                f"{len(prompt):,} chars (stage={stage_name!r})"
+            )
 
         # Build messages once (used by both paths)
         messages = [

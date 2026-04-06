@@ -15,7 +15,6 @@ python -m sglang_router.launch_server \
     --schedule-conservativeness 0.1 \
     --random-seed 42 \
     --attention-backend flashinfer \
-    --tokenizer-worker-num 4 \
     --fp8-gemm-backend deep_gemm \
     --moe-runner-backend flashinfer_trtllm \
     --cuda-graph-max-bs 4096 \
