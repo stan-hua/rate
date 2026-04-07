@@ -1,10 +1,10 @@
 #!/bin/bash
 
-export TORCHINDUCTOR_CACHE_DIR=/root/.cache/torch_inductor_cache
+export TORCHINDUCTOR_CACHE_DIR=/data/users/krishna/.cache/torch_inductor_cache
 export SGLANG_FLASHINFER_WORKSPACE_SIZE=4294967296
 
 
-python -m sglang_router.launch_server \
+python -m sglang.launch_server \
     --model-path Qwen/Qwen3-30B-A3B-FP8 \
     --reasoning-parser qwen3 \
     --port 8000 \
@@ -25,6 +25,3 @@ python -m sglang_router.launch_server \
     --chunked-prefill-size 65536 \
     --max-prefill-tokens 65536 \
     --schedule-policy lpm \
-    --router-log-level error \
-    --router-policy cache_aware \
-    --router-dp-aware

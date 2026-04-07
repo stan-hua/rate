@@ -1,149 +1,156 @@
-Category	Question
-Adult	Is there any acute ischemic infarct?
-Adult	Is there any subacute infarct?
-Adult	Is there any chronic infarct/encephalomalacia?
-Adult	Is there any lacunar infarcts?
-Adult	Is there any watershed infarcts?
-Adult	Is there any posterior circulation infarcts?
-Adult	Is there any acute intraparenchymal hemorrhage?
-Adult	Is there any subacute hemorrhage?
-Adult	Is there any chronic hemorrhage?
-Adult	Is there any hemorrhagic transformation of infarct?
-Adult	Is there any cerebral microbleeds (hypertensive/amyloid)?
-Adult	Is there any subarachnoid hemorrhage?
-Adult	Is there any epidural hematoma?
-Adult	Is there any arteriovenous malformation?
-Adult	Is there any dural arteriovenous fistula?
-Adult	Is there any cavernous malformation (cavernoma)?
-Adult	Is there any developmental venous anomaly?
-Adult	Is there any capillary telangiectasia?
-Adult	Is there any aneurysm?
-Adult	Is there any Moyamoya disease?
-Adult	Is there any cerebral venous sinus thrombosis?
-Adult	Is there any glioblastoma?
-Adult	Is there any astrocytoma?
-Adult	Is there any oligodendroglioma?
-Adult	Is there any glioma?
-Adult	Is there any primary CNS lymphoma?
-Adult	Is there any ependymoma?
-Adult	Is there any medulloblastoma?
-Adult	Is there any meningioma?
-Adult	Is there any vestibular schwannoma?
-Adult	Is there any trigeminal schwannoma?
-Adult	Is there any pituitary adenoma?
-Adult	Is there any craniopharyngioma?
-Adult	Is there any brain metastases?
-Adult	Is there any hemorrhagic metastases?
-Adult	Is there any leptomeningeal carcinomatosis?
-Adult	Is there any dural metastases?
-Adult	Is there any multiple sclerosis plaques?
-Adult	Is there any active demyelination?
-Adult	Is there any chronic demyelination?
-Adult	Is there any tumefactive demyelination?
-Adult	Is there any acute disseminated encephalomyelitis?
-Adult	Is there any progressive multifocal leukoencephalopathy?
-Adult	Is there any toxic leukoencephalopathy?
-Adult	Is there any radiation-induced white matter changes?
-Adult	Is there any Alzheimer disease pattern atrophy?
-Adult	Is there any frontotemporal dementia?
-Adult	Is there any Lewy body dementia?
-Adult	Is there any Huntington disease?
-Adult	Is there any progressive supranuclear palsy?
-Adult	Is there any cerebritis?
-Adult	Is there any brain abscess?
-Adult	Is there any viral encephalitis (HSV)?
-Adult	Is there any autoimmune encephalitis?
-Adult	Is there any limbic encephalitis?
-Adult	Is there any toxoplasmosis?
-Adult	Is there any neurocysticercosis?
-Adult	Is there any tuberculomas?
-Adult	Is there any fungal infections?
-Adult	Is there any diffuse axonal injury?
-Adult	Is there any cerebral contusions?
-Adult	Is there any traumatic subarachnoid hemorrhage?
-Adult	Is there any subdural hematoma?
-Adult	Is there any post-traumatic encephalomalacia?
-Adult	Is there any chronic traumatic microhemorrhages?
-Adult	Is there any obstructive hydrocephalus?
-Adult	Is there any communicating hydrocephalus?
-Adult	Is there any normal pressure hydrocephalus?
-Adult	Is there any ventriculomegaly?
-Adult	Is there any colloid cyst?
-Adult	Is there any arachnoid cyst?
-Adult	Is there any porencephalic cyst?
-Adult	Is there any mesial temporal sclerosis?
-Adult	Is there any cortical dysplasia?
-Adult	Is there any hippocampal atrophy?
-Adult	Is there any post-ictal cortical signal changes?
-Adult	Is there any Rathke cleft cyst?
-Adult	Is there any hypophysitis?
-Adult	Is there any empty sella?
-Adult	Is there any optic chiasm compression?
-Adult	Is there any Wernicke encephalopathy?
-Adult	Is there any osmotic demyelination syndrome?
-Adult	Is there any hypoxic-ischemic injury?
-Adult	Is there any hepatic encephalopathy?
-Adult	Is there any carbon monoxide poisoning?
-Adult	Is there any mitochondrial encephalopathy?
-Adult	Is there any chronic small vessel ischemic disease?
-Adult	Is there any perivascular spaces?
-Adult	Is there any pineal cyst?
-Adult	Is there any choroid plexus cysts?
-Adult	Is there any sinus disease?
-Pediatric	Is there any lissencephaly?
-Pediatric	Is there any polymicrogyria?
-Pediatric	Is there any schizencephaly?
-Pediatric	Is there any focal cortical dysplasia?
-Pediatric	Is there any gray matter heterotopia?
-Pediatric	Is there any agenesis of corpus callosum?
-Pediatric	Is there any partial callosal dysgenesis?
-Pediatric	Is there any Dandy-Walker malformation?
-Pediatric	Is there any Blake pouch cyst?
-Pediatric	Is there any Chiari I / II malformations?
-Pediatric	Is there any Joubert syndrome?
-Pediatric	Is there any rhombencephalosynapsis?
-Pediatric	Is there any neonatal hypoxic-ischemic encephalopathy?
-Pediatric	Is there any periventricular leukomalacia?
-Pediatric	Is there any basal ganglia/thalamic injury?
-Pediatric	Is there any watershed injury patterns?
-Pediatric	Is there any medulloblastoma?
-Pediatric	Is there any pilocytic astrocytoma?
-Pediatric	Is there any ependymoma?
-Pediatric	Is there any diffuse intrinsic pontine glioma?
-Pediatric	Is there any low-grade glioma?
-Pediatric	Is there any high-grade glioma?
-Pediatric	Is there any atypical teratoid/rhabdoid tumor?
-Pediatric	Is there any choroid plexus tumors?
-Pediatric	Is there any craniopharyngioma?
-Pediatric	Is there any leukodystrophies (e.g., metachromatic, Krabbe)?
-Pediatric	Is there any mitochondrial disorders?
-Pediatric	Is there any Canavan disease?
-Pediatric	Is there any Alexander disease?
-Pediatric	Is there any Pelizaeus-Merzbacher disease?
-Pediatric	Is there any viral encephalitis?
-Pediatric	Is there any bacterial meningitis?
-Pediatric	Is there any brain abscess?
-Pediatric	Is there any autoimmune encephalitis?
-Pediatric	Is there any acute disseminated encephalomyelitis?
-Pediatric	Is there any germinal matrix hemorrhage?
-Pediatric	Is there any intraventricular hemorrhage?
-Pediatric	Is there any arteriovenous malformations?
-Pediatric	Is there any Vein of Galen malformation?
-Pediatric	Is there any Moyamoya disease?
-Pediatric	Is there any cerebral venous sinus thrombosis?
-Pediatric	Is there any congenital hydrocephalus?
-Pediatric	Is there any aqueductal stenosis?
-Pediatric	Is there any post-hemorrhagic hydrocephalus?
-Pediatric	Is there any arachnoid cysts?
-Pediatric	Is there any porencephalic cysts?
-Pediatric	Is there any cortical dysplasia?
-Pediatric	Is there any hippocampal sclerosis?
-Pediatric	Is there any Sturge-Weber syndrome?
-Pediatric	Is there any shaken baby syndrome patterns?
-Pediatric	Is there any megalencephaly syndromes?
-Pediatric	Is there any hemimegalencephaly?
-Pediatric	Is there any Rasmussen encephalitis?
-Pediatric	Is there any neurocutaneous syndromes?
-Pediatric	Is there any neurofibromatosis?
-Pediatric	Is there any tuberous sclerosis?
-Pediatric	Is there any basal ganglia calcifications?
+modality: brain-mr
+categories:
+  Adult:
+    description: Adult brain MRI findings and diagnoses.
+    questions:
+    - question: Is there any acute ischemic infarct?
+    - question: Is there any subacute infarct?
+    - question: Is there any chronic infarct/encephalomalacia?
+    - question: Is there any lacunar infarcts?
+    - question: Is there any watershed infarcts?
+    - question: Is there any posterior circulation infarcts?
+    - question: Is there any acute intraparenchymal hemorrhage?
+    - question: Is there any subacute hemorrhage?
+    - question: Is there any chronic hemorrhage?
+    - question: Is there any hemorrhagic transformation of infarct?
+    - question: Is there any cerebral microbleeds (hypertensive/amyloid)?
+    - question: Is there any subarachnoid hemorrhage?
+    - question: Is there any epidural hematoma?
+    - question: Is there any arteriovenous malformation?
+    - question: Is there any dural arteriovenous fistula?
+    - question: Is there any cavernous malformation (cavernoma)?
+    - question: Is there any developmental venous anomaly?
+    - question: Is there any capillary telangiectasia?
+    - question: Is there any aneurysm?
+    - question: Is there any Moyamoya disease?
+    - question: Is there any cerebral venous sinus thrombosis?
+    - question: Is there any glioblastoma?
+    - question: Is there any astrocytoma?
+    - question: Is there any oligodendroglioma?
+    - question: Is there any glioma?
+    - question: Is there any primary CNS lymphoma?
+    - question: Is there any ependymoma?
+    - question: Is there any medulloblastoma?
+    - question: Is there any meningioma?
+    - question: Is there any vestibular schwannoma?
+    - question: Is there any trigeminal schwannoma?
+    - question: Is there any pituitary adenoma?
+    - question: Is there any craniopharyngioma?
+    - question: Is there any brain metastases?
+    - question: Is there any hemorrhagic metastases?
+    - question: Is there any leptomeningeal carcinomatosis?
+    - question: Is there any dural metastases?
+    - question: Is there any multiple sclerosis plaques?
+    - question: Is there any active demyelination?
+    - question: Is there any chronic demyelination?
+    - question: Is there any tumefactive demyelination?
+    - question: Is there any acute disseminated encephalomyelitis?
+    - question: Is there any progressive multifocal leukoencephalopathy?
+    - question: Is there any toxic leukoencephalopathy?
+    - question: Is there any radiation-induced white matter changes?
+    - question: Is there any Alzheimer disease pattern atrophy?
+    - question: Is there any frontotemporal dementia?
+    - question: Is there any Lewy body dementia?
+    - question: Is there any Huntington disease?
+    - question: Is there any progressive supranuclear palsy?
+    - question: Is there any cerebritis?
+    - question: Is there any brain abscess?
+    - question: Is there any viral encephalitis (HSV)?
+    - question: Is there any autoimmune encephalitis?
+    - question: Is there any limbic encephalitis?
+    - question: Is there any toxoplasmosis?
+    - question: Is there any neurocysticercosis?
+    - question: Is there any tuberculomas?
+    - question: Is there any fungal infections?
+    - question: Is there any diffuse axonal injury?
+    - question: Is there any cerebral contusions?
+    - question: Is there any traumatic subarachnoid hemorrhage?
+    - question: Is there any subdural hematoma?
+    - question: Is there any post-traumatic encephalomalacia?
+    - question: Is there any chronic traumatic microhemorrhages?
+    - question: Is there any obstructive hydrocephalus?
+    - question: Is there any communicating hydrocephalus?
+    - question: Is there any normal pressure hydrocephalus?
+    - question: Is there any ventriculomegaly?
+    - question: Is there any colloid cyst?
+    - question: Is there any arachnoid cyst?
+    - question: Is there any porencephalic cyst?
+    - question: Is there any mesial temporal sclerosis?
+    - question: Is there any cortical dysplasia?
+    - question: Is there any hippocampal atrophy?
+    - question: Is there any post-ictal cortical signal changes?
+    - question: Is there any Rathke cleft cyst?
+    - question: Is there any hypophysitis?
+    - question: Is there any empty sella?
+    - question: Is there any optic chiasm compression?
+    - question: Is there any Wernicke encephalopathy?
+    - question: Is there any osmotic demyelination syndrome?
+    - question: Is there any hypoxic-ischemic injury?
+    - question: Is there any hepatic encephalopathy?
+    - question: Is there any carbon monoxide poisoning?
+    - question: Is there any mitochondrial encephalopathy?
+    - question: Is there any chronic small vessel ischemic disease?
+    - question: Is there any perivascular spaces?
+    - question: Is there any pineal cyst?
+    - question: Is there any choroid plexus cysts?
+    - question: Is there any sinus disease?
+  Pediatric:
+    description: Pediatric brain MRI findings and diagnoses.
+    questions:
+    - question: Is there any lissencephaly?
+    - question: Is there any polymicrogyria?
+    - question: Is there any schizencephaly?
+    - question: Is there any focal cortical dysplasia?
+    - question: Is there any gray matter heterotopia?
+    - question: Is there any agenesis of corpus callosum?
+    - question: Is there any partial callosal dysgenesis?
+    - question: Is there any Dandy-Walker malformation?
+    - question: Is there any Blake pouch cyst?
+    - question: Is there any Chiari I / II malformations?
+    - question: Is there any Joubert syndrome?
+    - question: Is there any rhombencephalosynapsis?
+    - question: Is there any neonatal hypoxic-ischemic encephalopathy?
+    - question: Is there any periventricular leukomalacia?
+    - question: Is there any basal ganglia/thalamic injury?
+    - question: Is there any watershed injury patterns?
+    - question: Is there any medulloblastoma?
+    - question: Is there any pilocytic astrocytoma?
+    - question: Is there any ependymoma?
+    - question: Is there any diffuse intrinsic pontine glioma?
+    - question: Is there any low-grade glioma?
+    - question: Is there any high-grade glioma?
+    - question: Is there any atypical teratoid/rhabdoid tumor?
+    - question: Is there any choroid plexus tumors?
+    - question: Is there any craniopharyngioma?
+    - question: Is there any leukodystrophies (e.g., metachromatic, Krabbe)?
+    - question: Is there any mitochondrial disorders?
+    - question: Is there any Canavan disease?
+    - question: Is there any Alexander disease?
+    - question: Is there any Pelizaeus-Merzbacher disease?
+    - question: Is there any viral encephalitis?
+    - question: Is there any bacterial meningitis?
+    - question: Is there any brain abscess?
+    - question: Is there any autoimmune encephalitis?
+    - question: Is there any acute disseminated encephalomyelitis?
+    - question: Is there any germinal matrix hemorrhage?
+    - question: Is there any intraventricular hemorrhage?
+    - question: Is there any arteriovenous malformations?
+    - question: Is there any Vein of Galen malformation?
+    - question: Is there any Moyamoya disease?
+    - question: Is there any cerebral venous sinus thrombosis?
+    - question: Is there any congenital hydrocephalus?
+    - question: Is there any aqueductal stenosis?
+    - question: Is there any post-hemorrhagic hydrocephalus?
+    - question: Is there any arachnoid cysts?
+    - question: Is there any porencephalic cysts?
+    - question: Is there any cortical dysplasia?
+    - question: Is there any hippocampal sclerosis?
+    - question: Is there any Sturge-Weber syndrome?
+    - question: Is there any shaken baby syndrome patterns?
+    - question: Is there any megalencephaly syndromes?
+    - question: Is there any hemimegalencephaly?
+    - question: Is there any Rasmussen encephalitis?
+    - question: Is there any neurocutaneous syndromes?
+    - question: Is there any neurofibromatosis?
+    - question: Is there any tuberous sclerosis?
+    - question: Is there any basal ganglia calcifications?

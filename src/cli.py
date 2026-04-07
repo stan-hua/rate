@@ -222,6 +222,21 @@ def load_reports_from_files(input_files: list, accession_col: str, report_col: s
             s = new
         return s
 
+    def load_jsonl_lines(path: str):
+        """Load newline-delimited JSON objects from file."""
+        records = []
+        with open(path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                obj = json.loads(line)
+                for k in ("predict", "label", "prompt"):
+                    if k in obj and isinstance(obj[k], str):
+                        obj[k] = unescape_common_whitespace_fixpoint(obj[k])
+                records.append(obj)
+        return records
+
     for input_file in input_files:
         file_path = Path(input_file)
         file_extension = file_path.suffix.lower()
@@ -230,16 +245,20 @@ def load_reports_from_files(input_files: list, accession_col: str, report_col: s
             if file_extension in ['.json', '.jsonl']:
                 if file_extension == '.json':
                     with open(input_file, 'r') as f:
-                        data = json.load(f)
+                        try:
+                            data = json.load(f)
+                        except json.JSONDecodeError as e:
+                            # Some datasets are JSONL content with a .json extension.
+                            if e.msg == "Extra data":
+                                print(
+                                    f"Detected newline-delimited JSON in {input_file} with .json extension; "
+                                    "falling back to JSONL parsing."
+                                )
+                                data = load_jsonl_lines(input_file)
+                            else:
+                                raise
                 elif file_extension == '.jsonl':
-                    with open(input_file, 'r') as f:
-                        data = []
-                        for line in f:
-                            obj = json.loads(line)
-                            for k in ("predict", "label", "prompt"):
-                                if k in obj and isinstance(obj[k], str):
-                                    obj[k] = unescape_common_whitespace_fixpoint(obj[k])
-                            data.append(obj)
+                    data = load_jsonl_lines(input_file)
 
                 # Handle different JSON structures
                 if isinstance(data, list):
@@ -275,7 +294,7 @@ def load_reports_from_files(input_files: list, accession_col: str, report_col: s
                     raise ValueError(f"Unsupported JSON structure in {input_file}")
                     
             else:
-                raise ValueError(f"Unsupported file format: {file_extension}. Only .json files are supported.")
+                raise ValueError(f"Unsupported file format: {file_extension}. Only .json and .jsonl files are supported.")
                 
         except Exception as e:
             print(f"Error reading file {input_file}: {str(e)}")
