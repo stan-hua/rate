@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export TORCHINDUCTOR_CACHE_DIR=/data/users/krishna/.cache/torch_inductor_cache
+export TORCHINDUCTOR_CACHE_DIR=/mnt/nfs/home/krishna/.cache/torch_inductor_cache
 export SGLANG_FLASHINFER_WORKSPACE_SIZE=4294967296
 
 

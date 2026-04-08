@@ -13,9 +13,14 @@ A Python-based engine for processing radiology reports using the Qwen3-30B-A3B-F
 # To use with voio data
 1. Make sure you have sglang router installed `pip install sglang-router`. It helps with performance, but if you don't have it you can remove the router related settings from `scripts/server.sh`
 2. in a tmux window run `bash server.sh` to start sglang server  
-3. from the root of the rate repo, run `scripts/v0.1.3_ct_brain_valid/run_map-categories.sh` and/or `scripts/v0.1.3_ct_brain_valid/run_process-questions.sh`
-4. outputs are in `scripts/v0.1.3_ct_brain_valid/outputs/gt/*.csv`
-5. Edit `bash evaluate.sh` to point to your ground truth and your new output file e.g., `scripts/v0.1.3_ct_brain_valid/outputs/gt/questions.csv`
+3. from the root of the rate repo, run the pair of scripts for your dataset/split, e.g.:
+   - `scripts/v0.1.3_ct_brain_valid/run_map-categories.sh` and/or `scripts/v0.1.3_ct_brain_valid/run_process-questions.sh`
+   - `scripts/v0.1.3_mr_brain_valid/run_map-categories.sh` and/or `scripts/v0.1.3_mr_brain_valid/run_process-questions.sh`
+   - `scripts/v0.1.3_mr_brain_train/run_map-categories.sh` and/or `scripts/v0.1.3_mr_brain_train/run_process-questions.sh`
+   - `scripts/v0.1.3_mr_spine_valid/run_map-categories.sh` and/or `scripts/v0.1.3_mr_spine_valid/run_process-questions.sh`
+   - `scripts/v0.1.3_mr_spine_train/run_map-categories.sh` and/or `scripts/v0.1.3_mr_spine_train/run_process-questions.sh`
+4. outputs are in `scripts/v0.1.3_<dataset>_<split>/outputs/gt/*.csv` for the script pair you ran
+5. Edit `bash evaluate.sh` to point to your ground truth and your new output file e.g., `scripts/v0.1.3_mr_spine_train/outputs/gt/questions.csv`
 6. once finished kill the sglang server
 
 TODO: 
