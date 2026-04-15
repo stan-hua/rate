@@ -14,4 +14,5 @@ python -m src.cli \
     --accession-col "$ACCESSION_COL" \
     --report-col "$REPORT_COL" \
     --stages process-questions \
+	--all-categories true \
     --save-final-results-json false
