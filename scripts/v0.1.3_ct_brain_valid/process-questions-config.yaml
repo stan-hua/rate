@@ -13,6 +13,7 @@ server:
 processing:
   batch-processor-class: httpx_async
   batch-size: 384000000
+  flush-interval: 10000000
   max-in-flight-reports: 32
   request-concurrency: 16384
   apply-constrained-output: true

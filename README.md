@@ -10,8 +10,27 @@ A Python-based engine for processing radiology reports using the Qwen3-30B-A3B-F
 5. run `bash evaluate.sh` to get the metrics  
 6. once finished kill the sglang server
 
+## Launching the Server
+
+Run this inside a docker image if you cannot install sglang router into your python environment. (NOTE: pillar-engineering-hardening TODO: include sglang as part of the base docker image so we don't ahve to have two separate images. It is tricky to install onto the NVIDIA NGC image because of the pytorch build used there being newer than what the official sglang release supports, at least the last time we tried in Mar 2026. sglang may have caught up to pytorch versions since then )
+
+```
+sudo docker run --gpus all -it --rm \
+    -v ./research/gbiamby/rate:/proj/pillar/lib/rate \
+    --ipc=host \
+    --network host \
+    --ulimit memlock=-1 \
+    --ulimit stack=67108864 \
+    --privileged \
+    -v /dev/infiniband:/dev/infiniband \
+    --gpus all \
+    -w /proj/pillar/lib/rate \
+    docker.io/lmsysorg/sglang:dev-cu13 bash /proj/pillar/research/gbiamby/rate/scripts/server.sh
+```
+
 # To use with voio data
-1. Make sure you have sglang router installed `pip install sglang-router`. It helps with performance, but if you don't have it you can remove the router related settings from `scripts/server.sh`
+
+1. Make sure you have sglang-router installed `pip install sglang-router`. It helps with performance, but if you don't have it you can remove the router related settings from `scripts/server.sh`
 2. in a tmux window run `bash server.sh` to start sglang server  
 3. from the root of the rate repo, run the pair of scripts for your dataset/split, e.g.:
    - `scripts/v0.1.3_ct_brain_valid/run_map-categories.sh` and/or `scripts/v0.1.3_ct_brain_valid/run_process-questions.sh`
@@ -22,10 +41,6 @@ A Python-based engine for processing radiology reports using the Qwen3-30B-A3B-F
 4. outputs are in `scripts/v0.1.3_<dataset>_<split>/outputs/gt/*.csv` for the script pair you ran
 5. Edit `bash evaluate.sh` to point to your ground truth and your new output file e.g., `scripts/v0.1.3_mr_spine_train/outputs/gt/questions.csv`
 6. once finished kill the sglang server
-
-TODO: 
-- A few paths are hardcoded -- this can be changed to integrate into the current pillar_post pipeline
-- I moved all scripts to the scripts folder. You might or might not need to tweak a few launch paths, depending on your setup
 
 --------------
 --------------
