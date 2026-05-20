@@ -65,7 +65,7 @@ class Engine:
         self.validator = ResultValidator(self.logger)
         
         # Select batch processor class based on config
-        processor_class_name = self.config.get('processing', {}).get('batch-processor-class', 'default')
+        processor_class_name = self.config.get('processing', {}).get('batch-processor-class', 'httpx_async')
         
         if processor_class_name not in BATCH_PROCESSOR_CLASSES:
             available = ", ".join(BATCH_PROCESSOR_CLASSES.keys())
