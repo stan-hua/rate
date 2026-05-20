@@ -1,0 +1,33 @@
+# Model settings
+model:
+  name: "Qwen/Qwen3-30B-A3B-FP8"
+  temperature: 0.1
+  top_p: 0.1
+  max-completion-tokens: 256
+  enable-thinking: false
+
+# Server settings
+server:
+  port: 8000
+  base_url: "http://127.0.0.1"
+
+# Processing settings
+processing:
+  batch-size: 64
+  request-concurrency: 8
+  apply-constrained-output: false
+  use-category-segments: false
+  max_retries: 2
+  retry_delay: 5
+  validation:
+    enabled: true
+  storage:
+    atomic_writes: true
+    validate_csv: true
+
+prompt_templates:
+  findings_question: |
+    Based on the following prostate MRI radiology report:
+    {report}
+
+    {question}

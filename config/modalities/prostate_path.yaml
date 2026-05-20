@@ -1,0 +1,21 @@
+modality: "prostate-path"
+
+categories:
+  Cancer Grade:
+    description: "Cancer grade of prostate cancer"
+    questions:
+      - question: |
+          Report the maximum Gleason sum (the Z in "X+Y=Z") given to prostatic
+          adenocarcinoma in the CURRENT specimen's final / per-part diagnosis.
+
+          - Use only the current diagnosis. Ignore Gleason scores in clinical
+            history, "prior/previous biopsy", "prior prostatectomy", "on active
+            surveillance", or comments referring to other specimens.
+          - Take the max across all parts/cores. "3+4=7" and "4+3=7" both map to 7.
+          - "Gleason pattern N" alone (no X+Y=Z) is NOT a Gleason score.
+          - If only Grade Group is stated, map GG1->6, GG2->7, GG3->7, GG4->8,
+            GG5->9. Prefer an explicit X+Y=Z when both are given.
+          - If the current diagnosis is benign, HGPIN/ASAP only, or no carcinoma /
+            no Gleason can be determined, answer 0.
+
+          Answer with exactly one integer from {0, 6, 7, 8, 9, 10}.

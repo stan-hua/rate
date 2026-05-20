@@ -1,0 +1,28 @@
+modality: "prostate-mr-clinical-factors"
+
+categories:
+  Clinical Factors:
+    description: "Clinical factors mentioned in prostate MRI radiology reports, including demographics, PSA, and prior biopsy history."
+    questions:
+      - question: |
+          What is the patient's age in years at the time of this prostate MRI report?
+          Answer with a single integer only. If the age is not mentioned, answer 0.
+
+      - question: |
+          What race or ethnicity is stated for the patient in this report?
+          Answer with the exact race or ethnicity phrase only. If race or ethnicity is not mentioned, answer Unknown.
+
+      - question: |
+          What is the most recent PSA level mentioned in this report?
+          Answer with the numeric PSA value only. If no PSA level is mentioned, answer -1.
+
+      - question: |
+          Has the patient had a prostate biopsy before this MRI?
+          Answer Yes if a prior prostate biopsy is mentioned. Answer No if the report states no prior biopsy or does not mention prior biopsy.
+
+  Treatment History:
+    description: "Treatment history mentioned in prostate MRI radiology reports, including prior treatments and current treatment."
+    questions:
+      - question: |
+          Has the patient received any prior treatments for prostate cancer?
+          Answer Yes if any prior treatments are mentioned. Answer No if the report states no prior treatments or does not mention prior treatments.
