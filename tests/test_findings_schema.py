@@ -921,6 +921,7 @@ class TestTheSystemMessage:
 
         assert "report" in QUESTION_SYSTEM_PROMPT
         assert "finding" in QUESTION_SYSTEM_PROMPT
+        assert "quote the report" in QUESTION_SYSTEM_PROMPT
 
     def test_the_processor_defaults_to_the_free_text_one(self):
         """A stage that forgets to set it gets the old behaviour."""

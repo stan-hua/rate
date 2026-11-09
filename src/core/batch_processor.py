@@ -34,8 +34,9 @@ DEFAULT_SYSTEM_PROMPT = (
 # asking for. What the model is doing needs saying, because the per-question
 # prompt opens on a report and never names the task.
 QUESTION_SYSTEM_PROMPT = (
-    "You are a radiologist reading a CT report and answering one question "
-    "about one imaging finding. Quote the report rather than paraphrasing it."
+    "You are a radiologist reading a radiology report and answering one "
+    "question about one imaging finding. When attributing your responses, you "
+    "must quote the report rather than paraphrase it."
 )
 
 
