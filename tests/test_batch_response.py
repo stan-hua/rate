@@ -22,7 +22,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # Custom libraries
-from src.core.batch_processor import BatchProcessor
+from src.core.batch_processor import SAMPLING_FIELDS, BatchProcessor
 from src.core.validators import ResultValidator
 
 ANSWER = json.dumps({"answer": "yes", "evidence": "Moderate ascites.", "named_outright": True})
@@ -99,3 +99,58 @@ class TestTheShapesSglangWrites:
     def test_an_unparseable_line_is_passed_over(self, processor):
         got, _ = parse(processor, ["{not json", line("r1", content=ANSWER)])
         assert got == {"r1": ANSWER}
+
+
+class TestTheSamplingBlock:
+    """What reaches the server's `ChatCompletionRequest`, and what does not."""
+
+    def build(self, model):
+        logger = logging.getLogger("test_sampling")
+        processor = BatchProcessor(
+            client=None,
+            config={"model": model},
+            logger=logger,
+            validator=ResultValidator(logger),
+        )
+        return processor._sampling()
+
+    def test_the_committed_config_sends_qwen3s_thinking_settings(self):
+        """The model card's values. Greedy decoding degrades thinking mode."""
+        import yaml
+
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+        sampling = self.build(config["model"])
+        assert sampling["temperature"] == 0.6
+        assert sampling["top_p"] == 0.95
+        assert sampling["top_k"] == 20
+        assert sampling["min_p"] == 0
+
+    def test_the_model_name_is_not_a_sampling_field(self):
+        """It belongs in `model`, and sending it twice is a 422."""
+        sampling = self.build({"name": "Qwen/Qwen3-30B-A3B", "temperature": 0.6})
+        assert "name" not in sampling
+        assert sampling == {"temperature": 0.6}
+
+    def test_structured_output_is_not_sent_either(self):
+        """It selects a `response_format`; it is not a field the server reads."""
+        assert "structured_output" not in self.build(
+            {"structured_output": True, "top_p": 0.95}
+        )
+
+    def test_an_absent_field_is_not_sent_at_all(self):
+        """So the server's own default applies rather than a value invented here."""
+        sampling = self.build({"temperature": 0.6})
+        assert sampling == {"temperature": 0.6}
+
+    def test_every_whitelisted_field_passes_through(self):
+        model = dict.fromkeys(SAMPLING_FIELDS, 1)
+        assert set(self.build(model)) == set(SAMPLING_FIELDS)
+
+    def test_no_model_block_sends_no_sampling(self):
+        logger = logging.getLogger("test_sampling")
+        processor = BatchProcessor(
+            client=None, config={}, logger=logger, validator=ResultValidator(logger)
+        )
+        assert processor._sampling() == {}

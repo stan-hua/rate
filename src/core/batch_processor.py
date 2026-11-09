@@ -8,6 +8,20 @@ from typing import Dict, List, Tuple, Any
 from tqdm import tqdm
 
 from .exceptions import BatchProcessingError
+
+# The request-body fields that control sampling, in the order a reader expects.
+# `model` and `structured_output` live under the same config key and are not
+# sampling, which is why this is a whitelist rather than a copy of the block.
+SAMPLING_FIELDS = (
+    "temperature",
+    "top_p",
+    "top_k",
+    "min_p",
+    "max_tokens",
+    "repetition_penalty",
+    "presence_penalty",
+    "frequency_penalty",
+)
 from .validators import ResultValidator
 
 
@@ -60,6 +74,21 @@ class BatchProcessor:
                 self.logger.error(f"Unexpected error in batch processing: {str(e)}")
                 raise BatchProcessingError(f"Unexpected batch processing error: {str(e)}")
     
+    def _sampling(self) -> Dict[str, Any]:
+        """Return the sampling fields the config sets, and nothing else.
+
+        Driven by the config rather than named here, so changing how the model
+        samples is a config edit. The whitelist is what keeps `name` and
+        `structured_output` out of the request body, and an absent key is not
+        sent at all, so the server's own default applies.
+
+        `top_k` and `min_p` are sglang extensions rather than OpenAI fields.
+        sglang 0.4.7 declares both on `ChatCompletionRequest` (`top_k: int =
+        -1`, `min_p: float = 0.0`), so they are read rather than refused.
+        """
+        model = self.config.get('model', {})
+        return {field: model[field] for field in SAMPLING_FIELDS if field in model}
+
     def _submit_and_wait_for_batch(self, requests: List[Tuple[str, str]], attempt: int) -> Any:
         """Submit batch and wait for completion."""
         # Create batch requests
@@ -76,9 +105,7 @@ class BatchProcessor:
                         {"role": "system", "content": "You are a helpful assistant. Please output in plain text without any formatting."},
                         {"role": "user", "content": prompt}
                     ],
-                    "temperature": self.config['model']['temperature'],
-                    "top_p": self.config['model']['top_p'],
-                    "max_tokens": self.config['model']['max_tokens'],
+                    **self._sampling(),
                     **self.body_extras,
                 }
             }
