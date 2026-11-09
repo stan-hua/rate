@@ -19,6 +19,15 @@ magnitude word as the report writes them, and `lexicon.py` maps those to a
 level afterwards. A mapping is contestable and will be revised; re-asking four
 million questions to revise one is not.
 
+**`section` and `chronicity` are gone.** Nothing read either one: they
+appeared in the list of columns to write and nowhere else, in any of the three
+repositories. `section` restated the finding's own category, and the evidence
+sentence opens on that heading anyway -- "Liver: Nodular contour..." -- so it
+was recoverable where it was wanted. `chronicity` was never one of the five
+axes the design settled on and came back `unspecified` on every row. Together
+they cost about a third of the generated tokens, because decode is what this
+run spends its time on.
+
 **A phrase has to be in the evidence.** Both phrase fields ask for a verbatim
 quote, and a run returned `severity_phrase` "mildly enlarged" beside evidence
 that says "mild intrahepatic biliary ductal dilatation" -- near enough to look
@@ -46,7 +55,6 @@ import re
 from .lexicon import STATED, UNSPECIFIED, certainty_of, severity_of
 
 ANSWER_VALUES = ("yes", "no", "not_assessed")
-CHRONICITY_VALUES = ("acute", "chronic", "indeterminate", "unspecified")
 ATTRIBUTION_VALUES = ("spontaneous", "postoperative", "unknown")
 
 # The free-text fields carry no `maxLength`, and that is deliberate. A smoke
@@ -84,10 +92,6 @@ RESPONSE_SCHEMA = {
                 "a different abnormality."
             ),
         },
-        "section": {
-            "type": "string",
-            "description": "The report heading the evidence came from.",
-        },
         "certainty_phrase": {
             "type": "string",
             "description": (
@@ -114,18 +118,16 @@ RESPONSE_SCHEMA = {
                 "magnitude."
             ),
         },
-        "chronicity": {
-            "type": "string",
-            "enum": list(CHRONICITY_VALUES),
-            "description": "unspecified unless the report states it.",
-        },
         "attribution": {
             "type": "string",
             "enum": list(ATTRIBUTION_VALUES),
             "description": (
-                "postoperative when the report attributes the finding to a "
-                "procedure, as in 'expected pneumobilia' or 'postoperative "
-                "pneumoperitoneum'. Otherwise spontaneous, or unknown."
+                "postoperative when the report ties this finding to a "
+                "procedure or a device, as in 'expected pneumobilia', "
+                "'postoperative pneumoperitoneum' or 'status post "
+                "splenectomy'. unknown when the report says nothing about a "
+                "cause, which is the usual case. spontaneous only where the "
+                "report states the finding arose without an intervention."
             ),
         },
         "named_outright": {
@@ -145,12 +147,10 @@ RESPONSE_SCHEMA = {
 ANSWER_COLUMNS = (
     "verdict",
     "evidence",
-    "section",
     "certainty_phrase",
     "certainty",
     "severity_phrase",
     "severity",
-    "chronicity",
     "attribution",
     "named_outright",
     # Set by the reader rather than the model: the generation ran past the end
@@ -212,10 +212,8 @@ def parse_answer(raw):
         return _graded({
             "verdict": verdict,
             "evidence": body.get("evidence") or "",
-            "section": body.get("section") or "",
             "certainty_phrase": _phrase(body.get("certainty_phrase")),
             "severity_phrase": _phrase(body.get("severity_phrase")),
-            "chronicity": body.get("chronicity") or "unspecified",
             "attribution": body.get("attribution") or "unknown",
             "named_outright": bool(body.get("named_outright", False)),
             "truncated": truncated,
@@ -230,10 +228,8 @@ def parse_answer(raw):
             return _graded({
                 "verdict": match.group(1).lower(),
                 "evidence": "",
-                "section": "",
                 "certainty_phrase": "",
                 "severity_phrase": "",
-                "chronicity": "unspecified",
                 "attribution": "unknown",
                 "named_outright": False,
                 "truncated": False,

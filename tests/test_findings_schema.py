@@ -21,6 +21,7 @@ import pytest
 from src.core.findings_schema import (
     ANSWER_COLUMNS,
     ANSWER_VALUES,
+    ATTRIBUTION_VALUES,
     RESPONSE_SCHEMA,
     parse_answer,
     question_guidance,
@@ -120,10 +121,8 @@ class TestReadingAnObject:
                 {
                     "answer": "yes",
                     "evidence": "Trace free fluid in the pelvis.",
-                    "section": "Findings",
                     "certainty_phrase": "concerning for",
                     "severity_phrase": "trace",
-                    "chronicity": "unspecified",
                     "attribution": "spontaneous",
                     "named_outright": False,
                 }
@@ -136,7 +135,6 @@ class TestReadingAnObject:
 
     def test_an_absent_field_takes_a_default(self):
         got = parse_answer('{"answer": "no", "evidence": "", "named_outright": false}')
-        assert got["chronicity"] == "unspecified"
         assert got["attribution"] == "unknown"
         assert got["certainty_phrase"] == ""
 
@@ -482,7 +480,7 @@ class TestTheStringsAreNotBounded:
         """What the schema constrains is the answer, not the prose around it."""
         props = RESPONSE_SCHEMA["properties"]
         assert props["answer"]["enum"] == list(ANSWER_VALUES)
-        assert len(props["chronicity"]["enum"]) == 4
+        assert len(props["attribution"]["enum"]) == 3
         assert len(props["attribution"]["enum"]) == 3
         assert props["named_outright"]["type"] == "boolean"
 
@@ -1143,3 +1141,89 @@ class TestAPhraseIsCleanedAndCheckedAgainstItsEvidence:
 
     def test_it_is_a_stored_column(self):
         assert "unquoted" in ANSWER_COLUMNS
+
+
+class TestTheFieldsNobodyReadAreGone:
+    """`section` and `chronicity` appeared in one list and nowhere else.
+
+    Not `vote.py`, not the QC sheet, not `eval_cli`, not the label table, in
+    any of the three repositories. `section` restated the finding's own
+    category, and the evidence sentence opens on that heading anyway --
+    "Liver: Nodular contour ..." -- so it was recoverable where wanted.
+    `chronicity` was never one of the five axes the design settled on and came
+    back `unspecified` on every row.
+
+    Decode is what this run spends its time on: 1,828 token/s over 24
+    requests a second is 76 output tokens an answer, and those two fields plus
+    their keys were about a third of it.
+    """
+
+    def test_neither_is_in_the_schema(self):
+        assert "section" not in RESPONSE_SCHEMA["properties"]
+        assert "chronicity" not in RESPONSE_SCHEMA["properties"]
+
+    def test_neither_is_a_stored_column(self):
+        assert "section" not in ANSWER_COLUMNS
+        assert "chronicity" not in ANSWER_COLUMNS
+
+    def test_a_stored_answer_that_has_them_still_reads(self):
+        """`additionalProperties: false` stops the model producing them, and
+        the rows already extracted have them. Reading one ignores them."""
+        got = parse_answer(json.dumps({
+            "answer": "yes",
+            "evidence": "Liver: Cirrhosis.",
+            "section": "Findings",
+            "chronicity": "chronic",
+            "named_outright": True,
+        }))
+        assert got["verdict"] == "yes"
+        assert "section" not in got
+        assert "chronicity" not in got
+
+    def test_named_outright_is_the_last_property(self):
+        """Which leaves a boolean at the end of the object rather than a free
+        string, where a run wrote the closing characters inside the value."""
+        assert list(RESPONSE_SCHEMA["properties"])[-1] == "named_outright"
+
+
+class TestAttributionIsDefinedForTheModelNow:
+    """Nothing told the model what it meant.
+
+    The prompt named four fields and `attribution` was not one of them, and a
+    schema description reaches a grammar rather than a context. So the column
+    was the model's prior: a free-fluid row came back `spontaneous` on a
+    report that says nothing about any cause.
+
+    The old description made that the default -- "Otherwise spontaneous, or
+    unknown" -- which is backwards. A report almost never asserts spontaneity;
+    it says nothing, and that is `unknown`.
+    """
+
+    def test_the_prompt_defines_it(self):
+        prompt = findings_prompt()
+        assert "`attribution`" in prompt
+        assert "ties this finding to a procedure or a device" in prompt
+        assert "expected pneumobilia" in prompt
+
+    def test_unknown_is_the_stated_default(self):
+        prompt = findings_prompt()
+        assert "says nothing about a cause, which is the usual case" in prompt
+
+    def test_spontaneous_needs_the_report_to_say_so(self):
+        prompt = findings_prompt()
+        assert "only where the report states the finding arose without" in prompt
+
+    def test_the_schema_description_agrees(self):
+        said = RESPONSE_SCHEMA["properties"]["attribution"]["description"]
+        assert "usual case" in said
+        assert "status post splenectomy" in said
+
+    def test_the_prompt_defines_named_outright_too(self):
+        """It is required, and it was the other field nothing explained."""
+        prompt = findings_prompt()
+        assert "`named_outright`" in prompt
+        assert "rests on a related sign" in prompt
+
+    def test_the_three_values_are_unchanged(self):
+        """Keeping the enum keeps the grammar stable across this edit."""
+        assert ATTRIBUTION_VALUES == ("spontaneous", "postoperative", "unknown")

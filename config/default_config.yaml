@@ -127,6 +127,17 @@ prompt_templates:
     phrases empty unless the answer is `yes`. Do not grade the certainty or the
     severity yourself.
 
+    `attribution`
+      `postoperative` when the report ties this finding to a procedure or a
+      device: "expected pneumobilia", "postoperative pneumoperitoneum",
+      "status post splenectomy". `unknown` when the report says nothing about
+      a cause, which is the usual case. Use `spontaneous` only where the
+      report states the finding arose without an intervention.
+
+    `named_outright`
+      true when the report uses this finding's name or a synonym for it, and
+      false when your answer rests on a related sign.
+
     Report:
     {report}
 

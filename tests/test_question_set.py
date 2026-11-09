@@ -219,8 +219,9 @@ def test_the_questions_stage_writes_the_columns_the_sheets_read():
     never names a level, so re-grading is an edit to `config/lexicons/*.yaml`
     and a rebuild of these two columns.
     """
-    config = STAGE_CONFIGS["questions"]
-    assert config["columns"] == [
+    from src.core.findings_schema import ANSWER_COLUMNS
+
+    keys = [
         "report_id",
         "category",
         "finding_id",
@@ -228,18 +229,14 @@ def test_the_questions_stage_writes_the_columns_the_sheets_read():
         "question_id",
         "question",
         "answer",
-        "verdict",
-        "evidence",
-        "section",
-        "certainty_phrase",
-        "certainty",
-        "severity_phrase",
-        "severity",
-        "chronicity",
-        "attribution",
-        "named_outright",
-        "truncated",
     ]
+    config = STAGE_CONFIGS["questions"]
+    # The invariant rather than a copy of the list: what is written is the
+    # keys that identify a row, the raw answer, and whatever the reader
+    # produces from it. A literal copy drifts, and this one did when a column
+    # was added to the reader.
+    assert config["columns"][: len(keys)] == keys
+    assert config["columns"][len(keys) :] == list(ANSWER_COLUMNS)
 
 
 def test_the_resume_key_is_one_wording_of_one_finding():
