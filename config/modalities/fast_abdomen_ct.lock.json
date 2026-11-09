@@ -7,171 +7,202 @@
     "abdominal_aortic_aneurysm_aaa": {
       "category": "Great Vessel",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "49f3e631",
           "question": "Is abdominal aortic aneurysm suspected based on the imaging findings?"
         }
-      ]
+      ],
+      "window": "cardiac"
     },
     "accessory_spleen": {
       "category": "Spleen",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "d711c673",
           "question": "Are there any accessory spleens?"
         }
-      ]
+      ],
+      "window": "LUQ"
     },
     "active_extravasation_liver": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "67a19c0b",
           "question": "Are there any sites of active extravasation in the liver?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "acute_cholecystitis": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "78df7673",
           "question": "Is there acute cholecystitis?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "acute_pancreatitis": {
       "category": "Pancreas",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "32315c35",
           "question": "Is there acute pancreatitis?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "adrenal_myelolipoma": {
       "category": "Adrenal gland",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "19fd1e72",
           "question": "Are there any adrenal myelolipomas?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "anasarca": {
       "category": "Multi Organs",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "c638bfa1",
           "question": "Is anasarca suspected based on the imaging findings?"
         }
-      ]
+      ],
+      "window": "all windows"
     },
     "angiomyolipoma_aml": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "b1a768cb",
           "question": "Are there any angiomyolipomas?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "aortic_atherosclerosis": {
       "category": "Great Vessel",
       "covariate": true,
+      "tier": "C",
       "variants": [
         {
           "index": 0,
           "md5": "744f1292",
           "question": "Is aortic atherosclerosis suspected based on the imaging findings?"
         }
-      ]
+      ],
+      "window": "-"
     },
     "appendicitis": {
       "category": "Gastrointestinal",
       "covariate": true,
+      "tier": "C",
       "variants": [
         {
           "index": 0,
           "md5": "9c951e5e",
           "question": "Is appendicitis suspected based on the imaging findings?"
         }
-      ]
+      ],
+      "window": "-"
     },
     "ascites": {
       "category": "Peritoneum",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "b7881e53",
           "question": "Is there any ascites?"
         }
-      ]
+      ],
+      "window": "all windows"
     },
     "atelectasis": {
       "category": "Visible Thoracic",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "547d04f7",
           "question": "Is there any atelectasis in the visible lung?"
         }
-      ]
+      ],
+      "window": "thoracic"
     },
     "bladder_rupture": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "5188cec7",
           "question": "Is there bladder rupture?"
         }
-      ]
+      ],
+      "window": "suprapubic"
     },
     "bladder_stones": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "06b82428",
           "question": "Are there any bladder stones?"
         }
-      ]
+      ],
+      "window": "suprapubic"
     },
     "bladder_tcc": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "7500f3a4",
           "question": "Are there any bladder transitional cell carcinomas?"
         }
-      ]
+      ],
+      "window": "suprapubic"
     },
     "bowel_obstruction": {
       "category": "Gastrointestinal",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
@@ -183,330 +214,390 @@
           "md5": "b663a284",
           "question": "Is there bowel obstruction?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ/suprapubic"
     },
     "cardiomegaly": {
       "category": "Visible Thoracic",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "5671019d",
           "question": "Is there cardiomegaly?"
         }
-      ]
+      ],
+      "window": "cardiac"
     },
     "cholecystitis_with_rupture": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "47e91cce",
           "question": "Is there acute cholecystitis with rupture?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "choledochal_cysts": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "20d63122",
           "question": "Are there any choledochal cysts?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "cirrhosis": {
       "category": "Liver",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "ef2501cd",
           "question": "Is there cirrhosis?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "cirrhosis_portal_hypertension": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "9ac651fe",
           "question": "Is there cirrhosis with portal hypertension?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "cirrhosis_with_decompensation": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "b482ebca",
           "question": "Is there cirrhosis with decompensation?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "complex_renal_cyst": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "d63e0191",
           "question": "Are there any complex renal cysts?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "consolidation": {
       "category": "Visible Thoracic",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "fb482273",
           "question": "Is there any consolidation?"
         }
-      ]
+      ],
+      "window": "thoracic"
     },
     "emphysematous_cholecystitis": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "73ab74fc",
           "question": "Is there emphysematous cholecystitis?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "epithelial_splenic_cysts": {
       "category": "Spleen",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "8c87eb26",
           "question": "Are there any epithelial cysts?"
         }
-      ]
+      ],
+      "window": "LUQ"
     },
     "extrahepatic_duct_dilation": {
       "category": "Biliary Tree",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "49e69866",
           "question": "is there any extrahepatic biliary ductal dilation?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "fractures_general": {
       "category": "Musculoskeletal",
       "covariate": true,
+      "tier": "C",
       "variants": [
         {
           "index": 0,
           "md5": "d45e8d5d",
           "question": "Are there any fractures (general)?"
         }
-      ]
+      ],
+      "window": "-"
     },
     "free_air_pneumoperitoneum": {
       "category": "Peritoneum",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "b6ed3a95",
           "question": "Is there any free air or pneumoperitoneum?"
         }
-      ]
+      ],
+      "window": "all windows"
     },
     "gallbladder_adenomyomatosis": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "c82d4475",
           "question": "Is there gallbladder adenomyomatosis?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "gallbladder_cancer": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "61272100",
           "question": "Is there gallbladder cancer?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "gallbladder_stones": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "ec986e46",
           "question": "Are there any gallbladder stones or cholelithiasis?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "gallbladder_surgically_absent": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "71831878",
           "question": "Is the gallbladder surgically absent?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "gallbladder_wall_thickening": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "3b06d084",
           "question": "Is there gallbladder wall thickening?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "gastroesophageal_varices": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "7f07c142",
           "question": "Are there any esophageal or gastric varices?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatic_abscess": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "1bfa47d6",
           "question": "Are there any hepatic abscesses?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatic_adenoma": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "375d9900",
           "question": "Are there any hepatic adenomas?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatic_changes_post_resection": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "e267add5",
           "question": "Are there any hepatic changes post-resection?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatic_cysts_simple": {
       "category": "Liver",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "67290004",
           "question": "Are there any hepatic cysts?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatic_hemangioma": {
       "category": "Liver",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "ab943a30",
           "question": "Are there any hepatic hemangiomas?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatic_mass_indeterminate": {
       "category": "Liver",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "2a655638",
           "question": "Are there any hepatic masses?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatic_metastases": {
       "category": "Liver",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "546a5680",
           "question": "Are there any hepatic metastases?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatic_steatosis": {
       "category": "Liver",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "63f3bc5e",
           "question": "Is hepatic steatosis, fatty liver, focal fatty infiltration suspected based on the imaging findings?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatocellular_carcinoma_hcc": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "af006ec0",
           "question": "Is there hepatocellular carcinoma?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hepatomegaly": {
       "category": "Liver",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "2c75a192",
           "question": "Is there hepatomegaly?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "hiatal_hernia": {
       "category": "Gastrointestinal",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
@@ -518,502 +609,593 @@
           "md5": "e910ef5b",
           "question": "Is there hiatal hernia?"
         }
-      ]
+      ],
+      "window": "cardiac"
     },
     "horseshoe_kidney": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "fe093963",
           "question": "Is there horseshoe kidney?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "hydronephrosis": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "696f48d2",
           "question": "Is there hydronephrosis?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "ileus": {
       "category": "Gastrointestinal",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "bfc9aa65",
           "question": "Is there ileus?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ/suprapubic"
     },
     "inguinal_hernias": {
       "category": "Gastrointestinal",
       "covariate": true,
+      "tier": "C",
       "variants": [
         {
           "index": 0,
           "md5": "555e3747",
           "question": "Are there any inguinal hernias?"
         }
-      ]
+      ],
+      "window": "-"
     },
     "intra_uterine_devices": {
       "category": "Device",
       "covariate": true,
+      "tier": "C",
       "variants": [
         {
           "index": 0,
           "md5": "6fd7c921",
           "question": "Are there any intra-uterine devices?"
         }
-      ]
+      ],
+      "window": "-"
     },
     "intrahepatic_duct_dilation": {
       "category": "Biliary Tree",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "8a92c600",
           "question": "Is there any intrahepatic biliary ductal dilation?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "liver_laceration": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "0fff66c4",
           "question": "Are there any liver lacerations?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "lung_mass_or_nodule": {
       "category": "Visible Thoracic",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "49d6a08e",
           "question": "Are there any lung masses or nodules?"
         }
-      ]
+      ],
+      "window": "thoracic"
     },
     "lymphadenopathy": {
       "category": "Retroperitoneum",
       "covariate": true,
+      "tier": "C",
       "variants": [
         {
           "index": 0,
           "md5": "14e8d016",
           "question": "Is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?"
         }
-      ]
+      ],
+      "window": "-"
     },
     "metastatic_disease_general": {
       "category": "Multi Organs",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "00bf2726",
           "question": "Is metastatic disease suspected based on the imaging findings?"
         }
-      ]
+      ],
+      "window": "all windows"
     },
     "nephrocalcinosis": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "d1a83706",
           "question": "Is there nephrocalcinosis?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "peritoneal_carcinomatosis": {
       "category": "Peritoneum",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "e5a6f934",
           "question": "Is there peritoneal carcinomatosis or omental caking?"
         }
-      ]
+      ],
+      "window": "all windows"
     },
     "pleural_effusion": {
       "category": "Visible Thoracic",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "626e43b7",
           "question": "Is there any pleural effusion?"
         }
-      ]
+      ],
+      "window": "thoracic"
     },
     "pneumobilia": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "77ab2ec5",
           "question": "Is there pneumobilia?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "polycystic_kidney_disease": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "e48018b8",
           "question": "Is there polycystic kidney disease?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "polycystic_liver_disease": {
       "category": "Liver",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "47e1a377",
           "question": "Is polycystic liver disease present?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "porcelain_gallbladder": {
       "category": "Gallbladder",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "ecc139e8",
           "question": "Is there porcelain gallbladder?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "portal_venous_gas": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "dfbefa46",
           "question": "Is there any portal venous gas?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "portal_venous_occlusion_thrombosis": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "c0516a63",
           "question": "Is there portal venous occlusion?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "post_hysterectomy": {
       "category": "Female pelvis",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "36eb77ac",
           "question": "Are there changes status post hysterectomy?"
         }
-      ]
+      ],
+      "window": "suprapubic"
     },
     "post_liver_transplant": {
       "category": "Liver",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "db4bcfb4",
           "question": "Are there any hepatic changes post-transplantation?"
         }
-      ]
+      ],
+      "window": "RUQ"
     },
     "post_nephrectomy": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "64ec8614",
           "question": "Are there any post-nephrectomy changes?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "post_renal_transplant": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "5141b6b8",
           "question": "Are there any post-renal transplantation changes?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "prostatomegaly_bph": {
       "category": "Male Pelvis",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "6d6e7047",
           "question": "Is there prostatomegaly or prostatic hyperplasia?"
         }
-      ]
+      ],
+      "window": "suprapubic"
     },
     "pseudomyxoma_peritonei": {
       "category": "Peritoneum",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "1475c0a0",
           "question": "Is there pseudomyxoma peritonei?"
         }
-      ]
+      ],
+      "window": "all windows"
     },
     "renal_abscess": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "4b037146",
           "question": "Are there any renal abscesses?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "renal_cell_carcinoma_rcc": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "c6eedbec",
           "question": "Are there any renal cell carcinomas?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "renal_hypodensities": {
       "category": "Genitourinary",
       "covariate": true,
+      "tier": "C",
       "variants": [
         {
           "index": 0,
           "md5": "c95af380",
           "question": "Are there any renal hypodensities?"
         }
-      ]
+      ],
+      "window": "-"
     },
     "renal_laceration": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "d85a92fb",
           "question": "Are there any renal lacerations?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "renal_lymphoma": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "31252256",
           "question": "Is there renal lymphomas?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "renal_stones_nephrolithiasis": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "a1ffec17",
           "question": "Are there any renal stones / nephrolithiasis?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "renal_subcapsular_hemorrhage": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "1ae1634f",
           "question": "Are there any subcapsular hemorrhages?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "retroperitoneal_hemorrhage": {
       "category": "Retroperitoneum",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "472ea512",
           "question": "Is there retroperitoneal hemorrhage or retroperitoneal hematomas?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "rib_fractures": {
       "category": "Musculoskeletal",
       "covariate": true,
+      "tier": "C",
       "variants": [
         {
           "index": 0,
           "md5": "deb1af16",
           "question": "Are there any rib fractures?"
         }
-      ]
+      ],
+      "window": "-"
     },
     "simple_renal_cysts": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "17fe9b83",
           "question": "Are there any simple renal cysts?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     },
     "spleen_absent": {
       "category": "Spleen",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "638e66ca",
           "question": "Is the spleen surgically absent? Are there any post-splenectomy changes?"
         }
-      ]
+      ],
+      "window": "LUQ"
     },
     "splenic_infarct": {
       "category": "Spleen",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "384f3508",
           "question": "Are there any splenic infarcts?"
         }
-      ]
+      ],
+      "window": "LUQ"
     },
     "splenic_laceration": {
       "category": "Spleen",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "f561f0c1",
           "question": "Are there any splenic lacerations?"
         }
-      ]
+      ],
+      "window": "LUQ"
     },
     "splenic_lymphoma": {
       "category": "Spleen",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "804a3391",
           "question": "Is splenic lymphoma present?"
         }
-      ]
+      ],
+      "window": "LUQ"
     },
     "splenic_pseudocyst": {
       "category": "Spleen",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "b413e897",
           "question": "Are there any splenic pseudocysts?"
         }
-      ]
+      ],
+      "window": "LUQ"
     },
     "splenomegaly": {
       "category": "Spleen",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "42e8ffb8",
           "question": "Is there splenomegaly?"
         }
-      ]
+      ],
+      "window": "LUQ"
     },
     "ureteral_stones": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "f4af352d",
           "question": "Are there any ureteral stones?"
         }
-      ]
+      ],
+      "window": "suprapubic"
     },
     "ureteroceles": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "edac0f65",
           "question": "Are there any ureteroceles?"
         }
-      ]
+      ],
+      "window": "suprapubic"
     },
     "uterine_leiomyomas_fibroids": {
       "category": "Female pelvis",
       "covariate": false,
+      "tier": "A",
       "variants": [
         {
           "index": 0,
           "md5": "09c60386",
           "question": "Are there any leiomyomas?"
         }
-      ]
+      ],
+      "window": "suprapubic"
     },
     "xgp": {
       "category": "Genitourinary",
       "covariate": false,
+      "tier": "B",
       "variants": [
         {
           "index": 0,
           "md5": "0c4417f5",
           "question": "Is there xanthogranulomatous pyelonephritis?"
         }
-      ]
+      ],
+      "window": "RUQ/LUQ"
     }
   },
   "generated": "2026-11-08",
