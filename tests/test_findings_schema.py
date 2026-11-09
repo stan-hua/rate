@@ -27,6 +27,7 @@ from src.core.findings_schema import (
     response_format,
 )
 from src.core.lexicon import (
+    CERTAINTY_LEVELS,
     CERTAINTY_ORDER,
     SEVERITY_ORDER,
     at_least,
@@ -129,7 +130,9 @@ class TestTheCertaintyLexicon:
     """Three levels from the Memorial Sloan Kettering five."""
 
     @pytest.mark.parametrize("phrase", ["consistent with", "compatible with", "diagnostic of"])
-    def test_a_flat_statement_is_high(self, phrase):
+    def test_committing_to_it_is_high(self, phrase):
+        """`high` is still a hedge. A report with none of these grades
+        `stated`, above this."""
         assert certainty_of(phrase) == "high"
 
     @pytest.mark.parametrize("phrase", ["suspicious for", "concerning for", "probable", "likely"])
@@ -209,10 +212,14 @@ class TestTheThreshold:
 class TestTheLexiconFiles:
     """The config is data, so it needs its own checks."""
 
-    @pytest.mark.parametrize("name,order", [("certainty", CERTAINTY_ORDER), ("severity", SEVERITY_ORDER)])
-    def test_every_level_in_the_scale_has_phrases(self, name, order):
+    @pytest.mark.parametrize(
+        "name,levels", [("certainty", CERTAINTY_LEVELS), ("severity", SEVERITY_ORDER)]
+    )
+    def test_every_level_a_phrase_can_map_to_has_phrases(self, name, levels):
+        """`stated` is absent here on purpose: it is a point on the certainty
+        scale that no phrase produces."""
         _, mapping = load_lexicon(name)
-        assert set(order) <= set(mapping.values())
+        assert set(levels) <= set(mapping.values())
 
     @pytest.mark.parametrize("name", ["certainty", "severity"])
     def test_no_phrase_maps_to_two_levels(self, name):
@@ -648,3 +655,73 @@ class TestTheBareFavoredVerb:
         """"less favored" is longer, so the longest-phrase match takes it."""
         assert certainty_of("less favored") == "negated"
         assert certainty_of("not favored") == "negated"
+
+
+class TestStatedSitsAboveHigh:
+    """A report that names the finding and hedges it not at all.
+
+    Reading an empty `certainty_phrase` as `unspecified` put those rows off
+    the scale, and `aggregate_findings` takes the highest level the wordings
+    reached. Two wordings quoting no hedge and one quoting "possible" therefore
+    voted `low`, which ranks a flat statement below a maybe. The fix is a step
+    above `high`, because `high` is itself a hedge -- "consistent with" is a
+    radiologist stopping just short.
+    """
+
+    def answer(self, **fields):
+        body = {"answer": "yes", "evidence": "Spleen: Enlarged.", "named_outright": True}
+        body.update(fields)
+        return parse_answer(json.dumps(body))
+
+    def test_the_scale_has_four_steps_and_the_lexicon_three(self):
+        assert CERTAINTY_ORDER == ("low", "medium", "high", "stated")
+        assert CERTAINTY_LEVELS == ("low", "medium", "high")
+        assert "stated" not in CERTAINTY_LEVELS
+
+    def test_a_yes_with_no_hedge_is_stated(self):
+        assert self.answer(certainty_phrase="")["certainty"] == "stated"
+
+    def test_an_absent_field_counts_as_no_hedge(self):
+        """The schema requires three fields, so the model may omit this one."""
+        assert self.answer()["certainty"] == "stated"
+
+    def test_whitespace_is_no_hedge_either(self):
+        assert self.answer(certainty_phrase="   ")["certainty"] == "stated"
+
+    def test_a_hedge_still_grades_from_the_lexicon(self):
+        assert self.answer(certainty_phrase="concerning for")["certainty"] == "medium"
+        assert self.answer(certainty_phrase="consistent with")["certainty"] == "high"
+
+    def test_a_hedge_the_lexicon_does_not_list_stays_unspecified(self):
+        """The model wrote something and it maps nowhere, which is a different
+        state from a report that wrote nothing."""
+        assert self.answer(certainty_phrase="reminiscent of")["certainty"] == "unspecified"
+
+    def test_a_no_has_no_finding_to_state(self):
+        got = parse_answer('{"answer": "no", "evidence": "", "named_outright": false}')
+        assert got["certainty"] == "unspecified"
+
+    def test_not_assessed_likewise(self):
+        got = parse_answer('{"answer": "not_assessed", "evidence": "", "named_outright": false}')
+        assert got["certainty"] == "unspecified"
+
+    def test_an_answer_from_before_the_schema_is_not_stated(self):
+        """That run asked for no hedge, so its empty phrase claims nothing.
+        2.8 million of those answers are on disk."""
+        assert parse_answer("Yes")["certainty"] == "unspecified"
+        assert parse_answer("No")["certainty"] == "unspecified"
+
+    def test_severity_keeps_unspecified_for_an_empty_phrase(self):
+        """Only certainty gains a top step. Most findings are reported with no
+        magnitude word, and that is an absence of information."""
+        assert self.answer(certainty_phrase="", severity_phrase="")["severity"] == "unspecified"
+
+    def test_it_clears_every_floor_on_the_scale(self):
+        assert at_least("stated", "high", CERTAINTY_ORDER)
+        assert at_least("stated", "low", CERTAINTY_ORDER)
+        assert not at_least("high", "stated", CERTAINTY_ORDER)
+
+    def test_unspecified_is_still_off_the_scale(self):
+        """A ranking over certainty runs across the four levels that mean
+        something, and `unspecified` is not one of them."""
+        assert not at_least("unspecified", "low", CERTAINTY_ORDER)

@@ -142,6 +142,18 @@ class TestTheGradedColumnsOnAVotedRow:
         assert voted.loc[0, "certainty"] == "high"
         assert voted.loc[0, "severity"] == "marked"
 
+    def test_a_flat_statement_outranks_a_hedged_wording(self):
+        """The regression this level exists for. Two wordings quoting no hedge
+        grade `stated`; one quoting "possible" grades `low`. Reading the first
+        two as `unspecified` put them off the scale, so the maybe won."""
+        frame = rows({"SYN0001": ["yes", "yes", "yes"]})
+        frame.loc[0, ["certainty", "certainty_phrase"]] = ["stated", ""]
+        frame.loc[1, ["certainty", "certainty_phrase"]] = ["stated", ""]
+        frame.loc[2, ["certainty", "certainty_phrase"]] = ["low", "possible"]
+        voted = aggregate_findings(frame, "max")
+        assert voted.loc[0, "certainty"] == "stated"
+        assert voted.loc[0, "certainty_phrase"] == ""
+
     def test_a_no_carries_no_level(self):
         voted = aggregate_findings(rows(CASES), "max").set_index("report_id")
         assert voted.loc["SYN0002", "certainty"] == "unspecified"

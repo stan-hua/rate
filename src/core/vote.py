@@ -120,6 +120,11 @@ def aggregate_findings(frame, rule="max"):
     `max` applies to the verdict. The phrase that gave each level travels with
     it, so a reader can see what the report actually wrote.
 
+    `unspecified` is off both scales, so it never wins and never blocks. On
+    certainty that once cost the flatly stated rows their rank: two wordings
+    quoting no hedge and one quoting "possible" voted `low`. `stated` is a
+    level now, above `high`, so those two win it.
+
     Parameters
     ----------
     frame : pandas.DataFrame

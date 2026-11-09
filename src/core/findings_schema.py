@@ -25,7 +25,7 @@ import json
 import re
 
 # Custom libraries
-from .lexicon import certainty_of, severity_of
+from .lexicon import STATED, certainty_of, severity_of
 
 ANSWER_VALUES = ("yes", "no", "not_assessed")
 CHRONICITY_VALUES = ("acute", "chronic", "indeterminate", "unspecified")
@@ -193,7 +193,7 @@ def parse_answer(raw):
             "attribution": body.get("attribution") or "unknown",
             "named_outright": bool(body.get("named_outright", False)),
             "truncated": truncated,
-        })
+        }, structured=True)
 
     # Every run before the schema answered in words. The first line that opens
     # with yes or no decides, which is the rule the downstream project already
@@ -211,7 +211,7 @@ def parse_answer(raw):
                 "attribution": "unknown",
                 "named_outright": False,
                 "truncated": False,
-            })
+            }, structured=False)
     return None
 
 
@@ -250,15 +250,38 @@ def _load_object(text):
     return None, False
 
 
-def _graded(record):
+def _graded(record, structured):
     """Add the level each quoted phrase maps to, leaving the phrase alone.
 
     The model quotes the report's hedge and magnitude word and never names a
     level, so the mapping is a config edit rather than a re-extraction. These
     two columns are what that edit rebuilds.
+
+    A structured Yes with no hedge is the one level no phrase produces. The
+    report names the finding and qualifies it not at all, which is firmer than
+    "consistent with", so it grades `stated` at the top of `CERTAINTY_ORDER`.
+    Reading an empty phrase as `unspecified` put those rows off the scale,
+    where a single hedged wording outranked them: `vote.py` takes the highest
+    level the wordings reached, and `unspecified` is not one.
+
+    Three cases stay `unspecified`, and each means something different from a
+    flat statement. A hedge the lexicon does not list -- the model wrote one
+    and it maps nowhere. A No or a `not_assessed`, where there is no finding to
+    state. And every answer from before the schema, which asked for no hedge at
+    all.
+
+    Parameters
+    ----------
+    record : dict
+        The fields read from one answer.
+    structured : bool
+        Whether the answer was a JSON object, which is what makes an empty
+        `certainty_phrase` a claim rather than a field nobody asked for.
     """
     record["certainty"] = certainty_of(record["certainty_phrase"])
     record["severity"] = severity_of(record["severity_phrase"])
+    if structured and record["verdict"] == "yes" and not record["certainty_phrase"].strip():
+        record["certainty"] = STATED
     return record
 
 

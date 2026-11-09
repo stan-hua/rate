@@ -14,6 +14,11 @@ rather than on the `small` that mild also lists, and on whole words, so
 `large`. A tie between two phrases of the same length goes to the level that
 claims the least, so "possible but unlikely" is negated.
 
+`stated` is the one certainty level no phrase produces. A report that names
+the finding and hedges it not at all is firmer than "consistent with", so the
+scale `CERTAINTY_ORDER` ranks on runs low, medium, high, stated, and
+`findings_schema` sets the top step from the absence of a phrase.
+
 Where a report gives a formal grade instead of a magnitude word -- a Bosniak
 category, an SFU hydronephrosis grade, an aortic diameter -- the
 `graded_systems` block in the lexicon maps it onto the same four steps. The
@@ -31,11 +36,22 @@ import yaml
 
 LEXICON_DIR = Path(__file__).resolve().parents[2] / "config" / "lexicons"
 
-CERTAINTY_ORDER = ("low", "medium", "high")
+# The levels a certainty phrase maps to, which is what `certainty.yaml` may
+# contain.
+CERTAINTY_LEVELS = ("low", "medium", "high")
 SEVERITY_ORDER = ("trace", "mild", "moderate", "marked")
 
 UNSPECIFIED = "unspecified"
 NEGATED = "negated"
+STATED = "stated"
+
+# The certainty scale a reader ranks on, which has one more step than the
+# lexicon. `high` is a hedge that nearly commits -- "consistent with",
+# "diagnostic of" -- and a report that names the finding and hedges it not at
+# all is firmer than any phrase, so `stated` goes above it. No phrase maps
+# there: `findings_schema.parse_answer` sets it where a structured Yes quoted
+# no hedge, which is why `CERTAINTY_LEVELS` and this differ.
+CERTAINTY_ORDER = CERTAINTY_LEVELS + (STATED,)
 
 # Which level wins when two phrases of the same length both match. Six
 # certainty phrases are eight characters long and span three levels, so
