@@ -3,6 +3,14 @@
 # `name` goes into the `model` field of every request, so it has to be the
 # model the server was launched with. The FP8 build and the bf16 build are
 # different names to sglang.
+#
+# **This is bf16 where the first extraction was FP8**, which is the one model
+# difference a comparison between the two runs carries. It is forced rather
+# than chosen: FP8 needs Ada or Hopper tensor cores and an A40 is Ampere, so
+# the FP8 build cannot run on that host at all. That is why `README.md` has a
+# separate launch command for four A40s without the `-FP8` suffix. Quantisation
+# shifts logits slightly, so a finding whose answer changes between the two
+# runs has two candidate causes, not one: the new wording and the new build.
 model:
   name: "Qwen/Qwen3-30B-A3B"
   # Constrain the questions stage's decoding to the answer schema. Set this to
