@@ -3323,5 +3323,6 @@
       "question": "Is there any coronary atherosclerosis?"
     }
   ],
-  "source": "abdomen_ct.yaml@5b3a99141b3f698a"
+  "source": "abdomen_ct.yaml@5b3a99141b3f698a",
+  "vote_rule": "max"
 }

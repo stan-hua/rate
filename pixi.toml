@@ -38,6 +38,7 @@ ruff = ">=0.1"
 extract = { cmd = "python -m src.cli", description = "Run the extraction stages over a set of reports" }
 qc = { cmd = "python -m src.qc_cli", description = "Draw the sheets a human annotates" }
 evaluate = { cmd = "python -m src.eval_cli", description = "Score the annotated sheets" }
+vote = { cmd = "python -m src.vote_cli", description = "Collapse a finding's wordings into one answer per report" }
 test = { cmd = "pytest", description = "The test suite" }
 # Scoped to `tests` on purpose. `ruff check src` reports 738 findings that
 # predate this manifest, so linting the whole tree would be red from the first
