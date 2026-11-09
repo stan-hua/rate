@@ -49,13 +49,21 @@ FAST_ABDOMEN = ROOT / "config" / "modalities" / "fast_abdomen_ct.yaml"
 LOCK_PATH = ROOT / "config" / "modalities" / "fast_abdomen_ct.lock.json"
 LOCK = json.loads(LOCK_PATH.read_text())
 
-# Wordings the question set gained rather than inherited: the two free-fluid
-# findings and one compartment probe per category.
-ADDED_WORDINGS = {
+# The wording each finding inherited from `abdomen_ct.yaml`, byte for byte.
+# Everything else in the FAST set is authored: the two free-fluid findings, one
+# compartment probe per category, and the two variant wordings every finding
+# gained. Two of those variants are an exception and were inherited too,
+# because the source asked bowel obstruction and hiatal hernia twice.
+CANONICAL_WORDINGS = {
+    body["variants"][0]["question"]
+    for body in LOCK["findings"].values()
+    if not body.get("added")
+}
+
+VARIANT_WORDINGS = {
     variant["question"]
     for body in LOCK["findings"].values()
-    if body.get("added")
-    for variant in body["variants"]
+    for variant in body["variants"][1:]
 }
 
 
@@ -140,17 +148,17 @@ def test_one_question_is_asked_under_two_categories():
 
 
 def test_the_fast_config_rewrites_no_inherited_wording():
-    """A wording kept from the abdomen set appears byte for byte.
+    """A canonical wording appears byte for byte as the abdomen set wrote it.
 
     The FAST config is generated from `abdomen_ct.yaml` by dropping questions,
-    grouping duplicate wordings and appending findings the source never asked
-    about. It never rewrites an inherited one: a wording that drifted by a
-    character would answer a different question while appearing to answer this
-    one, and the md5 of that text is what joins the answers already extracted.
+    appending findings the source never asked about, and giving each finding
+    two authored variants. It never rewrites the canonical one: a wording that
+    drifted by a character would answer a different question while appearing to
+    answer this one, and the md5 of that text is what joins the answers already
+    extracted.
     """
     abdomen = {question for _, question in questions_of(ABDOMEN)}
-    inherited = {w for w in wordings_of(FAST_ABDOMEN) if w not in ADDED_WORDINGS}
-    assert inherited <= abdomen
+    assert CANONICAL_WORDINGS <= abdomen
 
 
 def test_the_fast_config_accounts_for_every_abdomen_question():
@@ -161,9 +169,22 @@ def test_the_fast_config_accounts_for_every_abdomen_question():
     """
     abdomen = {question for _, question in questions_of(ABDOMEN)}
     retired = {entry["question"] for entry in LOCK["retired"]}
-    inherited = {w for w in wordings_of(FAST_ABDOMEN) if w not in ADDED_WORDINGS}
-    assert inherited | retired == abdomen
-    assert not inherited & retired, "a question is both kept and retired"
+    asked = {w for w in wordings_of(FAST_ABDOMEN) if w in abdomen}
+    assert asked | retired == abdomen
+    assert not asked & retired, "a question is both kept and retired"
+
+
+def test_no_authored_variant_takes_over_a_retired_wording():
+    """A variant equal to a retired question would inherit its stored answers.
+
+    The md5 of a wording is the resume key, so the extraction would skip that
+    variant and hand back the answers to a question this set deliberately
+    dropped. Two variants are inherited on purpose -- the source asked bowel
+    obstruction and hiatal hernia twice -- and those two are kept rather than
+    retired, so they are not in this set.
+    """
+    retired = {entry["question"] for entry in LOCK["retired"]}
+    assert not VARIANT_WORDINGS & retired
 
 
 def test_question_id_is_the_md5_prefix(tmp_path):
@@ -268,12 +289,27 @@ class TestTheFastConfigAndItsLock:
         expected = hashlib.sha256(str(pairs).encode()).hexdigest()[:16]
         assert LOCK["digest"]["question_set"] == expected
 
-    def test_the_two_duplicate_wordings_are_grouped_as_variants(self):
-        """RATE asked these twice. Grouping them gives a vote for free."""
-        grouped = {i: b for i, b in LOCK["findings"].items() if len(b["variants"]) > 1}
-        assert set(grouped) == {"bowel_obstruction", "hiatal_hernia"}
-        for body in grouped.values():
-            assert len(body["variants"]) == 2
+    def test_every_finding_is_asked_under_three_wordings(self):
+        """One canonical and two authored, as three independent requests.
+
+        A finding asked under one wording measures nothing about how far its
+        answer depends on the question, which is what the variants are for.
+        """
+        for identifier, body in LOCK["findings"].items():
+            assert len(body["variants"]) == 3, identifier
+
+    def test_no_wording_is_asked_under_two_findings(self):
+        """The md5 is the resume key, so one of the two would never be asked."""
+        texts = [v["question"] for b in LOCK["findings"].values() for v in b["variants"]]
+        assert len(texts) == len(set(texts))
+
+    def test_the_two_re_asked_wordings_kept_their_place(self):
+        """The source asked these twice, and those md5s join stored answers."""
+        for identifier, inherited in (
+            ("bowel_obstruction", "Is there bowel obstruction?"),
+            ("hiatal_hernia", "Is there hiatal hernia?"),
+        ):
+            assert LOCK["findings"][identifier]["variants"][1]["question"] == inherited
 
     def test_the_covariates_are_marked_and_counted(self):
         """Tier C questions kept to explain the sweep's mistakes, never labels."""
@@ -281,17 +317,17 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 8
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """110 findings over 112 wordings.
+        """110 findings over 330 wordings, so 330 requests per report.
 
         83 visible findings with a positive in the cohort, 8 tier C questions
         kept as covariates, 2 free-fluid findings the source never asked about,
-        and one compartment probe per category.
+        and one compartment probe per category, each asked three times.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
         assert len(findings) == 110
-        assert wordings == 112
+        assert wordings == 330
         assert len(added) == 19
 
     def test_an_added_finding_is_marked_as_such(self):

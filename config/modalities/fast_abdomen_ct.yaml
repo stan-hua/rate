@@ -7,27 +7,54 @@ categories:
     questions:
       - id: acute_pancreatitis
         question: "Is there acute pancreatitis?"
+        variants:
+          - "Is the pancreas acutely inflamed?"
+          - "Does the report describe acute pancreatitis or peripancreatic inflammatory change?"
       
 
       - id: any_pancreas
         question: "Does the report describe any abnormality of the pancreas?"
+        variants:
+          - "Is anything abnormal described in the pancreas?"
+          - "Does the report record pancreatic inflammation, a pancreatic mass or cyst, ductal dilation, atrophy or any other pancreatic abnormality?"
   Spleen:
     description: "Spleen-related findings"
     questions:
       - id: splenomegaly
         question: "Is there splenomegaly?"
+        variants:
+          - "Is the spleen enlarged?"
+          - "Does the report describe splenomegaly or an enlarged spleen?"
       - id: epithelial_splenic_cysts
         question: "Are there any epithelial cysts?"
+        variants:
+          - "Does the report describe a cyst in the spleen?"
+          - "Is there a splenic cyst or an epithelial splenic cyst?"
       - id: splenic_pseudocyst
         question: "Are there any splenic pseudocysts?"
+        variants:
+          - "Does the report describe a post-traumatic or non-epithelial cyst in the spleen?"
+          - "Is there a splenic pseudocyst?"
       - id: splenic_lymphoma
         question: "Is splenic lymphoma present?"
+        variants:
+          - "Does the report describe lymphomatous involvement of the spleen?"
+          - "Is there splenic lymphoma?"
       - id: splenic_laceration
         question: "Are there any splenic lacerations?"
+        variants:
+          - "Does the report describe a tear or a traumatic injury of the splenic parenchyma?"
+          - "Is there a splenic laceration?"
       - id: splenic_infarct
         question: "Are there any splenic infarcts?"
+        variants:
+          - "Is there a wedge-shaped non-enhancing area in the spleen?"
+          - "Does the report describe a splenic infarct or splenic infarction?"
       - id: spleen_absent
         question: "Is the spleen surgically absent? Are there any post-splenectomy changes?"
+        variants:
+          - "Is the spleen absent?"
+          - "Does the report describe a splenectomy or post-splenectomy change?"
         definition: "The spleen is absent, or the report describes post-splenectomy change."
         include_terms:
           - "splenectomy"
@@ -35,26 +62,47 @@ categories:
           - "asplenia"
       - id: accessory_spleen
         question: "Are there any accessory spleens?"
+        variants:
+          - "Is there a splenule?"
+          - "Does the report describe an accessory spleen near the splenic hilum?"
 
       - id: any_spleen
         question: "Does the report describe any abnormality of the spleen?"
+        variants:
+          - "Is anything abnormal described in the spleen?"
+          - "Does the report record splenomegaly, a splenic lesion, an infarct, injury or any other splenic abnormality?"
   Biliary Tree:
     description: "Biliary tree-related findings"
     questions:
       - id: intrahepatic_duct_dilation
         question: "Is there any intrahepatic biliary ductal dilation?"
+        variants:
+          - "Are the intrahepatic bile ducts dilated?"
+          - "Does the report describe intrahepatic biliary dilation or prominent intrahepatic ducts?"
       - id: extrahepatic_duct_dilation
         question: "is there any extrahepatic biliary ductal dilation?"
+        variants:
+          - "Is the common bile duct or the common hepatic duct dilated?"
+          - "Does the report describe extrahepatic biliary dilation or a prominent common duct?"
 
       - id: any_biliary
         question: "Does the report describe any abnormality of the bile ducts?"
+        variants:
+          - "Is anything abnormal described in the bile ducts?"
+          - "Does the report record biliary ductal dilation, a duct stone, pneumobilia, a stricture or any other biliary abnormality?"
   Liver:
     description: "Liver-related findings"
     questions:
       - id: hepatomegaly
         question: "Is there hepatomegaly?"
+        variants:
+          - "Is the liver enlarged?"
+          - "Does the report describe hepatomegaly or an enlarged liver?"
       - id: hepatic_steatosis
         question: "Is hepatic steatosis, fatty liver, focal fatty infiltration suspected based on the imaging findings?"
+        variants:
+          - "Is the liver described as fatty or steatotic?"
+          - "Does the report describe hepatic steatosis, fatty liver, hepatic fat or focal fatty infiltration?"
         definition: "Fat infiltrates the liver, diffusely or focally."
         include_terms:
           - "hepatic steatosis"
@@ -64,8 +112,14 @@ categories:
         severity_scale: "generic"
       - id: cirrhosis
         question: "Is there cirrhosis?"
+        variants:
+          - "Is the liver described as cirrhotic?"
+          - "Does the report describe cirrhosis, a nodular hepatic contour or cirrhotic morphology?"
       - id: cirrhosis_portal_hypertension
         question: "Is there cirrhosis with portal hypertension?"
+        variants:
+          - "Is there portal hypertension in a cirrhotic liver?"
+          - "Does the report describe cirrhosis with portosystemic collaterals, varices, splenomegaly or a recanalised paraumbilical vein?"
         definition: "The report states portal hypertension alongside cirrhosis, or names one of its consequences: splenomegaly, varices, a recanalised paraumbilical vein."
         include_terms:
           - "portal hypertension"
@@ -73,24 +127,48 @@ categories:
           - "varices"
       - id: cirrhosis_with_decompensation
         question: "Is there cirrhosis with decompensation?"
+        variants:
+          - "Is the cirrhosis described as decompensated?"
+          - "Does the report describe decompensated cirrhosis or hepatic decompensation?"
         definition: "The report describes the cirrhosis as decompensated. Do not infer decompensation from a shrunken liver or from ascites."
         include_terms:
           - "decompensated cirrhosis"
           - "hepatic decompensation"
       - id: gastroesophageal_varices
         question: "Are there any esophageal or gastric varices?"
+        variants:
+          - "Are there dilated veins around the esophagus or the stomach?"
+          - "Does the report describe esophageal, gastric, paraesophageal or perigastric varices?"
       - id: polycystic_liver_disease
         question: "Is polycystic liver disease present?"
+        variants:
+          - "Are there innumerable cysts throughout the liver?"
+          - "Does the report describe polycystic liver disease?"
       - id: hepatic_abscess
         question: "Are there any hepatic abscesses?"
+        variants:
+          - "Does the report describe a rim-enhancing fluid collection in the liver?"
+          - "Is there a hepatic abscess or a pyogenic liver collection?"
       - id: hepatic_cysts_simple
         question: "Are there any hepatic cysts?"
+        variants:
+          - "Does the report describe a fluid-density cyst in the liver?"
+          - "Is there a hepatic cyst or a simple cyst in the liver?"
       - id: hepatic_hemangioma
         question: "Are there any hepatic hemangiomas?"
+        variants:
+          - "Does the report describe a hemangioma in the liver?"
+          - "Is there a hepatic hemangioma?"
       - id: hepatic_adenoma
         question: "Are there any hepatic adenomas?"
+        variants:
+          - "Does the report describe a hepatocellular adenoma?"
+          - "Is there a hepatic adenoma or a liver cell adenoma?"
       - id: hepatic_mass_indeterminate
         question: "Are there any hepatic masses?"
+        variants:
+          - "Does the report describe a solid liver lesion it does not characterise?"
+          - "Is there an indeterminate hepatic lesion or a solid hepatic lesion of unclear nature?"
         definition: "The report describes a solid hepatic lesion and does not characterise it. A cyst does not count. A lesion the report names has its own question: hemangioma, metastasis, hepatocellular carcinoma."
         include_terms:
           - "indeterminate hepatic lesion"
@@ -104,43 +182,94 @@ categories:
           - "hepatocellular carcinoma"
       - id: hepatocellular_carcinoma_hcc
         question: "Is there hepatocellular carcinoma?"
+        variants:
+          - "Does the report describe a primary liver cancer?"
+          - "Is there hepatocellular carcinoma, an HCC or a hepatoma?"
       - id: hepatic_metastases
         question: "Are there any hepatic metastases?"
+        variants:
+          - "Does the report describe metastatic deposits in the liver?"
+          - "Are there hepatic metastases or metastatic lesions in the liver?"
       - id: liver_laceration
         question: "Are there any liver lacerations?"
+        variants:
+          - "Does the report describe a tear or a traumatic injury of the hepatic parenchyma?"
+          - "Is there a liver laceration or a hepatic laceration?"
       - id: active_extravasation_liver
         question: "Are there any sites of active extravasation in the liver?"
+        variants:
+          - "Does the report describe active bleeding from the liver on contrast imaging?"
+          - "Is there contrast extravasation, active hemorrhage or a contrast blush in the liver?"
       - id: hepatic_changes_post_resection
         question: "Are there any hepatic changes post-resection?"
+        variants:
+          - "Has part of the liver been surgically removed?"
+          - "Does the report describe a hepatic resection, a partial hepatectomy or a segmentectomy?"
       - id: post_liver_transplant
         question: "Are there any hepatic changes post-transplantation?"
+        variants:
+          - "Is there a transplanted liver?"
+          - "Does the report describe a liver transplant or a hepatic allograft?"
       - id: portal_venous_occlusion_thrombosis
         question: "Is there portal venous occlusion?"
+        variants:
+          - "Is the portal vein occluded or thrombosed?"
+          - "Does the report describe portal vein thrombosis or thrombus in the portal vein?"
       - id: portal_venous_gas
         question: "Is there any portal venous gas?"
+        variants:
+          - "Is there gas in the portal veins?"
+          - "Does the report describe portal venous gas or air in the portal venous system?"
       
       
       - id: any_liver
         question: "Does the report describe any abnormality of the liver?"
+        variants:
+          - "Is anything abnormal described in the liver?"
+          - "Does the report record hepatic steatosis, a liver lesion, cirrhosis, hepatomegaly, injury or any other hepatic abnormality?"
   Gallbladder:
     description: "Gallbladder-related findings"
     questions:
       - id: gallbladder_stones
         question: "Are there any gallbladder stones or cholelithiasis?"
+        variants:
+          - "Does the report describe stones in the gallbladder?"
+          - "Is there cholelithiasis, a gallstone or a calculus in the gallbladder?"
       - id: gallbladder_surgically_absent
         question: "Is the gallbladder surgically absent?"
+        variants:
+          - "Has the gallbladder been removed?"
+          - "Does the report describe a cholecystectomy, an absent gallbladder or post-cholecystectomy change?"
       - id: choledochal_cysts
         question: "Are there any choledochal cysts?"
+        variants:
+          - "Is there a cystic dilation of the bile duct?"
+          - "Does the report describe a choledochal cyst or a congenital biliary cyst?"
       - id: acute_cholecystitis
         question: "Is there acute cholecystitis?"
+        variants:
+          - "Does the report describe acute inflammation of the gallbladder?"
+          - "Is there acute cholecystitis, acute calculous cholecystitis or acute acalculous cholecystitis?"
       - id: cholecystitis_with_rupture
         question: "Is there acute cholecystitis with rupture?"
+        variants:
+          - "Does the report describe a perforated or ruptured gallbladder?"
+          - "Is there gallbladder perforation or a wall defect with acute cholecystitis?"
       - id: emphysematous_cholecystitis
         question: "Is there emphysematous cholecystitis?"
+        variants:
+          - "Is there gas in the gallbladder wall or lumen with cholecystitis?"
+          - "Does the report describe emphysematous cholecystitis?"
       - id: porcelain_gallbladder
         question: "Is there porcelain gallbladder?"
+        variants:
+          - "Is the gallbladder wall calcified?"
+          - "Does the report describe a porcelain gallbladder or mural gallbladder calcification?"
       - id: pneumobilia
         question: "Is there pneumobilia?"
+        variants:
+          - "Is there gas in the biliary tree?"
+          - "Does the report describe pneumobilia, aerobilia or air in the bile ducts?"
         definition: "Gas lies in the biliary tree: the intrahepatic ducts, the extrahepatic ducts, or the gallbladder."
         include_terms:
           - "pneumobilia"
@@ -149,6 +278,9 @@ categories:
           - "aerobilia"
       - id: gallbladder_wall_thickening
         question: "Is there gallbladder wall thickening?"
+        variants:
+          - "Is the gallbladder wall diffusely thickened?"
+          - "Does the report describe gallbladder wall thickening or a thickened gallbladder wall?"
         definition: "The gallbladder wall is diffusely thickened. Focal thickening with the features of adenomyomatosis has its own question."
         include_terms:
           - "gallbladder wall thickening"
@@ -159,6 +291,9 @@ categories:
         severity_scale: "generic"
       - id: gallbladder_adenomyomatosis
         question: "Is there gallbladder adenomyomatosis?"
+        variants:
+          - "Does the report describe intramural diverticula or Rokitansky-Aschoff sinuses in the gallbladder wall?"
+          - "Is there adenomyomatosis or adenomyomatous change of the gallbladder?"
         definition: "The gallbladder wall is thickened and contains intramural diverticula or Rokitansky-Aschoff sinuses, at the fundus or in the mid-body."
         include_terms:
           - "adenomyomatosis"
@@ -166,14 +301,23 @@ categories:
           - "Rokitansky-Aschoff"
       - id: gallbladder_cancer
         question: "Is there gallbladder cancer?"
+        variants:
+          - "Does the report describe a malignant mass of the gallbladder?"
+          - "Is there gallbladder carcinoma or a gallbladder neoplasm?"
 
       - id: any_gallbladder
         question: "Does the report describe any abnormality of the gallbladder?"
+        variants:
+          - "Is anything abnormal described in the gallbladder?"
+          - "Does the report record gallstones, wall thickening, inflammation, a polyp, a mass or any other gallbladder abnormality?"
   Genitourinary:
     description: "Kidney and urinary tract findings"
     questions:
       - id: hydronephrosis
         question: "Is there hydronephrosis?"
+        variants:
+          - "Is the renal pelvis or are the calyces dilated?"
+          - "Does the report describe hydronephrosis, hydroureteronephrosis, pelvicaliectasis or caliectasis?"
         definition: "The renal collecting system is dilated: the pelvis, the calyces, or both. A dilated ureter beside a normal pelvis and normal calyces does not count, and hydroureteronephrosis does."
         include_terms:
           - "hydronephrosis"
@@ -187,10 +331,19 @@ categories:
         severity_scale: "hydronephrosis_sfu"
       - id: renal_hypodensities
         question: "Are there any renal hypodensities?"
+        variants:
+          - "Does the report describe a low-density renal lesion it does not characterise?"
+          - "Are there renal hypodensities or hypodense renal lesions too small to characterise?"
       - id: simple_renal_cysts
         question: "Are there any simple renal cysts?"
+        variants:
+          - "Does the report describe a thin-walled fluid-density renal cyst?"
+          - "Is there a simple renal cyst or a benign renal cyst?"
       - id: complex_renal_cyst
         question: "Are there any complex renal cysts?"
+        variants:
+          - "Does the report describe a renal cyst with septations, calcification, a thickened wall or solid elements?"
+          - "Is there a complex renal cyst, a septated or multiloculated renal cyst or a Bosniak IIF, III or IV lesion?"
         definition: "A renal cyst shows internal complexity: septations, multiple locules, a thickened or enhancing wall, calcification, or solid elements. Bosniak IIF and above."
         include_terms:
           - "complex cyst"
@@ -203,10 +356,19 @@ categories:
         severity_scale: "bosniak"
       - id: renal_abscess
         question: "Are there any renal abscesses?"
+        variants:
+          - "Does the report describe a rim-enhancing fluid collection in a kidney?"
+          - "Is there a renal abscess or a perinephric abscess?"
       - id: xgp
         question: "Is there xanthogranulomatous pyelonephritis?"
+        variants:
+          - "Does the report describe a chronically obstructed kidney replaced by inflammatory tissue around stones?"
+          - "Is there xanthogranulomatous pyelonephritis or XGP?"
       - id: renal_stones_nephrolithiasis
         question: "Are there any renal stones / nephrolithiasis?"
+        variants:
+          - "Is there a calculus in a kidney or in the renal pelvis?"
+          - "Does the report describe nephrolithiasis, a renal calculus or a kidney stone?"
         definition: "A calculus in the kidney, including the renal pelvis. A stone in a ureter or in the bladder has its own question."
         include_terms:
           - "nephrolithiasis"
@@ -219,6 +381,9 @@ categories:
           - "bladder stone"
       - id: ureteral_stones
         question: "Are there any ureteral stones?"
+        variants:
+          - "Is there a calculus in a ureter?"
+          - "Does the report describe ureterolithiasis, a ureteric calculus or a stone at the ureterovesical junction?"
         definition: "A calculus in a ureter, at any level including the ureterovesical junction."
         include_terms:
           - "ureteral stone"
@@ -231,6 +396,9 @@ categories:
           - "bladder stone"
       - id: bladder_stones
         question: "Are there any bladder stones?"
+        variants:
+          - "Is there a calculus in the bladder?"
+          - "Does the report describe a bladder stone or a vesical calculus?"
         definition: "A calculus in the bladder, including one in a bladder diverticulum. A stone at the ureterovesical junction counts as ureteral."
         include_terms:
           - "bladder stone"
@@ -242,8 +410,14 @@ categories:
           - "renal stone"
       - id: nephrocalcinosis
         question: "Is there nephrocalcinosis?"
+        variants:
+          - "Is there calcification in the renal parenchyma?"
+          - "Does the report describe nephrocalcinosis or medullary or cortical renal calcification?"
       - id: polycystic_kidney_disease
         question: "Is there polycystic kidney disease?"
+        variants:
+          - "Are there innumerable bilateral renal cysts replacing the parenchyma?"
+          - "Does the report describe polycystic kidney disease or ADPKD?"
         definition: "The report states polycystic kidney disease, or describes innumerable bilateral cysts replacing the renal parenchyma. A few cysts in each kidney do not count."
         include_terms:
           - "polycystic kidney"
@@ -254,14 +428,29 @@ categories:
           - "multiple renal cysts"
       - id: horseshoe_kidney
         question: "Is there horseshoe kidney?"
+        variants:
+          - "Are the kidneys fused across the midline?"
+          - "Does the report describe a horseshoe kidney or a renal fusion anomaly?"
       - id: ureteroceles
         question: "Are there any ureteroceles?"
+        variants:
+          - "Is the distal ureter dilated within the bladder wall?"
+          - "Does the report describe a ureterocele?"
       - id: renal_cell_carcinoma_rcc
         question: "Are there any renal cell carcinomas?"
+        variants:
+          - "Does the report describe a solid enhancing renal mass?"
+          - "Is there a renal cell carcinoma or an RCC?"
       - id: renal_lymphoma
         question: "Is there renal lymphomas?"
+        variants:
+          - "Does the report describe lymphomatous involvement of a kidney?"
+          - "Is there renal lymphoma?"
       - id: angiomyolipoma_aml
         question: "Are there any angiomyolipomas?"
+        variants:
+          - "Does the report describe a fat-containing renal lesion?"
+          - "Is there a renal angiomyolipoma or an AML?"
         definition: "A fat-containing lesion, almost always in the kidney and rarely in the liver. An adrenal myelolipoma is a different lesion in a different organ and has its own question."
         include_terms:
           - "angiomyolipoma"
@@ -273,26 +462,53 @@ categories:
           - "adrenal myelolipoma"
       - id: bladder_tcc
         question: "Are there any bladder transitional cell carcinomas?"
+        variants:
+          - "Does the report describe a mass arising from the bladder wall?"
+          - "Is there a transitional cell carcinoma, a urothelial carcinoma or a bladder tumour?"
       - id: post_nephrectomy
         question: "Are there any post-nephrectomy changes?"
+        variants:
+          - "Is a kidney surgically absent?"
+          - "Does the report describe a nephrectomy or a partial nephrectomy?"
       - id: post_renal_transplant
         question: "Are there any post-renal transplantation changes?"
+        variants:
+          - "Is there a transplanted kidney?"
+          - "Does the report describe a renal allograft or post-transplantation change in an iliac fossa?"
       - id: renal_subcapsular_hemorrhage
         question: "Are there any subcapsular hemorrhages?"
+        variants:
+          - "Is there blood under the renal capsule?"
+          - "Does the report describe a renal subcapsular hematoma?"
       - id: renal_laceration
         question: "Are there any renal lacerations?"
+        variants:
+          - "Does the report describe a tear or a traumatic injury of the renal parenchyma?"
+          - "Is there a renal laceration or a renal fracture?"
       - id: bladder_rupture
         question: "Is there bladder rupture?"
+        variants:
+          - "Is the bladder wall disrupted with extravasation of urine?"
+          - "Does the report describe bladder rupture, bladder perforation or a bladder injury?"
 
       - id: any_kidneys
         question: "Does the report describe any abnormality of the kidneys?"
+        variants:
+          - "Is anything abnormal described in either kidney?"
+          - "Does the report record a renal cyst, mass, stone, hydronephrosis, scarring, injury or any other renal abnormality?"
       - id: any_urinary_tract
         question: "Does the report describe any abnormality of the ureters or bladder?"
+        variants:
+          - "Is anything abnormal described in the ureters or the bladder?"
+          - "Does the report record ureteral dilation, a ureteral or bladder stone, bladder wall thickening, a bladder mass or any other abnormality there?"
   Adrenal gland:
     description: "Adrenal gland findings"
     questions:
       - id: adrenal_myelolipoma
         question: "Are there any adrenal myelolipomas?"
+        variants:
+          - "Does the report describe a fat-containing lesion in an adrenal gland?"
+          - "Is there an adrenal myelolipoma?"
         definition: "A fat-containing lesion in an adrenal gland. A renal angiomyolipoma has its own question, and a soft-tissue myolipoma is a third lesion again."
         include_terms:
           - "myelolipoma"
@@ -303,37 +519,60 @@ categories:
 
       - id: any_adrenals
         question: "Does the report describe any abnormality of the adrenal glands?"
+        variants:
+          - "Is anything abnormal described in either adrenal gland?"
+          - "Does the report record an adrenal nodule, mass, thickening, hemorrhage or any other adrenal abnormality?"
   Gastrointestinal:
     description: "Gastrointestinal findings"
     questions:
       - id: appendicitis
         question: "Is appendicitis suspected based on the imaging findings?"
+        variants:
+          - "Does the report describe an inflamed appendix?"
+          - "Is there appendicitis or periappendiceal inflammatory change?"
       - id: bowel_obstruction
         question: "Is bowel obstruction present?"
         variants:
           - "Is there bowel obstruction?"
+          - "Does the report describe dilated bowel loops with a transition point or a mechanical obstruction?"
       - id: hiatal_hernia
         question: "Is hiatal hernia present?"
         variants:
           - "Is there hiatal hernia?"
+          - "Does the report describe gastric herniation through the diaphragmatic hiatus?"
       - id: ileus
         question: "Is there ileus?"
+        variants:
+          - "Does the report describe adynamic or paralytic bowel?"
+          - "Is there ileus, adynamic ileus or non-obstructive bowel dilation?"
       - id: inguinal_hernias
         question: "Are there any inguinal hernias?"
+        variants:
+          - "Does the report describe a hernia in the groin?"
+          - "Is there an inguinal hernia or an inguinoscrotal hernia?"
 
       - id: any_bowel
         question: "Does the report describe any abnormality of the stomach or bowel?"
+        variants:
+          - "Is anything abnormal described in the stomach, the small bowel or the colon?"
+          - "Does the report record bowel wall thickening, obstruction, dilated loops, inflammation, a mass or any other gastrointestinal abnormality?"
   Device:
     description: "Medical devices/hardware/implants"
     questions:
       - id: intra_uterine_devices
         question: "Are there any intra-uterine devices?"
+        variants:
+          - "Is an IUD described in the uterus?"
+          - "Does the report record an intrauterine contraceptive device?"
 
   Peritoneum:
     description: "Peritoneal cavity findings"
     questions:
       - id: ascites
         question: "Is there any ascites?"
+        variants:
+          - "Does the report describe ascites?"
+          - "Is there ascitic fluid or chronic non-hemorrhagic free peritoneal fluid?"
         definition: "Free peritoneal fluid that the report does not call blood: the chronic kind, from cirrhosis, malignancy or heart failure. Free blood answers the hemoperitoneum question, and fluid the report leaves uncharacterised answers the umbrella question."
         include_terms:
           - "ascites"
@@ -344,6 +583,9 @@ categories:
         severity_scale: "volume"
       - id: free_air_pneumoperitoneum
         question: "Is there any free air or pneumoperitoneum?"
+        variants:
+          - "Is there gas outside the bowel lumen in the peritoneal cavity?"
+          - "Does the report describe pneumoperitoneum, free intraperitoneal air or mesenteric free air?"
         definition: "Gas lies outside the bowel lumen, in the peritoneal cavity. Gas confined to the mesentery counts."
         include_terms:
           - "pneumoperitoneum"
@@ -353,8 +595,14 @@ categories:
         severity_scale: "volume"
       - id: pseudomyxoma_peritonei
         question: "Is there pseudomyxoma peritonei?"
+        variants:
+          - "Does the report describe gelatinous mucinous material filling the peritoneal cavity?"
+          - "Is there pseudomyxoma peritonei or mucinous ascites?"
       - id: peritoneal_carcinomatosis
         question: "Is there peritoneal carcinomatosis or omental caking?"
+        variants:
+          - "Does the report describe tumour deposits on the peritoneum?"
+          - "Is there peritoneal carcinomatosis, peritoneal implants or peritoneal nodularity?"
         definition: "Tumour deposits stud the peritoneum as nodules or plaques. Omental caking has its own question as of this round."
         include_terms:
           - "peritoneal carcinomatosis"
@@ -365,6 +613,9 @@ categories:
 
       - id: free_intraperitoneal_fluid
         question: "Is there any free intraperitoneal fluid?"
+        variants:
+          - "Does the report describe free fluid in the abdomen or the pelvis?"
+          - "Is there fluid in Morison's pouch, perihepatic, perisplenic or in the pelvic cul-de-sac?"
         definition: "Fluid lies free in the peritoneal cavity, whatever the report calls it: blood, ascites, bile, urine, enteric content, or fluid it leaves uncharacterised. Any of those answers Yes."
         include_terms:
           - "free fluid"
@@ -380,6 +631,9 @@ categories:
         severity_scale: "volume"
       - id: hemoperitoneum
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
+        variants:
+          - "Does the report describe blood in the peritoneal cavity?"
+          - "Is there hemoperitoneum, hemorrhagic free fluid, high-density free fluid or a sentinel clot?"
         definition: "The report calls the free intraperitoneal fluid blood -- by that word, by its density, or by the injury it attributes the fluid to. Fluid the report leaves uncharacterised answers the umbrella question instead."
         include_terms:
           - "hemoperitoneum"
@@ -396,32 +650,56 @@ categories:
         severity_scale: "volume"
       - id: any_peritoneum
         question: "Does the report describe any abnormality of the peritoneal cavity?"
+        variants:
+          - "Is anything abnormal described in the peritoneal cavity?"
+          - "Does the report record free fluid, free air, peritoneal thickening, a peritoneal deposit or any other abnormality there?"
   Great Vessel:
     description: "Vascular findings in the abdomen"
     questions:
       - id: abdominal_aortic_aneurysm_aaa
         question: "Is abdominal aortic aneurysm suspected based on the imaging findings?"
+        variants:
+          - "Is the abdominal aorta aneurysmally dilated?"
+          - "Does the report describe an abdominal aortic aneurysm or an AAA?"
       - id: aortic_atherosclerosis
         question: "Is aortic atherosclerosis suspected based on the imaging findings?"
+        variants:
+          - "Is the aortic wall atherosclerotic or calcified?"
+          - "Does the report describe aortic atherosclerosis, aortic calcification or atherosclerotic plaque in the aorta?"
 
       - id: any_great_vessels
         question: "Does the report describe any abnormality of the aorta or its branches?"
+        variants:
+          - "Is anything abnormal described in the aorta or its branches?"
+          - "Does the report record aortic dilation, atherosclerosis, dissection, thrombus, stenosis or any other abnormality there?"
   Retroperitoneum:
     description: "Retroperitoneal space findings"
     questions:
       - id: lymphadenopathy
         question: "Is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?"
+        variants:
+          - "Are there enlarged lymph nodes in the abdomen or the pelvis?"
+          - "Does the report describe lymphadenopathy or prominent nodes in the retroperitoneum, the peritoneum or the pelvis?"
       - id: retroperitoneal_hemorrhage
         question: "Is there retroperitoneal hemorrhage or retroperitoneal hematomas?"
+        variants:
+          - "Is there blood in the retroperitoneum?"
+          - "Does the report describe a retroperitoneal hematoma or retroperitoneal hemorrhage?"
       
 
       - id: any_retroperitoneum
         question: "Does the report describe any abnormality of the retroperitoneum?"
+        variants:
+          - "Is anything abnormal described in the retroperitoneum?"
+          - "Does the report record retroperitoneal fluid, hemorrhage, lymphadenopathy, fibrosis, a mass or any other retroperitoneal abnormality?"
   Multi Organs:
     description: "Findings affecting multiple organ systems"
     questions:
       - id: metastatic_disease_general
         question: "Is metastatic disease suspected based on the imaging findings?"
+        variants:
+          - "Does the report describe metastatic disease anywhere in the imaged volume?"
+          - "Are there metastases, metastatic deposits or secondary deposits?"
         definition: "The report describes metastatic disease anywhere in the imaged volume, by that word or by naming a lesion a metastasis."
         include_terms:
           - "metastatic"
@@ -431,6 +709,9 @@ categories:
           - "secondary deposits"
       - id: anasarca
         question: "Is anasarca suspected based on the imaging findings?"
+        variants:
+          - "Is there generalised subcutaneous oedema?"
+          - "Does the report describe anasarca, diffuse subcutaneous oedema or third spacing?"
         definition: "The report describes subcutaneous oedema as generalised, diffuse or third-spaced."
         include_terms:
           - "anasarca"
@@ -444,14 +725,23 @@ categories:
     questions:
       - id: prostatomegaly_bph
         question: "Is there prostatomegaly or prostatic hyperplasia?"
+        variants:
+          - "Is the prostate enlarged?"
+          - "Does the report describe prostatomegaly, benign prostatic hyperplasia or BPH?"
 
       - id: any_male_pelvis
         question: "Does the report describe any abnormality of the prostate or scrotum?"
+        variants:
+          - "Is anything abnormal described in the prostate or the scrotum?"
+          - "Does the report record prostatic enlargement, a prostatic mass, a testicular or scrotal abnormality or any other abnormality there?"
   Female pelvis:
     description: "Female pelvic findings"
     questions:
       - id: uterine_leiomyomas_fibroids
         question: "Are there any leiomyomas?"
+        variants:
+          - "Does the report describe a uterine fibroid or myoma?"
+          - "Is there a leiomyoma, a leiomyomatous uterus or a broad ligament myoma?"
         definition: "A benign smooth-muscle tumour of the uterus, under any of its names."
         include_terms:
           - "leiomyoma"
@@ -463,30 +753,54 @@ categories:
         severity_scale: "generic"
       - id: post_hysterectomy
         question: "Are there changes status post hysterectomy?"
+        variants:
+          - "Is the uterus surgically absent?"
+          - "Does the report describe a prior hysterectomy, an absent uterus or a vaginal cuff?"
   
 
       - id: any_female_pelvis
         question: "Does the report describe any abnormality of the uterus, ovaries or adnexa?"
+        variants:
+          - "Is anything abnormal described in the uterus, the ovaries or the adnexa?"
+          - "Does the report record a uterine, ovarian or adnexal mass, cyst, enlargement or any other abnormality there?"
   Musculoskeletal:
     description: "Musculoskeletal findings"
     questions:
       - id: fractures_general
         question: "Are there any fractures (general)?"
+        variants:
+          - "Is any bone fractured?"
+          - "Does the report describe a fracture at any site, acute or healing?"
       - id: rib_fractures
         question: "Are there any rib fractures?"
+        variants:
+          - "Is any rib fractured?"
+          - "Does the report describe a rib fracture, acute or healed?"
       
 
       - id: any_musculoskeletal
         question: "Does the report describe any abnormality of the bones or body wall?"
+        variants:
+          - "Is anything abnormal described in the bones or the body wall?"
+          - "Does the report record a fracture, a bone lesion, degenerative change, a body wall hernia or any other musculoskeletal abnormality?"
   Visible Thoracic:
     description: "Findings visible in the lower thorax"
     questions:
       - id: atelectasis
         question: "Is there any atelectasis in the visible lung?"
+        variants:
+          - "Is there collapsed lung at the imaged lung bases?"
+          - "Does the report describe atelectasis, subsegmental atelectasis or basilar collapse?"
       - id: pleural_effusion
         question: "Is there any pleural effusion?"
+        variants:
+          - "Is there fluid in a pleural space?"
+          - "Does the report describe a pleural effusion or pleural fluid?"
       - id: cardiomegaly
         question: "Is there cardiomegaly?"
+        variants:
+          - "Is the heart enlarged overall?"
+          - "Does the report describe cardiomegaly, an enlarged heart or cardiac enlargement?"
         definition: "The heart is enlarged overall. One enlarged chamber does not count."
         include_terms:
           - "cardiomegaly"
@@ -498,9 +812,21 @@ categories:
           - "ventricular hypertrophy"
       - id: consolidation
         question: "Is there any consolidation?"
+        variants:
+          - "Is there airspace opacification in the visible lung?"
+          - "Does the report describe consolidation or a dense airspace opacity at a lung base?"
       - id: lung_mass_or_nodule
         question: "Are there any lung masses or nodules?"
+        variants:
+          - "Is there a nodule or a mass in the visible lung?"
+          - "Does the report describe a pulmonary nodule or a lung mass?"
       - id: any_pericardium
         question: "Does the report describe any abnormality of the pericardium?"
+        variants:
+          - "Is anything abnormal described in the pericardium?"
+          - "Does the report record a pericardial effusion, pericardial thickening, pericardial calcification or any other pericardial abnormality?"
       - id: any_pleura
         question: "Does the report describe any abnormality of the pleural spaces or lung bases?"
+        variants:
+          - "Is anything abnormal described in the pleural spaces or the lung bases?"
+          - "Does the report record a pleural effusion, pleural thickening, atelectasis, consolidation, a nodule or any other abnormality there?"
