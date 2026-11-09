@@ -12,6 +12,8 @@ move by accident.
 
 # Standard libraries
 import hashlib
+import json
+import re
 from pathlib import Path
 
 # Non-standard libraries
@@ -44,12 +46,31 @@ ABDOMEN = ROOT / "config" / "modalities" / "abdomen_ct.yaml"
 FAST_ABDOMEN = ROOT / "config" / "modalities" / "fast_abdomen_ct.yaml"
 
 
+LOCK_PATH = ROOT / "config" / "modalities" / "fast_abdomen_ct.lock.json"
+LOCK = json.loads(LOCK_PATH.read_text())
+
+
 def questions_of(path):
     """Yield (category, question text) for every entry in a modality config."""
     config = yaml.safe_load(Path(path).read_text())
     for category, body in config["categories"].items():
         for entry in body.get("questions", []):
             yield category, entry["question"]
+
+
+def entries_of(path):
+    """Yield (category, entry) for a config with authored ids."""
+    config = yaml.safe_load(Path(path).read_text())
+    for category, body in config["categories"].items():
+        for entry in body.get("questions", []):
+            yield category, entry
+
+
+def wordings_of(path):
+    """Yield every wording in a config, canonical and variant alike."""
+    for _, entry in entries_of(path):
+        yield entry["question"]
+        yield from entry.get("variants", [])
 
 
 def test_a_modality_config_exists():
@@ -59,13 +80,18 @@ def test_a_modality_config_exists():
 
 @pytest.mark.parametrize("path", MODALITIES)
 def test_every_config_parses_and_has_the_documented_shape(path):
-    """`categories` maps a name to a body, and every entry has a question."""
+    """`categories` maps a name to a body, and every entry has a question.
+
+    `fast_abdomen_ct.yaml` is the one config with authored ids and variants, so
+    it allows two more keys. Every other file still has `question` alone.
+    """
+    allowed = {"question", "id", "variants"} if path == FAST_ABDOMEN else {"question"}
     config = yaml.safe_load(path.read_text())
     assert "categories" in config, "the loader asserts this key and nothing else"
     for category, body in config["categories"].items():
         assert isinstance(category, str) and category
         for entry in body.get("questions", []):
-            assert set(entry) == {"question"}, f"unexpected keys in {category}: {set(entry)}"
+            assert set(entry) <= allowed, f"unexpected keys in {category}: {set(entry)}"
             assert entry["question"].strip(), "a question may not be blank"
 
 
@@ -99,13 +125,28 @@ def test_one_question_is_asked_under_two_categories():
     assert categories == {"Device", "Great Vessel"}
 
 
-def test_the_fast_config_asks_the_same_questions_as_the_abdomen_one():
-    """The two files differ only in the `modality` label today.
+def test_the_fast_config_asks_a_subset_of_the_abdomen_questions():
+    """Every FAST wording is one of the abdomen set's, byte for byte.
 
-    `fast_abdomen_ct.yaml` is this project's copy to diverge; until it does,
-    an edit to one and not the other is a silent inconsistency.
+    The FAST config is generated from `abdomen_ct.yaml` by dropping questions
+    and grouping two duplicate wordings, never by rewriting text. A wording
+    that drifted by a character would answer a different question while
+    appearing to answer this one.
     """
-    assert sorted(questions_of(ABDOMEN)) == sorted(questions_of(FAST_ABDOMEN))
+    abdomen = {question for _, question in questions_of(ABDOMEN)}
+    assert set(wordings_of(FAST_ABDOMEN)) <= abdomen
+
+
+def test_the_fast_config_accounts_for_every_abdomen_question():
+    """A question is either asked here or recorded as retired in the lock.
+
+    So a later tier move can find the wording it needs instead of digging it
+    out of the history.
+    """
+    abdomen = {question for _, question in questions_of(ABDOMEN)}
+    retired = {entry["question"] for entry in LOCK["retired"]}
+    assert set(wordings_of(FAST_ABDOMEN)) | retired == abdomen
+    assert not set(wordings_of(FAST_ABDOMEN)) & retired, "a question is both kept and retired"
 
 
 def test_question_id_is_the_md5_prefix(tmp_path):
@@ -133,3 +174,67 @@ def test_the_questions_stage_writes_the_columns_the_sheets_read():
     config = STAGE_CONFIGS["questions"]
     assert config["columns"] == ["report_id", "category", "question_id", "question", "answer"]
     assert config["request_id_pattern"] == "{report_id}_{category}_{question_id}"
+
+
+class TestTheFastConfigAndItsLock:
+    """The FAST set is generated, so the lock file is what proves it."""
+
+    def test_every_entry_has_an_authored_id(self):
+        """An id outlives a rewording, where an md5 of the text does not."""
+        for category, entry in entries_of(FAST_ABDOMEN):
+            assert "id" in entry, f"an entry under {category} has no id"
+            assert re.fullmatch(r"[a-z0-9_]+", entry["id"]), f"{entry['id']!r} is not a slug"
+
+    def test_the_ids_are_unique(self):
+        identifiers = [entry["id"] for _, entry in entries_of(FAST_ABDOMEN)]
+        assert len(identifiers) == len(set(identifiers))
+
+    def test_the_lock_names_the_same_findings_as_the_config(self):
+        from_config = {entry["id"] for _, entry in entries_of(FAST_ABDOMEN)}
+        assert from_config == set(LOCK["findings"])
+
+    def test_the_lock_records_each_wording_and_its_md5(self):
+        """The md5 is no longer an identifier, but it still joins to the
+        extraction that ran before the ids existed."""
+        for identifier, body in LOCK["findings"].items():
+            for variant in body["variants"]:
+                expected = hashlib.md5(variant["question"].encode("utf-8")).hexdigest()[:8]
+                assert variant["md5"] == expected, f"{identifier} v{variant['index']}"
+
+    def test_the_lock_agrees_with_the_config_on_every_wording(self):
+        for category, entry in entries_of(FAST_ABDOMEN):
+            body = LOCK["findings"][entry["id"]]
+            assert body["category"] == category
+            wordings = [entry["question"], *entry.get("variants", [])]
+            assert [v["question"] for v in body["variants"]] == wordings
+            assert [v["index"] for v in body["variants"]] == list(range(len(wordings)))
+
+    def test_the_question_set_digest_matches_the_config(self):
+        """The digest is what a downstream project compares, so it has to be
+        a function of the wordings and nothing else."""
+        pairs = sorted(
+            (identifier, variant["index"], variant["question"])
+            for identifier, body in LOCK["findings"].items()
+            for variant in body["variants"]
+        )
+        expected = hashlib.sha256(str(pairs).encode()).hexdigest()[:16]
+        assert LOCK["digest"]["question_set"] == expected
+
+    def test_the_two_duplicate_wordings_are_grouped_as_variants(self):
+        """RATE asked these twice. Grouping them gives a vote for free."""
+        grouped = {i: b for i, b in LOCK["findings"].items() if len(b["variants"]) > 1}
+        assert set(grouped) == {"bowel_obstruction", "hiatal_hernia"}
+        for body in grouped.values():
+            assert len(body["variants"]) == 2
+
+    def test_the_covariates_are_marked_and_counted(self):
+        """Tier C questions kept to explain the sweep's mistakes, never labels."""
+        covariates = [i for i, b in LOCK["findings"].items() if b["covariate"]]
+        assert len(covariates) == 8
+
+    def test_the_set_is_the_size_the_plan_fixed(self):
+        """91 findings over 93 wordings: 83 visible with a positive, 8 covariates."""
+        findings = LOCK["findings"]
+        wordings = sum(len(b["variants"]) for b in findings.values())
+        assert len(findings) == 91
+        assert wordings == 93

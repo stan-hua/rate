@@ -1,0 +1,1689 @@
+{
+  "digest": {
+    "file": "23149d889fa34860",
+    "question_set": "29990f8325432693"
+  },
+  "findings": {
+    "abdominal_aortic_aneurysm_aaa": {
+      "category": "Great Vessel",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "49f3e631",
+          "question": "Is abdominal aortic aneurysm suspected based on the imaging findings?"
+        }
+      ]
+    },
+    "accessory_spleen": {
+      "category": "Spleen",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "d711c673",
+          "question": "Are there any accessory spleens?"
+        }
+      ]
+    },
+    "active_extravasation_liver": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "67a19c0b",
+          "question": "Are there any sites of active extravasation in the liver?"
+        }
+      ]
+    },
+    "acute_cholecystitis": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "78df7673",
+          "question": "Is there acute cholecystitis?"
+        }
+      ]
+    },
+    "acute_pancreatitis": {
+      "category": "Pancreas",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "32315c35",
+          "question": "Is there acute pancreatitis?"
+        }
+      ]
+    },
+    "adrenal_myelolipoma": {
+      "category": "Adrenal gland",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "19fd1e72",
+          "question": "Are there any adrenal myelolipomas?"
+        }
+      ]
+    },
+    "anasarca": {
+      "category": "Multi Organs",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "c638bfa1",
+          "question": "Is anasarca suspected based on the imaging findings?"
+        }
+      ]
+    },
+    "angiomyolipoma_aml": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "b1a768cb",
+          "question": "Are there any angiomyolipomas?"
+        }
+      ]
+    },
+    "aortic_atherosclerosis": {
+      "category": "Great Vessel",
+      "covariate": true,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "744f1292",
+          "question": "Is aortic atherosclerosis suspected based on the imaging findings?"
+        }
+      ]
+    },
+    "appendicitis": {
+      "category": "Gastrointestinal",
+      "covariate": true,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "9c951e5e",
+          "question": "Is appendicitis suspected based on the imaging findings?"
+        }
+      ]
+    },
+    "ascites": {
+      "category": "Peritoneum",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "b7881e53",
+          "question": "Is there any ascites?"
+        }
+      ]
+    },
+    "atelectasis": {
+      "category": "Visible Thoracic",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "547d04f7",
+          "question": "Is there any atelectasis in the visible lung?"
+        }
+      ]
+    },
+    "bladder_rupture": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "5188cec7",
+          "question": "Is there bladder rupture?"
+        }
+      ]
+    },
+    "bladder_stones": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "06b82428",
+          "question": "Are there any bladder stones?"
+        }
+      ]
+    },
+    "bladder_tcc": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "7500f3a4",
+          "question": "Are there any bladder transitional cell carcinomas?"
+        }
+      ]
+    },
+    "bowel_obstruction": {
+      "category": "Gastrointestinal",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "4a90833b",
+          "question": "Is bowel obstruction present?"
+        },
+        {
+          "index": 1,
+          "md5": "b663a284",
+          "question": "Is there bowel obstruction?"
+        }
+      ]
+    },
+    "cardiomegaly": {
+      "category": "Visible Thoracic",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "5671019d",
+          "question": "Is there cardiomegaly?"
+        }
+      ]
+    },
+    "cholecystitis_with_rupture": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "47e91cce",
+          "question": "Is there acute cholecystitis with rupture?"
+        }
+      ]
+    },
+    "choledochal_cysts": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "20d63122",
+          "question": "Are there any choledochal cysts?"
+        }
+      ]
+    },
+    "cirrhosis": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "ef2501cd",
+          "question": "Is there cirrhosis?"
+        }
+      ]
+    },
+    "cirrhosis_portal_hypertension": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "9ac651fe",
+          "question": "Is there cirrhosis with portal hypertension?"
+        }
+      ]
+    },
+    "cirrhosis_with_decompensation": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "b482ebca",
+          "question": "Is there cirrhosis with decompensation?"
+        }
+      ]
+    },
+    "complex_renal_cyst": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "d63e0191",
+          "question": "Are there any complex renal cysts?"
+        }
+      ]
+    },
+    "consolidation": {
+      "category": "Visible Thoracic",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "fb482273",
+          "question": "Is there any consolidation?"
+        }
+      ]
+    },
+    "emphysematous_cholecystitis": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "73ab74fc",
+          "question": "Is there emphysematous cholecystitis?"
+        }
+      ]
+    },
+    "epithelial_splenic_cysts": {
+      "category": "Spleen",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "8c87eb26",
+          "question": "Are there any epithelial cysts?"
+        }
+      ]
+    },
+    "extrahepatic_duct_dilation": {
+      "category": "Biliary Tree",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "49e69866",
+          "question": "is there any extrahepatic biliary ductal dilation?"
+        }
+      ]
+    },
+    "fractures_general": {
+      "category": "Musculoskeletal",
+      "covariate": true,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "d45e8d5d",
+          "question": "Are there any fractures (general)?"
+        }
+      ]
+    },
+    "free_air_pneumoperitoneum": {
+      "category": "Peritoneum",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "b6ed3a95",
+          "question": "Is there any free air or pneumoperitoneum?"
+        }
+      ]
+    },
+    "gallbladder_adenomyomatosis": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "c82d4475",
+          "question": "Is there gallbladder adenomyomatosis?"
+        }
+      ]
+    },
+    "gallbladder_cancer": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "61272100",
+          "question": "Is there gallbladder cancer?"
+        }
+      ]
+    },
+    "gallbladder_stones": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "ec986e46",
+          "question": "Are there any gallbladder stones or cholelithiasis?"
+        }
+      ]
+    },
+    "gallbladder_surgically_absent": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "71831878",
+          "question": "Is the gallbladder surgically absent?"
+        }
+      ]
+    },
+    "gallbladder_wall_thickening": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "3b06d084",
+          "question": "Is there gallbladder wall thickening?"
+        }
+      ]
+    },
+    "gastroesophageal_varices": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "7f07c142",
+          "question": "Are there any esophageal or gastric varices?"
+        }
+      ]
+    },
+    "hepatic_abscess": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "1bfa47d6",
+          "question": "Are there any hepatic abscesses?"
+        }
+      ]
+    },
+    "hepatic_adenoma": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "375d9900",
+          "question": "Are there any hepatic adenomas?"
+        }
+      ]
+    },
+    "hepatic_changes_post_resection": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "e267add5",
+          "question": "Are there any hepatic changes post-resection?"
+        }
+      ]
+    },
+    "hepatic_cysts_simple": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "67290004",
+          "question": "Are there any hepatic cysts?"
+        }
+      ]
+    },
+    "hepatic_hemangioma": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "ab943a30",
+          "question": "Are there any hepatic hemangiomas?"
+        }
+      ]
+    },
+    "hepatic_mass_indeterminate": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "2a655638",
+          "question": "Are there any hepatic masses?"
+        }
+      ]
+    },
+    "hepatic_metastases": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "546a5680",
+          "question": "Are there any hepatic metastases?"
+        }
+      ]
+    },
+    "hepatic_steatosis": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "63f3bc5e",
+          "question": "Is hepatic steatosis, fatty liver, focal fatty infiltration suspected based on the imaging findings?"
+        }
+      ]
+    },
+    "hepatocellular_carcinoma_hcc": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "af006ec0",
+          "question": "Is there hepatocellular carcinoma?"
+        }
+      ]
+    },
+    "hepatomegaly": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "2c75a192",
+          "question": "Is there hepatomegaly?"
+        }
+      ]
+    },
+    "hiatal_hernia": {
+      "category": "Gastrointestinal",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "37e09710",
+          "question": "Is hiatal hernia present?"
+        },
+        {
+          "index": 1,
+          "md5": "e910ef5b",
+          "question": "Is there hiatal hernia?"
+        }
+      ]
+    },
+    "horseshoe_kidney": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "fe093963",
+          "question": "Is there horseshoe kidney?"
+        }
+      ]
+    },
+    "hydronephrosis": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "696f48d2",
+          "question": "Is there hydronephrosis?"
+        }
+      ]
+    },
+    "ileus": {
+      "category": "Gastrointestinal",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "bfc9aa65",
+          "question": "Is there ileus?"
+        }
+      ]
+    },
+    "inguinal_hernias": {
+      "category": "Gastrointestinal",
+      "covariate": true,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "555e3747",
+          "question": "Are there any inguinal hernias?"
+        }
+      ]
+    },
+    "intra_uterine_devices": {
+      "category": "Device",
+      "covariate": true,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "6fd7c921",
+          "question": "Are there any intra-uterine devices?"
+        }
+      ]
+    },
+    "intrahepatic_duct_dilation": {
+      "category": "Biliary Tree",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "8a92c600",
+          "question": "Is there any intrahepatic biliary ductal dilation?"
+        }
+      ]
+    },
+    "liver_laceration": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "0fff66c4",
+          "question": "Are there any liver lacerations?"
+        }
+      ]
+    },
+    "lung_mass_or_nodule": {
+      "category": "Visible Thoracic",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "49d6a08e",
+          "question": "Are there any lung masses or nodules?"
+        }
+      ]
+    },
+    "lymphadenopathy": {
+      "category": "Retroperitoneum",
+      "covariate": true,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "14e8d016",
+          "question": "Is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?"
+        }
+      ]
+    },
+    "metastatic_disease_general": {
+      "category": "Multi Organs",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "00bf2726",
+          "question": "Is metastatic disease suspected based on the imaging findings?"
+        }
+      ]
+    },
+    "nephrocalcinosis": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "d1a83706",
+          "question": "Is there nephrocalcinosis?"
+        }
+      ]
+    },
+    "peritoneal_carcinomatosis": {
+      "category": "Peritoneum",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "e5a6f934",
+          "question": "Is there peritoneal carcinomatosis or omental caking?"
+        }
+      ]
+    },
+    "pleural_effusion": {
+      "category": "Visible Thoracic",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "626e43b7",
+          "question": "Is there any pleural effusion?"
+        }
+      ]
+    },
+    "pneumobilia": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "77ab2ec5",
+          "question": "Is there pneumobilia?"
+        }
+      ]
+    },
+    "polycystic_kidney_disease": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "e48018b8",
+          "question": "Is there polycystic kidney disease?"
+        }
+      ]
+    },
+    "polycystic_liver_disease": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "47e1a377",
+          "question": "Is polycystic liver disease present?"
+        }
+      ]
+    },
+    "porcelain_gallbladder": {
+      "category": "Gallbladder",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "ecc139e8",
+          "question": "Is there porcelain gallbladder?"
+        }
+      ]
+    },
+    "portal_venous_gas": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "dfbefa46",
+          "question": "Is there any portal venous gas?"
+        }
+      ]
+    },
+    "portal_venous_occlusion_thrombosis": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "c0516a63",
+          "question": "Is there portal venous occlusion?"
+        }
+      ]
+    },
+    "post_hysterectomy": {
+      "category": "Female pelvis",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "36eb77ac",
+          "question": "Are there changes status post hysterectomy?"
+        }
+      ]
+    },
+    "post_liver_transplant": {
+      "category": "Liver",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "db4bcfb4",
+          "question": "Are there any hepatic changes post-transplantation?"
+        }
+      ]
+    },
+    "post_nephrectomy": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "64ec8614",
+          "question": "Are there any post-nephrectomy changes?"
+        }
+      ]
+    },
+    "post_renal_transplant": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "5141b6b8",
+          "question": "Are there any post-renal transplantation changes?"
+        }
+      ]
+    },
+    "prostatomegaly_bph": {
+      "category": "Male Pelvis",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "6d6e7047",
+          "question": "Is there prostatomegaly or prostatic hyperplasia?"
+        }
+      ]
+    },
+    "pseudomyxoma_peritonei": {
+      "category": "Peritoneum",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "1475c0a0",
+          "question": "Is there pseudomyxoma peritonei?"
+        }
+      ]
+    },
+    "renal_abscess": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "4b037146",
+          "question": "Are there any renal abscesses?"
+        }
+      ]
+    },
+    "renal_cell_carcinoma_rcc": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "c6eedbec",
+          "question": "Are there any renal cell carcinomas?"
+        }
+      ]
+    },
+    "renal_hypodensities": {
+      "category": "Genitourinary",
+      "covariate": true,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "c95af380",
+          "question": "Are there any renal hypodensities?"
+        }
+      ]
+    },
+    "renal_laceration": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "d85a92fb",
+          "question": "Are there any renal lacerations?"
+        }
+      ]
+    },
+    "renal_lymphoma": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "31252256",
+          "question": "Is there renal lymphomas?"
+        }
+      ]
+    },
+    "renal_stones_nephrolithiasis": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "a1ffec17",
+          "question": "Are there any renal stones / nephrolithiasis?"
+        }
+      ]
+    },
+    "renal_subcapsular_hemorrhage": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "1ae1634f",
+          "question": "Are there any subcapsular hemorrhages?"
+        }
+      ]
+    },
+    "retroperitoneal_hemorrhage": {
+      "category": "Retroperitoneum",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "472ea512",
+          "question": "Is there retroperitoneal hemorrhage or retroperitoneal hematomas?"
+        }
+      ]
+    },
+    "rib_fractures": {
+      "category": "Musculoskeletal",
+      "covariate": true,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "deb1af16",
+          "question": "Are there any rib fractures?"
+        }
+      ]
+    },
+    "simple_renal_cysts": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "17fe9b83",
+          "question": "Are there any simple renal cysts?"
+        }
+      ]
+    },
+    "spleen_absent": {
+      "category": "Spleen",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "638e66ca",
+          "question": "Is the spleen surgically absent? Are there any post-splenectomy changes?"
+        }
+      ]
+    },
+    "splenic_infarct": {
+      "category": "Spleen",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "384f3508",
+          "question": "Are there any splenic infarcts?"
+        }
+      ]
+    },
+    "splenic_laceration": {
+      "category": "Spleen",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "f561f0c1",
+          "question": "Are there any splenic lacerations?"
+        }
+      ]
+    },
+    "splenic_lymphoma": {
+      "category": "Spleen",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "804a3391",
+          "question": "Is splenic lymphoma present?"
+        }
+      ]
+    },
+    "splenic_pseudocyst": {
+      "category": "Spleen",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "b413e897",
+          "question": "Are there any splenic pseudocysts?"
+        }
+      ]
+    },
+    "splenomegaly": {
+      "category": "Spleen",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "42e8ffb8",
+          "question": "Is there splenomegaly?"
+        }
+      ]
+    },
+    "ureteral_stones": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "f4af352d",
+          "question": "Are there any ureteral stones?"
+        }
+      ]
+    },
+    "ureteroceles": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "edac0f65",
+          "question": "Are there any ureteroceles?"
+        }
+      ]
+    },
+    "uterine_leiomyomas_fibroids": {
+      "category": "Female pelvis",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "09c60386",
+          "question": "Are there any leiomyomas?"
+        }
+      ]
+    },
+    "xgp": {
+      "category": "Genitourinary",
+      "covariate": false,
+      "variants": [
+        {
+          "index": 0,
+          "md5": "0c4417f5",
+          "question": "Is there xanthogranulomatous pyelonephritis?"
+        }
+      ]
+    }
+  },
+  "generated": "2026-11-08",
+  "modality": "fast_abdominal_ct",
+  "retired": [
+    {
+      "category": "Pancreas",
+      "md5": "f7b31c40",
+      "question": "Is there pancreatic atrophy?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "58c9dc9d",
+      "question": "Is chronic pancreatitis suspected based on imaging findings?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "1511544c",
+      "question": "Is there necrotizing pancreatitis?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "3f39e2a5",
+      "question": "Is there autoimmune pancreatitis?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "79df8595",
+      "question": "Is there groove pancreatitis?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "091c8983",
+      "question": "Is there any pancreatic pseudocysts?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "b8482d9a",
+      "question": "Are there any pancreatic tumors?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "144f48c1",
+      "question": "Are there any intraductal papillary mucinous neoplasms (IPMN)?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "5a160420",
+      "question": "Are there any intraductal papillary mucinous neoplasms with worrisome features?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "c1516142",
+      "question": "Are there any serous cystic neoplasms?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "4d430dda",
+      "question": "Are there any mucinous cystic neoplasms?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "d1282ebf",
+      "question": "Are there any solid pseudopapillary tumors?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "69d1d797",
+      "question": "Are there any ductal pancreatic carcinomas?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "26202a0c",
+      "question": "Are there any neuroendocrine tumors?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "041479b1",
+      "question": "Is there main pancreatic duct dilatation?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "ca10f8e6",
+      "question": "Is there an annular pancreas?"
+    },
+    {
+      "category": "Pancreas",
+      "md5": "d9901bc3",
+      "question": "Is cystic fibrosis suspected based on the pancreatic imaging findings?"
+    },
+    {
+      "category": "Spleen",
+      "md5": "50fb2a90",
+      "question": "Are there any splenic hamartomas?"
+    },
+    {
+      "category": "Spleen",
+      "md5": "2f1c95af",
+      "question": "Are there any splenic abscesses?"
+    },
+    {
+      "category": "Biliary Tree",
+      "md5": "b7a4f824",
+      "question": "Are there any intra-hepatic stones?"
+    },
+    {
+      "category": "Biliary Tree",
+      "md5": "ed43430d",
+      "question": "Is there ascending cholangitis?"
+    },
+    {
+      "category": "Biliary Tree",
+      "md5": "f064007f",
+      "question": "Is there primary sclerosing cholangitis?"
+    },
+    {
+      "category": "Biliary Tree",
+      "md5": "a047b85f",
+      "question": "Is there periductal/intraductal cholangiocarcinoma?"
+    },
+    {
+      "category": "Biliary Tree",
+      "md5": "e298fe6e",
+      "question": "Are there any biliary cystadenomas?"
+    },
+    {
+      "category": "Biliary Tree",
+      "md5": "a367eca7",
+      "question": "Are there any biliary hamartomas?"
+    },
+    {
+      "category": "Liver",
+      "md5": "0dffeb42",
+      "question": "Are there any hepatic regenerative nodules?"
+    },
+    {
+      "category": "Liver",
+      "md5": "919098f9",
+      "question": "Are there any dysplastic nodules?"
+    },
+    {
+      "category": "Liver",
+      "md5": "a9bf8547",
+      "question": "Is there viral hepatitis?"
+    },
+    {
+      "category": "Liver",
+      "md5": "276c2c11",
+      "question": "Is there hemochromatosis?"
+    },
+    {
+      "category": "Liver",
+      "md5": "15c6cb53",
+      "question": "Are there any hepatic focal nodular hyperplasias?"
+    },
+    {
+      "category": "Liver",
+      "md5": "d976ff37",
+      "question": "Is there hepatoblastoma?"
+    },
+    {
+      "category": "Liver",
+      "md5": "cc09ae78",
+      "question": "Is there cholangiocarcinoma?"
+    },
+    {
+      "category": "Liver",
+      "md5": "4f33bff9",
+      "question": "Is there hepatic lymphoma?"
+    },
+    {
+      "category": "Liver",
+      "md5": "d0ccad1a",
+      "question": "Is there angiosarcoma?"
+    },
+    {
+      "category": "Liver",
+      "md5": "ee9b59d9",
+      "question": "Is there epithelioid hemangioendothelioma?"
+    },
+    {
+      "category": "Liver",
+      "md5": "16947526",
+      "question": "Is there fibrolamellar carcinoma?"
+    },
+    {
+      "category": "Liver",
+      "md5": "3acd115c",
+      "question": "Are there any hepatic infarcts?"
+    },
+    {
+      "category": "Gallbladder",
+      "md5": "50051765",
+      "question": "Are there any gallbladder polyps?"
+    },
+    {
+      "category": "Genitourinary",
+      "md5": "c4350551",
+      "question": "Is there nephritis?"
+    },
+    {
+      "category": "Genitourinary",
+      "md5": "9cf4733a",
+      "question": "Are there any urachal diverticula?"
+    },
+    {
+      "category": "Genitourinary",
+      "md5": "6aa0ab5f",
+      "question": "Are there any oncocytomas?"
+    },
+    {
+      "category": "Genitourinary",
+      "md5": "628ff647",
+      "question": "Are there any Wilms tumors?"
+    },
+    {
+      "category": "Genitourinary",
+      "md5": "392cea26",
+      "question": "Are there any renal infarcts?"
+    },
+    {
+      "category": "Adrenal gland",
+      "md5": "f2bd431d",
+      "question": "Are there any adrenal masses?"
+    },
+    {
+      "category": "Adrenal gland",
+      "md5": "304de33c",
+      "question": "Are there any adrenal adenomas?"
+    },
+    {
+      "category": "Adrenal gland",
+      "md5": "0e2c3ef4",
+      "question": "Are there any pheochromocytomas?"
+    },
+    {
+      "category": "Adrenal gland",
+      "md5": "cd2f2d04",
+      "question": "Is there adrenal hyperplasia?"
+    },
+    {
+      "category": "Adrenal gland",
+      "md5": "ec00509c",
+      "question": "Are there any adrenal hemorrhages?"
+    },
+    {
+      "category": "Adrenal gland",
+      "md5": "7db63ff0",
+      "question": "Are there any adrenal infarcts?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "6be583af",
+      "question": "Is there submucosal edema, enterocolitis, or gastritis?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "6c5642a7",
+      "question": "Is there pneumatosis intestinalis?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "0a4a21c4",
+      "question": "Is there inflammatory bowel disease?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "280b6da6",
+      "question": "Is there pseudomembranous colitis?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "7b796f53",
+      "question": "Is there diverticulitis?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "6bef1c46",
+      "question": "Is there small bowel obstruction?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "04fea0ab",
+      "question": "Is there volvulus?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "d088b73a",
+      "question": "Is there large bowel obstruction?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "7dc00e9a",
+      "question": "Is there intussusception?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "3e92d9d3",
+      "question": "Are there any enteric duplication cysts?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "3a7ba64a",
+      "question": "Is there achalasia or scleroderma suspected based on gastrointestinal imaging findings?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "caf0d541",
+      "question": "Are there any enteric diverticula?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "30f8f92e",
+      "question": "Is there gastric volvulus?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "8cdbab94",
+      "question": "Are there any femoral/ventral/Spigelian hernias?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "3953c973",
+      "question": "Is there evidence of sleeve gastrectomy or fundoplication?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "f68c0563",
+      "question": "Is there a surgical gastric conduit?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "b976e49a",
+      "question": "Are there any gastric foreign bodies (not related to medical devices or post-surgical changes)?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "81d5e44a",
+      "question": "Is there any evidence of enteric contrast leak suggestive of postoperative leakage/fistula after surgery?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "09fad904",
+      "question": "Are there any gastric carcinomas?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "adb71e46",
+      "question": "Are there any esophageal carcinomas?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "85092af5",
+      "question": "Are there any duodenal carcinomas?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "9d0d5dc0",
+      "question": "Are there any colonic carcinomas?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "1790a05b",
+      "question": "Are there any rectal carcinomas?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "af501180",
+      "question": "Are there any gastrointestinal stromal tumors (GISTs)?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "md5": "516fd2e6",
+      "question": "Is there gastrointestinal lymphoma?"
+    },
+    {
+      "category": "Device",
+      "md5": "a1b4d132",
+      "question": "Are there any nasogastric tubes?"
+    },
+    {
+      "category": "Device",
+      "md5": "255eb1a0",
+      "question": "Are there any gastrostomy tubes?"
+    },
+    {
+      "category": "Device",
+      "md5": "52aaaf23",
+      "question": "Are there any drainage catheters?"
+    },
+    {
+      "category": "Device",
+      "md5": "fd26154f",
+      "question": "Are there any biliary stents?"
+    },
+    {
+      "category": "Device",
+      "md5": "bf887002",
+      "question": "Are there any transjugular intrahepatic portosystemic shunts?"
+    },
+    {
+      "category": "Device",
+      "md5": "0c81d3d7",
+      "question": "Are there any Foley catheters?"
+    },
+    {
+      "category": "Device",
+      "md5": "42101c61",
+      "question": "Are there any percutaneous nephrostomy tubes/catheters?"
+    },
+    {
+      "category": "Device",
+      "md5": "63b195b1",
+      "question": "Are there any ureteral double-J catheters/stents?"
+    },
+    {
+      "category": "Device",
+      "md5": "21d0219a",
+      "question": "Are there any extracorporeal membrane oxygenation (ECMO) devices?"
+    },
+    {
+      "category": "Device",
+      "md5": "eea99be0",
+      "question": "Are there any central venous catheters?"
+    },
+    {
+      "category": "Device",
+      "md5": "554ceacc",
+      "question": "Are there any aortic stents?"
+    },
+    {
+      "category": "Peritoneum",
+      "md5": "a114cfd8",
+      "question": "Is there mesenteric carcinoid tumor?"
+    },
+    {
+      "category": "Great Vessel",
+      "md5": "4df8e2c8",
+      "question": "Is arterial or aortic thrombosis suspected based on the imaging findings?"
+    },
+    {
+      "category": "Great Vessel",
+      "md5": "554ceacc",
+      "question": "Are there any aortic stents?"
+    },
+    {
+      "category": "Great Vessel",
+      "md5": "d53453d0",
+      "question": "Are there any deep venous thromboses?"
+    },
+    {
+      "category": "Great Vessel",
+      "md5": "88b2e0ff",
+      "question": "Are there any aortic dissections?"
+    },
+    {
+      "category": "Great Vessel",
+      "md5": "8f071209",
+      "question": "Are there any aortic intramural hematomas?"
+    },
+    {
+      "category": "Great Vessel",
+      "md5": "3a3629eb",
+      "question": "Are there any penetrating atherosclerotic aortic ulcers?"
+    },
+    {
+      "category": "Retroperitoneum",
+      "md5": "734ef30b",
+      "question": "Is there retroperitoneal fibrosis?"
+    },
+    {
+      "category": "Retroperitoneum",
+      "md5": "9707f78c",
+      "question": "Is there retroperitoneal liposarcoma?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "6f5b1d52",
+      "question": "Is there prostatitis?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "463b5130",
+      "question": "Is there prostate cancer?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "0bed11f4",
+      "question": "Is there testicular torsion?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "00a49566",
+      "question": "Are there any testicular masses?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "bea4d3fe",
+      "question": "Is there testicular (segmental) infarct?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "3cdcf0dc",
+      "question": "Are there any scrotal hematomas?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "cc1fe2ef",
+      "question": "Is there epididymitis?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "07a8b550",
+      "question": "Are there any hydroceles?"
+    },
+    {
+      "category": "Male Pelvis",
+      "md5": "a7c5b0e4",
+      "question": "Are there any varicoceles?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "deb2909e",
+      "question": "Are there any leiomyosarcomas?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "862dd6e8",
+      "question": "Is there any adenomyosis?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "11b3969f",
+      "question": "Is there endometrial thickening?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "bf5c112c",
+      "question": "Are there any endometrial polyps?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "42abe346",
+      "question": "Are there any uterine malformations?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "36e1e35b",
+      "question": "Are there any cervical masses?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "76d11c67",
+      "question": "Are there any Nabothian cysts?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "5c04f60f",
+      "question": "Is there adenoma malignum?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "520fe095",
+      "question": "Are there any ovarian tumors?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "408a8ae7",
+      "question": "Are there any endometriomas?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "c3745e95",
+      "question": "Are there any ovarian cancers?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "ce677608",
+      "question": "Is there adnexal torsion?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "dbdc93ce",
+      "question": "Are there any ovarian teratomas?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "29d0fe2f",
+      "question": "Is there polycystic ovarian syndrome?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "52efee8b",
+      "question": "Is there deep infiltrative endometriosis?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "ec176080",
+      "question": "Is there pelvic inflammatory disease?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "42c23510",
+      "question": "Are there any Bartholin gland cysts?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "eae2edb3",
+      "question": "Are there any Gartner duct cysts?"
+    },
+    {
+      "category": "Female pelvis",
+      "md5": "eb5d96f2",
+      "question": "Are there any vaginal or vulvar cancers?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "md5": "616774b1",
+      "question": "Is osteopenia suspected based on the imaging findings?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "md5": "1e03ec2d",
+      "question": "Are there any spinal fractures?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "md5": "f687ad49",
+      "question": "Are there any fractures of the pelvic girdle or sacrum?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "md5": "bac7a9d6",
+      "question": "Are there any femoral fractures?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "md5": "69207fab",
+      "question": "Are there any osteolytic lesions?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "md5": "d651272e",
+      "question": "Are there any osteosclerotic lesions?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "md5": "c30a92aa",
+      "question": "Are there any iliopsoas muscle abscesses?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "md5": "e76382e4",
+      "question": "Is there Fournier's gangrene / necrotizing fasciitis?"
+    },
+    {
+      "category": "Visible Thoracic",
+      "md5": "ab2dd26a",
+      "question": "Are there any aortic valve calcifications?"
+    },
+    {
+      "category": "Visible Thoracic",
+      "md5": "5e227a14",
+      "question": "Are there coronary artery calcifications?"
+    },
+    {
+      "category": "Visible Thoracic",
+      "md5": "4c34a8d7",
+      "question": "Is there any coronary atherosclerosis?"
+    }
+  ],
+  "source": "abdomen_ct.yaml@5b3a99141b3f698a"
+}

@@ -61,6 +61,11 @@ venv.bak/
 # Project-specific
 *.jsonl
 *.json
+# The question set's lock file is config rather than output. The blanket
+# rule above keeps `final_results.json` and the rest of the extraction out
+# of the repository, which stays; this one file is the pin that this project
+# and the two beside it all test against, so it has to be tracked.
+!config/modalities/*.lock.json
 debug/
 results/
 output/
