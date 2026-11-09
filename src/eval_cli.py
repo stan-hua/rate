@@ -63,7 +63,16 @@ class QCEvaluator:
                 continue
                 
             if isinstance(val, (int, float)):
-                binary_values.append(1 if val > 0 else 0)
+                # The annotator writes a graded number, not a flag: 1 is a
+                # finding named outright, 0.5 to 0.9 is mild, trace or hedged,
+                # below 0.5 is a related mention and not the finding, and 0 is
+                # absent. A negative value marks a report that cannot answer,
+                # because the finding was recorded in another document, so it
+                # leaves the denominator instead of scoring as a No.
+                if val < 0:
+                    binary_values.append(np.nan)
+                else:
+                    binary_values.append(1 if val >= 0.5 else 0)
             elif isinstance(val, str):
                 val_lower = val.lower().strip()
                 if val_lower in ['yes', 'true', '1', 'correct', 'good']:
@@ -314,10 +323,15 @@ class QCEvaluator:
                 unique_questions = len(pd.Series(annotated_df['question']).unique())
                 
                 # Store consolidated results
+                # `n_samples` and `n_annotated` come from `_calculate_metrics`,
+                # which counts the rows the metric actually used. Overwriting
+                # them with `len(annotated_df)` reported a denominator larger
+                # than the one every figure beside it was computed over,
+                # because a row whose label will not parse is masked out of
+                # the arithmetic and was still counted here.
                 results['_CONSOLIDATED'] = {
                     **consolidated_metrics,
-                    'n_samples': len(annotated_df),
-                    'n_annotated': len(annotated_df),
+                    'n_rows_with_a_label': len(annotated_df),
                     'n_unique_questions': unique_questions,
                     'file': str(qc_file),
                     'description': f'Consolidated evaluation across {unique_questions} unique questions',
@@ -350,8 +364,7 @@ class QCEvaluator:
                     question_key = str(question).replace('?', '').replace(' ', '_').replace('/', '_')
                     results[question_key] = {
                         **metrics,
-                        'n_samples': len(question_df),
-                        'n_annotated': len(question_df),
+                        'n_rows_with_a_label': len(question_df),
                         'file': str(qc_file),
                         'question': str(question),
                         'type': 'binary_classification'
