@@ -94,12 +94,27 @@ prompt_templates:
     Answer with a JSON object and nothing else.
 
     Quote the report rather than paraphrasing it. `evidence` is the one
-    sentence that settles the question, verbatim. `certainty_phrase` is the
-    hedge the report uses, verbatim and empty if it states the finding flatly.
-    `severity_phrase` is how the report gives the finding's magnitude, verbatim:
-    a word like "trace" or "moderate", a measurement like "13 mm", or a formal
-    grade like "Bosniak III". Empty only if the report gives none. Do not grade
-    the certainty or the severity yourself.
+    sentence that settles the question, verbatim.
+
+    `certainty_phrase` is the hedge the report uses about this finding,
+    verbatim: "consistent with", "concerning for", "may represent". Leave it
+    empty if the report states the finding flatly, and leave it empty if the
+    only hedge belongs to another diagnosis. "Subcentimeter hypodensity,
+    likely a cyst" states the hypodensity flatly and hedges the cyst, so a
+    question about the hypodensity has no hedge and a question about the cyst
+    has "likely".
+
+    `severity_phrase` is how the report gives this finding's magnitude,
+    verbatim: a word like "trace" or "moderate", a measurement like "13 mm",
+    or a formal grade like "Bosniak III". Give the magnitude alone and never
+    the finding's own name: in "Mildly enlarged spleen", "mildly" is the
+    magnitude and "enlarged" is the finding. Leave it empty if the report
+    gives no magnitude.
+
+    A word about size or amount is never a hedge, so "mildly", "small" and
+    "subcentimeter" go in `severity_phrase` and never in `certainty_phrase`.
+    The two fields are read separately, so do not split one phrase across
+    them. Do not grade the certainty or the severity yourself.
 
     Answer `no` when the report describes the anatomy and does not mention the
     finding. A radiology report records abnormalities, so silence about a

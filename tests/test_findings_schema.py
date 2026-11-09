@@ -540,3 +540,111 @@ class TestWhatNotAssessedMeans:
         assert "not_assessed" in ANSWER_VALUES
         got = parse_answer('{"answer": "not_assessed", "evidence": "", "named_outright": false}')
         assert got["verdict"] == "not_assessed"
+
+
+class TestTheTwoPhraseFieldsStayApart:
+    """A smoke run split one descriptive phrase across both fields.
+
+    On a report reading "Spleen: Mildly enlarged, up to 13.5 cm", three
+    wordings of `splenomegaly` answered Yes and divided the words three ways:
+    `certainty_phrase` "Mildly enlarged" with `severity_phrase` "mildly
+    enlarged", and twice `certainty_phrase` "Mildly" with `severity_phrase`
+    "enlarged". The last two lose the magnitude: "enlarged" grades
+    `unspecified`, and the `mild` the radiologist wrote ends up in the field
+    that grades hedges, where it matches nothing.
+
+    Two instructions were missing. A word about size is not a hedge, and the
+    magnitude is the modifier rather than the finding's own name.
+    """
+
+    def prompt(self):
+        import yaml
+
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+        return config["prompt_templates"]["findings_question"]
+
+    def test_the_prompt_says_a_size_word_is_not_a_hedge(self):
+        prompt = self.prompt()
+        assert "never a hedge" in prompt
+        assert "subcentimeter" in prompt
+
+    def test_the_prompt_forbids_splitting_one_phrase_across_both(self):
+        assert "do not split one phrase across" in self.prompt()
+
+    def test_the_prompt_says_the_magnitude_is_not_the_finding_name(self):
+        """"Mildly enlarged" is the case: the magnitude is "mildly"."""
+        prompt = self.prompt()
+        assert "never\nthe finding's own name" in prompt
+        assert "Mildly enlarged spleen" in prompt
+
+    def test_the_schema_says_both(self):
+        """The description reaches the model even where the prompt is reworded."""
+        cert = RESPONSE_SCHEMA["properties"]["certainty_phrase"]["description"]
+        sev = RESPONSE_SCHEMA["properties"]["severity_phrase"]["description"]
+        assert "not a hedge" in cert and "subcentimeter" in cert
+        assert "never the finding's own name" in sev
+
+    def test_the_severity_field_no_longer_says_empty_only(self):
+        """"Empty only when the report gives none" reads as an instruction to
+        find something, and "hyperdense renal lesion" is what that produced."""
+        sev = RESPONSE_SCHEMA["properties"]["severity_phrase"]["description"]
+        assert "Empty only when" not in sev
+        assert "Empty when the report gives none" in sev
+
+    def test_the_words_that_came_back_in_the_wrong_field_grade_nothing(self):
+        """Neither lexicon claims the other's vocabulary, so a misplaced word
+        costs the level it should have given and never invents one."""
+        assert certainty_of("Mildly") == "unspecified"
+        assert certainty_of("Mildly enlarged") == "unspecified"
+        assert severity_of("enlarged") == "unspecified"
+        assert severity_of("hyperdense renal lesion") == "unspecified"
+
+
+class TestAHedgeOnAnotherDiagnosis:
+    """"Subcentimeter hypodensity too small to characterize likely cysts."
+
+    The hypodensity is stated flatly and "likely" governs the cyst, so a
+    question about the hypodensity has no hedge. Grading that row `medium`
+    understates a finding the radiologist saw. Which noun a hedge governs
+    depends on the question, so no post-processing can recover it and the
+    prompt has to say it.
+    """
+
+    def test_the_prompt_states_the_rule(self):
+        import yaml
+
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+        prompt = config["prompt_templates"]["findings_question"]
+        assert "belongs to another diagnosis" in prompt
+        assert "likely a cyst" in prompt
+
+    def test_the_schema_states_it_too(self):
+        cert = RESPONSE_SCHEMA["properties"]["certainty_phrase"]["description"]
+        assert "another diagnosis" in cert
+
+    def test_too_small_to_characterize_still_grades_as_a_size(self):
+        """It is a size statement, and a radiologist writes it of a lesion
+        under about a centimetre. It belongs in `severity_phrase`."""
+        assert severity_of("too small to characterize") == "mild"
+        assert severity_of("subcentimeter") == "mild"
+
+
+class TestTheBareFavoredVerb:
+    """A run quoted "favored" where the lexicon listed only the full idioms."""
+
+    def test_the_bare_verb_is_a_lean(self):
+        assert certainty_of("favored") == "medium"
+        assert certainty_of("favors a hemorrhagic cyst") == "medium"
+
+    def test_the_full_idioms_still_read(self):
+        assert certainty_of("favored to represent") == "medium"
+        assert certainty_of("favored to be") == "medium"
+
+    def test_setting_it_aside_beats_the_bare_verb(self):
+        """"less favored" is longer, so the longest-phrase match takes it."""
+        assert certainty_of("less favored") == "negated"
+        assert certainty_of("not favored") == "negated"

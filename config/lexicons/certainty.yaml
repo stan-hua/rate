@@ -36,6 +36,10 @@ levels:
     - worrisome for
     - probable
     - probably
+    # A smoke run quoted the bare verb, which the two full idioms below do
+    # not match, so the row graded `unspecified`.
+    - favored
+    - favors
     - favored to be
     - favored to represent
     - most likely
@@ -64,6 +68,10 @@ levels:
 # low certainty.
 negated:
   - less likely
+  # Parallel to `less likely`, and longer than the `favored` above, so it
+  # wins the longest-phrase match.
+  - less favored
+  - not favored
   # Absent from this list until 2026-11-09, and the substring fallback landed
   # it on `medium` through `likely` -- the opposite of what it means.
   - not likely

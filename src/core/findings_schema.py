@@ -70,18 +70,24 @@ RESPONSE_SCHEMA = {
         "certainty_phrase": {
             "type": "string",
             "description": (
-                "The hedge the report uses, quoted verbatim -- 'consistent "
-                "with', 'concerning for', 'may represent'. Empty when the "
-                "report states the finding flatly."
+                "The hedge this report uses about this finding, quoted verbatim "
+                "-- 'consistent with', 'concerning for', 'may represent'. Empty "
+                "when the report states the finding flatly, and empty when the "
+                "only hedge belongs to another diagnosis: a report calling a "
+                "hypodensity 'likely a cyst' states the hypodensity flatly and "
+                "hedges the cyst. A word about size or amount is not a hedge, so "
+                "'mildly', 'small' and 'subcentimeter' go in severity_phrase."
             ),
         },
         "severity_phrase": {
             "type": "string",
             "description": (
-                "How the report gives the finding's magnitude, quoted "
+                "How the report gives this finding's magnitude, quoted "
                 "verbatim: a word such as 'trace' or 'moderate', a measurement "
-                "such as '13 mm', or a formal grade such as 'Bosniak III'. "
-                "Empty only when the report gives none."
+                "such as '13 mm', or a formal grade such as 'Bosniak III'. The "
+                "magnitude alone, and never the finding's own name: 'enlarged' "
+                "and 'hyperdense renal lesion' name the finding and give no "
+                "magnitude. Empty when the report gives none."
             ),
         },
         "chronicity": {
