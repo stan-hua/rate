@@ -816,8 +816,8 @@ categories:
         variants:
           - "Is anything abnormal described in the ureters or the bladder?"
           - "Does the report record ureteral dilation, a ureteral or bladder stone, bladder wall thickening, a bladder mass or any other abnormality there?"
-  Pericardium:
-    description: "Pericardial and cardiac findings"
+  Heart:
+    description: "Cardiac and pericardial findings"
     questions:
       - id: cardiomegaly
         question: "Is there cardiomegaly?"
@@ -833,8 +833,9 @@ categories:
           - "atrial enlargement"
           - "left atrial enlargement"
           - "ventricular hypertrophy"
-      - id: any_pericardium
-        question: "Does the report describe any abnormality of the pericardium?"
+      - id: any_heart
+        question: "Does the report describe any abnormality of the heart or the pericardium?"
         variants:
-          - "Is anything abnormal described in the pericardium?"
-          - "Does the report record a pericardial effusion, pericardial thickening, pericardial calcification or any other pericardial abnormality?"
+          - "Is anything abnormal described in the heart or the pericardium?"
+          - "Does the report record cardiomegaly, a pericardial effusion, pericardial thickening or calcification, a valvular or coronary abnormality or any other cardiac abnormality?"
+        definition: "Anything abnormal in the heart or the pericardial space: chamber or global enlargement, a pericardial effusion, pericardial thickening or calcification, a valvular or coronary abnormality, or any other cardiac finding the report records. The pericardium is inside this compartment rather than beside it."

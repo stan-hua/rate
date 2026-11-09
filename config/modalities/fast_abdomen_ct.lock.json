@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "78b50168b6d3e22f",
-    "question_set": "1cad31c4cb552c97"
+    "file": "8f9ae4ea2a277618",
+    "question_set": "4985bf9b78f4d7e9"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -332,6 +332,30 @@
       ],
       "window": "-"
     },
+    "any_heart": {
+      "added": true,
+      "category": "Heart",
+      "covariate": false,
+      "tier": "A",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "09d0a483",
+          "question": "Does the report describe any abnormality of the heart or the pericardium?"
+        },
+        {
+          "index": 1,
+          "md5": "c34c9dad",
+          "question": "Is anything abnormal described in the heart or the pericardium?"
+        },
+        {
+          "index": 2,
+          "md5": "546e52c7",
+          "question": "Does the report record cardiomegaly, a pericardial effusion, pericardial thickening or calcification, a valvular or coronary abnormality or any other cardiac abnormality?"
+        }
+      ],
+      "window": "cardiac"
+    },
     "any_kidneys": {
       "added": true,
       "category": "Kidney",
@@ -451,30 +475,6 @@
         }
       ],
       "window": "-"
-    },
-    "any_pericardium": {
-      "added": true,
-      "category": "Pericardium",
-      "covariate": false,
-      "tier": "A",
-      "variants": [
-        {
-          "index": 0,
-          "md5": "a5c7d7f7",
-          "question": "Does the report describe any abnormality of the pericardium?"
-        },
-        {
-          "index": 1,
-          "md5": "2be30df1",
-          "question": "Is anything abnormal described in the pericardium?"
-        },
-        {
-          "index": 2,
-          "md5": "8f4ec4b5",
-          "question": "Does the report record a pericardial effusion, pericardial thickening, pericardial calcification or any other pericardial abnormality?"
-        }
-      ],
-      "window": "cardiac"
     },
     "any_peritoneum": {
       "added": true,
@@ -781,7 +781,7 @@
       "window": "RUQ/LUQ/suprapubic"
     },
     "cardiomegaly": {
-      "category": "Pericardium",
+      "category": "Heart",
       "covariate": false,
       "tier": "B",
       "variants": [

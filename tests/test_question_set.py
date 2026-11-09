@@ -322,15 +322,15 @@ class TestTheFastConfigAndItsLock:
 
         `abdomen_ct.yaml` puts the kidneys and the bladder in `Genitourinary`,
         which the RUQ/LUQ views and the suprapubic view show respectively, and
-        the pericardium with the pleura in `Visible Thoracic`. `ifast` splits
-        both when it generates this config, so the source still has 17
-        categories and this file has 19.
+        the heart with the pleura in `Visible Thoracic`. `ifast` splits both
+        when it generates this config, so the source still has 17 categories
+        and this file has 19.
         """
         config = yaml.safe_load(FAST_ABDOMEN.read_text())
         names = set(config["categories"])
         assert len(names) == 19
         assert not names & {"Genitourinary", "Visible Thoracic"}
-        assert {"Kidney", "Urinary tract", "Pericardium", "Pleura and lung bases"} <= names
+        assert {"Kidney", "Urinary tract", "Heart", "Pleura and lung bases"} <= names
 
     def test_every_compartment_has_one_probe_and_the_cross_cutting_two_have_none(self):
         """Which is what separates a compartment from a cross-cutting category.
