@@ -64,6 +64,9 @@ levels:
 # low certainty.
 negated:
   - less likely
+  # Absent from this list until 2026-11-09, and the substring fallback landed
+  # it on `medium` through `likely` -- the opposite of what it means.
+  - not likely
   - unlikely
   - very unlikely
   - doubt

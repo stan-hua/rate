@@ -213,6 +213,11 @@ def test_the_questions_stage_writes_the_columns_the_sheets_read():
     `answer` keeps the raw model string whatever shape it has, so a field added
     to the schema later needs no re-extraction. The parsed columns beside it
     are what the sheets and the metrics read.
+
+    `certainty` and `severity` are the lexicon's, not the model's: it quotes
+    the report's hedge and magnitude word into the two `_phrase` columns and
+    never names a level, so re-grading is an edit to `config/lexicons/*.yaml`
+    and a rebuild of these two columns.
     """
     config = STAGE_CONFIGS["questions"]
     assert config["columns"] == [
@@ -227,7 +232,9 @@ def test_the_questions_stage_writes_the_columns_the_sheets_read():
         "evidence",
         "section",
         "certainty_phrase",
+        "certainty",
         "severity_phrase",
+        "severity",
         "chronicity",
         "attribution",
         "named_outright",

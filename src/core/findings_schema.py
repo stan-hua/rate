@@ -24,6 +24,9 @@ million questions to revise one is not.
 import json
 import re
 
+# Custom libraries
+from .lexicon import certainty_of, severity_of
+
 ANSWER_VALUES = ("yes", "no", "not_assessed")
 CHRONICITY_VALUES = ("acute", "chronic", "indeterminate", "unspecified")
 ATTRIBUTION_VALUES = ("spontaneous", "postoperative", "unknown")
@@ -100,11 +103,19 @@ ANSWER_COLUMNS = (
     "evidence",
     "section",
     "certainty_phrase",
+    "certainty",
     "severity_phrase",
+    "severity",
     "chronicity",
     "attribution",
     "named_outright",
 )
+
+# The two columns the lexicon computes rather than the model. They are stored
+# beside the phrase they came from, because a re-map has to be an edit to
+# `config/lexicons/*.yaml` and a rebuild of these two columns, never four
+# million requests asked again.
+GRADED_COLUMNS = {"certainty": "certainty_phrase", "severity": "severity_phrase"}
 
 _LEADING_VERDICT = re.compile(r"^\s*(yes|no)\b", re.IGNORECASE)
 
@@ -150,7 +161,7 @@ def parse_answer(raw):
         verdict = str(body.get("answer", "")).strip().lower()
         if verdict not in ANSWER_VALUES:
             return None
-        return {
+        return _graded({
             "verdict": verdict,
             "evidence": body.get("evidence") or "",
             "section": body.get("section") or "",
@@ -159,7 +170,7 @@ def parse_answer(raw):
             "chronicity": body.get("chronicity") or "unspecified",
             "attribution": body.get("attribution") or "unknown",
             "named_outright": bool(body.get("named_outright", False)),
-        }
+        })
 
     # Every run before the schema answered in words. The first line that opens
     # with yes or no decides, which is the rule the downstream project already
@@ -167,7 +178,7 @@ def parse_answer(raw):
     for line in text.splitlines():
         match = _LEADING_VERDICT.match(line)
         if match:
-            return {
+            return _graded({
                 "verdict": match.group(1).lower(),
                 "evidence": "",
                 "section": "",
@@ -176,8 +187,20 @@ def parse_answer(raw):
                 "chronicity": "unspecified",
                 "attribution": "unknown",
                 "named_outright": False,
-            }
+            })
     return None
+
+
+def _graded(record):
+    """Add the level each quoted phrase maps to, leaving the phrase alone.
+
+    The model quotes the report's hedge and magnitude word and never names a
+    level, so the mapping is a config edit rather than a re-extraction. These
+    two columns are what that edit rebuilds.
+    """
+    record["certainty"] = certainty_of(record["certainty_phrase"])
+    record["severity"] = severity_of(record["severity_phrase"])
+    return record
 
 
 _GUIDANCE_FIELDS = (

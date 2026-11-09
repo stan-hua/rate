@@ -35,8 +35,9 @@ STAGE_CONFIGS = {
         'columns': [
             'report_id', 'category', 'finding_id', 'variant_index',
             'question_id', 'question', 'answer',
-            'verdict', 'evidence', 'section', 'certainty_phrase',
-            'severity_phrase', 'chronicity', 'attribution', 'named_outright',
+            'verdict', 'evidence', 'section',
+            'certainty_phrase', 'certainty', 'severity_phrase', 'severity',
+            'chronicity', 'attribution', 'named_outright',
         ],
         'key_column': 'report_id',
         'data_type': 'complex',  # Dict[str, Dict[str, List[Dict]]]

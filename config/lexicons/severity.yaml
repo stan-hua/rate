@@ -56,10 +56,64 @@ levels:
     - gross
     - high-volume
 
-# Formal grading systems, kept verbatim where a report uses one. These are not
-# mapped onto the four steps, because each has its own meaning and a reader
-# comparing a Bosniak III against a `moderate` would be comparing nothing.
+# Formal grading systems, where a report uses one instead of a magnitude word.
+#
+# An earlier version kept these verbatim and mapped none of them, arguing that
+# a reader comparing a Bosniak III against a `moderate` would be comparing
+# nothing. That left `severity` unspecified for every finding graded this way,
+# which is worse: the four steps are what every downstream figure is taken
+# over, and a finding with a formal grade is one where the report was *more*
+# precise than usual. So each system now maps onto the four steps as well, and
+# the phrase stays verbatim in `severity_phrase` either way, so a reader who
+# wants the grade still has it.
+#
+# `token` entries match the captured group, with roman and arabic numerals
+# written out. `bands` entries read the captured group as a number and take
+# the first band whose `below` it falls under, so the order matters.
 graded_systems:
-  bosniak: '(?i)bosniak\s+(I{1,3}F?|IV|[1-4]F?)'
-  hydronephrosis_sfu: '(?i)(?:SFU\s+)?grade\s+(I{1,4}|IV|[0-4])\s+hydronephrosis'
-  aneurysm_diameter: '(?i)(\d+(?:\.\d+)?)\s*cm\b'
+  bosniak:
+    # `IV` comes first in the alternation: `I{1,3}` would otherwise match
+    # the `I` of `IV` and grade a Bosniak IV as a Bosniak I.
+    pattern: '(?i)bosniak\s+(IV|I{1,3}F|I{1,3}|[1-3]F|[1-4])'
+    # `complex_renal_cyst` counts a IIF and above, so the finding's own range
+    # is IIF to IV and the three upper steps span it. A I or a II is a
+    # near-miss on the definition rather than a trace of the finding.
+    tokens:
+      I: trace
+      "1": trace
+      II: trace
+      "2": trace
+      IIF: mild
+      "2F": mild
+      III: moderate
+      "3": moderate
+      IV: marked
+      "4": marked
+
+  hydronephrosis_sfu:
+    pattern: '(?i)(?:SFU\s+)?grade\s+(IV|I{1,3}|[0-4])(?=\s|$|[.,;])'
+    # SFU 1 is a dilated pelvis alone, 4 is cortical thinning.
+    tokens:
+      "0": unspecified
+      I: trace
+      "1": trace
+      II: mild
+      "2": mild
+      III: moderate
+      "3": moderate
+      IV: marked
+      "4": marked
+
+  aneurysm_diameter:
+    pattern: '(?i)(\d+(?:\.\d+)?)\s*cm\b'
+    # The surveillance bands: under 3.0 is not an aneurysm, 3.0 to 4.4 small,
+    # 4.5 to 5.4 medium, 5.5 and above is the repair threshold.
+    bands:
+      - below: 3.0
+        level: unspecified
+      - below: 4.5
+        level: mild
+      - below: 5.5
+        level: moderate
+      - below: null
+        level: marked
