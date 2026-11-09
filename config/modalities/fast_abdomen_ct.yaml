@@ -128,7 +128,7 @@ categories:
           - "fatty liver"
           - "fatty infiltration"
           - "hepatic fat"
-        severity_scale: "generic"
+        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
       - id: cirrhosis
         question: "Is there cirrhosis?"
         variants:
@@ -307,7 +307,7 @@ categories:
         exclude_terms:
           - "adenomyomatosis"
           - "Rokitansky-Aschoff"
-        severity_scale: "generic"
+        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
       - id: gallbladder_adenomyomatosis
         question: "Is there gallbladder adenomyomatosis?"
         variants:
@@ -347,7 +347,7 @@ categories:
           - "hydroureter"
           - "ureterectasis"
           - "ureteral dilation"
-        severity_scale: "hydronephrosis_sfu"
+        severity_scale: "the grade the report gives, such as mild, moderate or severe"
       - id: renal_hypodensities
         question: "Are there any renal hypodensities?"
         variants:
@@ -372,7 +372,7 @@ categories:
         exclude_terms:
           - "simple cyst"
           - "simple renal cyst"
-        severity_scale: "bosniak"
+        severity_scale: "the Bosniak category, if the report gives one"
       - id: renal_abscess
         question: "Are there any renal abscesses?"
         variants:
@@ -500,6 +500,20 @@ categories:
         variants:
           - "Does the report describe an inflamed appendix?"
           - "Is there appendicitis or periappendiceal inflammatory change?"
+        definition: "The appendix is inflamed: dilated, with wall thickening, mural hyperenhancement, periappendiceal fat stranding or periappendiceal fluid. A normal appendix does not count, and neither does an appendicolith on its own."
+        include_terms:
+          - "appendicitis"
+          - "acute appendicitis"
+          - "inflamed appendix"
+          - "appendiceal wall thickening"
+          - "periappendiceal inflammatory change"
+          - "periappendiceal fluid"
+        exclude_terms:
+          - "normal appendix"
+          - "appendicolith"
+          - "post-appendectomy"
+          - "appendectomy"
+        severity_scale: "the magnitude word the report uses, and whether it describes perforation"
       - id: bowel_obstruction
         question: "Is bowel obstruction present?"
         variants:
@@ -551,7 +565,7 @@ categories:
         exclude_terms:
           - "hemoperitoneum"
           - "hemorrhagic fluid"
-        severity_scale: "volume"
+        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
       - id: free_air_pneumoperitoneum
         question: "Is there any free air or pneumoperitoneum?"
         variants:
@@ -563,7 +577,7 @@ categories:
           - "free air"
           - "free intraperitoneal air"
           - "mesenteric free air"
-        severity_scale: "volume"
+        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
       - id: pseudomyxoma_peritonei
         question: "Is there pseudomyxoma peritonei?"
         variants:
@@ -599,7 +613,7 @@ categories:
           - "pelvic free fluid"
           - "hemoperitoneum"
           - "ascites"
-        severity_scale: "volume"
+        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
       - id: hemoperitoneum
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
         variants:
@@ -618,7 +632,7 @@ categories:
           - "simple fluid"
           - "low-density fluid"
           - "ascites"
-        severity_scale: "volume"
+        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
       - id: omental_caking
         question: "Is there omental caking?"
         variants:
@@ -636,7 +650,7 @@ categories:
           - "peritoneal carcinomatosis"
           - "peritoneal implants"
           - "peritoneal nodularity"
-        severity_scale: "generic"
+        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
       - id: any_peritoneum
         question: "Does the report describe any abnormality of the peritoneal cavity?"
         variants:
@@ -650,11 +664,38 @@ categories:
         variants:
           - "Is the abdominal aorta aneurysmally dilated?"
           - "Does the report describe an abdominal aortic aneurysm or an AAA?"
+        definition: "The abdominal aorta is aneurysmally dilated: a focal dilation the report calls an aneurysm, or a diameter of 3 cm or more. Ectasia below 3 cm does not count, and neither does atherosclerosis without dilation. A thoracic aneurysm is a different segment."
+        include_terms:
+          - "abdominal aortic aneurysm"
+          - "AAA"
+          - "aneurysmal dilation of the abdominal aorta"
+          - "infrarenal aortic aneurysm"
+          - "fusiform aortic aneurysm"
+        exclude_terms:
+          - "aortic ectasia"
+          - "atherosclerosis"
+          - "thoracic aortic aneurysm"
+          - "iliac aneurysm"
+        severity_scale: "the maximum diameter the report gives, in centimetres"
       - id: aortic_atherosclerosis
         question: "Is aortic atherosclerosis suspected based on the imaging findings?"
         variants:
           - "Is the aortic wall atherosclerotic or calcified?"
           - "Does the report describe aortic atherosclerosis, aortic calcification or atherosclerotic plaque in the aorta?"
+        definition: "The aortic wall is atherosclerotic: calcified or mural plaque, or a wall the report describes as atheromatous or atherosclerotic. A dilated or aneurysmal aorta has its own question."
+        include_terms:
+          - "aortic atherosclerosis"
+          - "atherosclerotic calcification"
+          - "aortic calcification"
+          - "calcified plaque"
+          - "atheromatous"
+          - "atherosclerotic disease of the aorta"
+        exclude_terms:
+          - "aneurysm"
+          - "ectasia"
+          - "dissection"
+          - "mural thrombus"
+        severity_scale: "the magnitude word the report uses, such as mild, moderate or extensive"
 
       - id: any_great_vessels
         question: "Does the report describe any abnormality of the aorta or its branches?"
@@ -708,7 +749,7 @@ categories:
           - "generalized edema"
           - "diffuse subcutaneous edema"
           - "third spacing"
-        severity_scale: "generic"
+        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
 
   Male Pelvis:
     description: "Male pelvic findings"
@@ -740,7 +781,7 @@ categories:
           - "fibroid"
           - "leiomyomatous uterus"
           - "broad ligament myoma"
-        severity_scale: "generic"
+        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
       - id: post_hysterectomy
         question: "Are there changes status post hysterectomy?"
         variants:
@@ -890,7 +931,7 @@ categories:
           - "atrial enlargement"
           - "coronary artery calcification"
           - "aortic valve"
-        severity_scale: "volume"
+        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
       - id: any_heart
         question: "Does the report describe any abnormality of the heart or the pericardium?"
         variants:

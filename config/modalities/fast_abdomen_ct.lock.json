@@ -1,11 +1,12 @@
 {
   "digest": {
-    "file": "14d5dc92d2c9bbd6",
+    "file": "cfa8fe12058c258f",
     "question_set": "bc346098da101a44"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
       "category": "Great Vessel",
+      "change": "scope_change",
       "covariate": false,
       "tier": "B",
       "variants": [
@@ -640,6 +641,7 @@
     },
     "aortic_atherosclerosis": {
       "category": "Great Vessel",
+      "change": "scope_change",
       "covariate": true,
       "tier": "C",
       "variants": [
@@ -663,6 +665,7 @@
     },
     "appendicitis": {
       "category": "Gastrointestinal",
+      "change": "scope_change",
       "covariate": true,
       "tier": "C",
       "variants": [
