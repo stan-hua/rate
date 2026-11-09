@@ -55,7 +55,7 @@ categories:
         question: "Is there hepatomegaly?"
       - id: hepatic_steatosis
         question: "Is hepatic steatosis, fatty liver, focal fatty infiltration suspected based on the imaging findings?"
-        definition: "Fatty infiltration of the liver, diffuse or focal."
+        definition: "Fat infiltrates the liver, diffusely or focally."
         include_terms:
           - "hepatic steatosis"
           - "fatty liver"
@@ -66,14 +66,14 @@ categories:
         question: "Is there cirrhosis?"
       - id: cirrhosis_portal_hypertension
         question: "Is there cirrhosis with portal hypertension?"
-        definition: "Cirrhosis with portal hypertension stated, or with its named consequences: splenomegaly, varices, recanalised paraumbilical vein."
+        definition: "The report states portal hypertension alongside cirrhosis, or names one of its consequences: splenomegaly, varices, a recanalised paraumbilical vein."
         include_terms:
           - "portal hypertension"
           - "portosystemic collaterals"
           - "varices"
       - id: cirrhosis_with_decompensation
         question: "Is there cirrhosis with decompensation?"
-        definition: "Cirrhosis the report describes as decompensated. Do not infer decompensation from a shrunken liver or from ascites."
+        definition: "The report describes the cirrhosis as decompensated. Do not infer decompensation from a shrunken liver or from ascites."
         include_terms:
           - "decompensated cirrhosis"
           - "hepatic decompensation"
@@ -91,7 +91,7 @@ categories:
         question: "Are there any hepatic adenomas?"
       - id: hepatic_mass_indeterminate
         question: "Are there any hepatic masses?"
-        definition: "A solid hepatic lesion the report does not characterise. A cyst does not count, and neither does a lesion the report names -- a hemangioma, a metastasis or a hepatocellular carcinoma each have their own question."
+        definition: "The report describes a solid hepatic lesion and does not characterise it. A cyst does not count. A lesion the report names has its own question: hemangioma, metastasis, hepatocellular carcinoma."
         include_terms:
           - "indeterminate hepatic lesion"
           - "indeterminate liver mass"
@@ -141,7 +141,7 @@ categories:
         question: "Is there porcelain gallbladder?"
       - id: pneumobilia
         question: "Is there pneumobilia?"
-        definition: "Gas in the biliary tree, whether intrahepatic, in the gallbladder or in the ducts."
+        definition: "Gas lies in the biliary tree: the intrahepatic ducts, the extrahepatic ducts, or the gallbladder."
         include_terms:
           - "pneumobilia"
           - "biliary gas"
@@ -149,7 +149,7 @@ categories:
           - "aerobilia"
       - id: gallbladder_wall_thickening
         question: "Is there gallbladder wall thickening?"
-        definition: "Diffuse thickening of the gallbladder wall. Focal thickening with the features of adenomyomatosis has its own question."
+        definition: "The gallbladder wall is diffusely thickened. Focal thickening with the features of adenomyomatosis has its own question."
         include_terms:
           - "gallbladder wall thickening"
           - "thickened gallbladder wall"
@@ -159,7 +159,7 @@ categories:
         severity_scale: "generic"
       - id: gallbladder_adenomyomatosis
         question: "Is there gallbladder adenomyomatosis?"
-        definition: "Gallbladder wall thickening with intramural diverticula or Rokitansky-Aschoff sinuses, fundal or mid-body."
+        definition: "The gallbladder wall is thickened and contains intramural diverticula or Rokitansky-Aschoff sinuses, at the fundus or in the mid-body."
         include_terms:
           - "adenomyomatosis"
           - "adenomyomatous"
@@ -174,7 +174,7 @@ categories:
     questions:
       - id: hydronephrosis
         question: "Is there hydronephrosis?"
-        definition: "Dilation of the renal collecting system: the pelvis, the calyces, or both. Dilation of a ureter alone is not hydronephrosis."
+        definition: "The renal collecting system is dilated: the pelvis, the calyces, or both. A dilated ureter beside a normal pelvis and normal calyces does not count, and hydroureteronephrosis does."
         include_terms:
           - "hydronephrosis"
           - "hydroureteronephrosis"
@@ -191,7 +191,7 @@ categories:
         question: "Are there any simple renal cysts?"
       - id: complex_renal_cyst
         question: "Are there any complex renal cysts?"
-        definition: "A renal cyst with internal complexity: septations, multiple locules, a thickened or enhancing wall, calcification or solid elements. Bosniak IIF and above."
+        definition: "A renal cyst shows internal complexity: septations, multiple locules, a thickened or enhancing wall, calcification, or solid elements. Bosniak IIF and above."
         include_terms:
           - "complex cyst"
           - "septated cyst"
@@ -244,7 +244,7 @@ categories:
         question: "Is there nephrocalcinosis?"
       - id: polycystic_kidney_disease
         question: "Is there polycystic kidney disease?"
-        definition: "Polycystic kidney disease stated, or innumerable bilateral renal cysts replacing the parenchyma. Several bilateral cysts alone do not count."
+        definition: "The report states polycystic kidney disease, or describes innumerable bilateral cysts replacing the renal parenchyma. A few cysts in each kidney do not count."
         include_terms:
           - "polycystic kidney"
           - "ADPKD"
@@ -262,7 +262,7 @@ categories:
         question: "Is there renal lymphomas?"
       - id: angiomyolipoma_aml
         question: "Are there any angiomyolipomas?"
-        definition: "A fat-containing renal lesion, almost always in the kidney and rarely in the liver. Not an adrenal myelolipoma, which is a different lesion in a different organ."
+        definition: "A fat-containing lesion, almost always in the kidney and rarely in the liver. An adrenal myelolipoma is a different lesion in a different organ and has its own question."
         include_terms:
           - "angiomyolipoma"
           - "AML"
@@ -293,7 +293,7 @@ categories:
     questions:
       - id: adrenal_myelolipoma
         question: "Are there any adrenal myelolipomas?"
-        definition: "A fat-containing adrenal lesion. Not a renal angiomyolipoma, and not a myolipoma of soft tissue."
+        definition: "A fat-containing lesion in an adrenal gland. A renal angiomyolipoma has its own question, and a soft-tissue myolipoma is a third lesion again."
         include_terms:
           - "myelolipoma"
           - "adrenal myelolipoma"
@@ -334,7 +334,7 @@ categories:
     questions:
       - id: ascites
         question: "Is there any ascites?"
-        definition: "Non-hemorrhagic free peritoneal fluid: the chronic kind, from cirrhosis, malignancy or heart failure. Free blood is hemoperitoneum and fluid of unstated character belongs to the umbrella question, both new this round."
+        definition: "Free peritoneal fluid that the report does not call blood: the chronic kind, from cirrhosis, malignancy or heart failure. Free blood answers the hemoperitoneum question, and fluid the report leaves uncharacterised answers the umbrella question."
         include_terms:
           - "ascites"
           - "ascitic fluid"
@@ -344,7 +344,7 @@ categories:
         severity_scale: "volume"
       - id: free_air_pneumoperitoneum
         question: "Is there any free air or pneumoperitoneum?"
-        definition: "Extraluminal gas in the peritoneal cavity, including gas confined to the mesentery."
+        definition: "Gas lies outside the bowel lumen, in the peritoneal cavity. Gas confined to the mesentery counts."
         include_terms:
           - "pneumoperitoneum"
           - "free air"
@@ -355,7 +355,7 @@ categories:
         question: "Is there pseudomyxoma peritonei?"
       - id: peritoneal_carcinomatosis
         question: "Is there peritoneal carcinomatosis or omental caking?"
-        definition: "Nodular or plaque-like peritoneal tumour deposits. Omental caking has its own question from this round."
+        definition: "Tumour deposits stud the peritoneum as nodules or plaques. Omental caking has its own question as of this round."
         include_terms:
           - "peritoneal carcinomatosis"
           - "peritoneal implants"
@@ -365,7 +365,7 @@ categories:
 
       - id: free_intraperitoneal_fluid
         question: "Is there any free intraperitoneal fluid?"
-        definition: "Fluid of any character in the peritoneal cavity: blood, ascites, bile, urine, enteric content or fluid of unstated character. This is the umbrella question, so a report describing any of them answers Yes."
+        definition: "Fluid lies free in the peritoneal cavity, whatever the report calls it: blood, ascites, bile, urine, enteric content, or fluid it leaves uncharacterised. Any of those answers Yes."
         include_terms:
           - "free fluid"
           - "free intraperitoneal fluid"
@@ -380,7 +380,7 @@ categories:
         severity_scale: "volume"
       - id: hemoperitoneum
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
-        definition: "Free intraperitoneal fluid the report characterises as blood, whether by density, by an attributed injury, or by the word itself. Fluid of unstated character does not count here; it counts under the umbrella question."
+        definition: "The report calls the free intraperitoneal fluid blood -- by that word, by its density, or by the injury it attributes the fluid to. Fluid the report leaves uncharacterised answers the umbrella question instead."
         include_terms:
           - "hemoperitoneum"
           - "intraperitoneal blood"
@@ -422,7 +422,7 @@ categories:
     questions:
       - id: metastatic_disease_general
         question: "Is metastatic disease suspected based on the imaging findings?"
-        definition: "Metastatic disease anywhere in the imaged volume, stated as metastatic or described as a metastasis."
+        definition: "The report describes metastatic disease anywhere in the imaged volume, by that word or by naming a lesion a metastasis."
         include_terms:
           - "metastatic"
           - "metastasis"
@@ -431,7 +431,7 @@ categories:
           - "secondary deposits"
       - id: anasarca
         question: "Is anasarca suspected based on the imaging findings?"
-        definition: "Generalised subcutaneous oedema, by that name or described as diffuse."
+        definition: "The report describes subcutaneous oedema as generalised, diffuse or third-spaced."
         include_terms:
           - "anasarca"
           - "generalized edema"
@@ -452,7 +452,7 @@ categories:
     questions:
       - id: uterine_leiomyomas_fibroids
         question: "Are there any leiomyomas?"
-        definition: "A benign smooth-muscle tumour of the uterus, by any of its names."
+        definition: "A benign smooth-muscle tumour of the uterus, under any of its names."
         include_terms:
           - "leiomyoma"
           - "uterine myoma"
@@ -487,7 +487,7 @@ categories:
         question: "Is there any pleural effusion?"
       - id: cardiomegaly
         question: "Is there cardiomegaly?"
-        definition: "Enlargement of the heart as a whole. Enlargement of one chamber is not cardiomegaly."
+        definition: "The heart is enlarged overall. One enlarged chamber does not count."
         include_terms:
           - "cardiomegaly"
           - "enlarged heart"

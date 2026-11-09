@@ -1,6 +1,6 @@
 {
   "digest": {
-    "file": "37d4930f2235c9d7",
+    "file": "78d00c71deccf6ef",
     "question_set": "6b9c3b6c912f39bf"
   },
   "findings": {
@@ -126,7 +126,7 @@
       "added": true,
       "category": "Biliary Tree",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -134,7 +134,7 @@
           "question": "Does the report describe any abnormality of the bile ducts?"
         }
       ],
-      "window": "-"
+      "window": "RUQ"
     },
     "any_bowel": {
       "added": true,
@@ -168,7 +168,7 @@
       "added": true,
       "category": "Gallbladder",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -176,7 +176,7 @@
           "question": "Does the report describe any abnormality of the gallbladder?"
         }
       ],
-      "window": "-"
+      "window": "RUQ"
     },
     "any_great_vessels": {
       "added": true,
@@ -196,7 +196,7 @@
       "added": true,
       "category": "Genitourinary",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -204,13 +204,13 @@
           "question": "Does the report describe any abnormality of the kidneys?"
         }
       ],
-      "window": "-"
+      "window": "RUQ/LUQ"
     },
     "any_liver": {
       "added": true,
       "category": "Liver",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -218,7 +218,7 @@
           "question": "Does the report describe any abnormality of the liver?"
         }
       ],
-      "window": "-"
+      "window": "RUQ"
     },
     "any_male_pelvis": {
       "added": true,
@@ -266,7 +266,7 @@
       "added": true,
       "category": "Visible Thoracic",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -274,13 +274,13 @@
           "question": "Does the report describe any abnormality of the pericardium?"
         }
       ],
-      "window": "-"
+      "window": "cardiac"
     },
     "any_peritoneum": {
       "added": true,
       "category": "Peritoneum",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -288,13 +288,13 @@
           "question": "Does the report describe any abnormality of the peritoneal cavity?"
         }
       ],
-      "window": "-"
+      "window": "all windows"
     },
     "any_pleura": {
       "added": true,
       "category": "Visible Thoracic",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -302,7 +302,7 @@
           "question": "Does the report describe any abnormality of the pleural spaces or lung bases?"
         }
       ],
-      "window": "-"
+      "window": "thoracic"
     },
     "any_retroperitoneum": {
       "added": true,
@@ -322,7 +322,7 @@
       "added": true,
       "category": "Spleen",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -330,13 +330,13 @@
           "question": "Does the report describe any abnormality of the spleen?"
         }
       ],
-      "window": "-"
+      "window": "LUQ"
     },
     "any_urinary_tract": {
       "added": true,
       "category": "Genitourinary",
       "covariate": false,
-      "tier": "C",
+      "tier": "A",
       "variants": [
         {
           "index": 0,
@@ -344,7 +344,7 @@
           "question": "Does the report describe any abnormality of the ureters or bladder?"
         }
       ],
-      "window": "-"
+      "window": "suprapubic"
     },
     "aortic_atherosclerosis": {
       "category": "Great Vessel",
@@ -1464,7 +1464,7 @@
       "window": "RUQ/LUQ"
     }
   },
-  "generated": "2026-11-08",
+  "generated": "2026-11-09",
   "modality": "fast_abdominal_ct",
   "retired": [
     {
