@@ -2,6 +2,7 @@
 
 import logging
 from typing import Dict, List, Tuple, Set
+from .logging_config import redacted
 from .exceptions import ValidationError
 
 
@@ -51,7 +52,10 @@ class ResultValidator:
                 invalid_patterns[pattern] = invalid_patterns.get(pattern, 0) + 1
                 
                 if invalid_count <= 10:  # Log first 10 invalid results in detail
-                    self.logger.warning(f"Invalid result for {request_id} in {stage_name}: '{content[:100]}...'")
+                    self.logger.warning(
+                        f"Invalid result for {redacted(request_id)} in {stage_name}: "
+                        f"'{content[:100]}...'"
+                    )
         
         if invalid_count > 0:
             self.logger.info(f"Filtered out {invalid_count} invalid results from {stage_name}")

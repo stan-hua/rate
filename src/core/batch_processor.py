@@ -22,7 +22,9 @@ SAMPLING_FIELDS = (
     "presence_penalty",
     "frequency_penalty",
 )
+from .logging_config import redacted
 from .validators import ResultValidator
+
 
 
 class BatchProcessor:
@@ -279,12 +281,12 @@ class BatchProcessor:
                     
                     # Handle error responses
                     if not parsing_success and 'error' in result:
-                        self.logger.warning(f"Error in batch response for {custom_id}: {result['error']}")
+                        self.logger.warning(f"Error in batch response for {redacted(custom_id)}: {result['error']}")
                         content = ""
                         parsing_success = True
                     
                     if not parsing_success:
-                        self.logger.warning(f"Could not parse response for {custom_id}, available keys: {list(result.keys())}")
+                        self.logger.warning(f"Could not parse response for {redacted(custom_id)}, available keys: {list(result.keys())}")
                         content = ""
                     
                     # Clean up content (remove thinking tags if present)
@@ -377,12 +379,15 @@ class BatchProcessor:
             self.logger.info(f"Sample non-empty results:")
             for rid, content in sample_results:
                 if content.strip():
-                    self.logger.info(f"  {rid}: '{content[:150]}{'...' if len(content) > 150 else ''}'")
+                    self.logger.info(
+                        f"  {redacted(rid)}: "
+                        f"'{content[:150]}{'...' if len(content) > 150 else ''}'"
+                    )
             
             if empty_samples:
                 self.logger.warning(f"Sample empty results:")
                 for rid, content in empty_samples:
-                    self.logger.warning(f"  {rid}: EMPTY ('{content}')")
+                    self.logger.warning(f"  {redacted(rid)}: EMPTY ('{content}')")
             
             # Log response patterns to identify issues
             response_patterns = {}

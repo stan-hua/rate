@@ -1,3 +1,5 @@
+import hashlib
+import re
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -47,3 +49,32 @@ def setup_logging(name: str, save_dir: str = "logs", filename: str = None) -> lo
     logger.addHandler(file_handler)
     
     return logger 
+
+# A request id opens with the report id, which for this cohort is a real
+# accession number. The sample lines the batch processor logs print five ids
+# and five answers per batch at INFO, so a run over the cohort would write
+# some ten thousand accession numbers into a log file. `redacted` keeps the
+# half that debugs anything -- the finding and the wording index -- and
+# replaces the report id with a short digest, which still groups one report's
+# lines together.
+_REQUEST_ID = re.compile(r"^(.*?)_([a-z][a-z0-9_]*_v\d+)$")
+
+
+def redacted(request_id):
+    """Return a request id with the report id replaced by a short digest.
+
+    Parameters
+    ----------
+    request_id : str
+        `{report_id}_{finding_id}_v{variant_index}`, or any other stage's id.
+
+    Returns
+    -------
+    str
+        The digest, with the finding and wording kept where the id has them.
+    """
+    text = str(request_id)
+    match = _REQUEST_ID.match(text)
+    report, rest = (match.group(1), match.group(2)) if match else (text, "")
+    digest = hashlib.sha256(report.encode()).hexdigest()[:8]
+    return f"{digest}_{rest}" if rest else digest

@@ -725,3 +725,41 @@ class TestStatedSitsAboveHigh:
         """A ranking over certainty runs across the four levels that mean
         something, and `unspecified` is not one of them."""
         assert not at_least("unspecified", "low", CERTAINTY_ORDER)
+
+
+class TestTheLogsDoNotNameAReport:
+    """A request id opens with the report id, which here is a real accession.
+
+    The batch processor logs five ids and five answers per batch at INFO, so a
+    run over 12,681 reports would write some ten thousand accession numbers
+    into a log file on disk.
+    """
+
+    def test_the_report_id_becomes_a_digest(self):
+        from src.core.logging_config import redacted
+
+        got = redacted("A12345678_hepatic_cysts_simple_v1")
+        assert "A12345678" not in got
+        assert got.endswith("_hepatic_cysts_simple_v1")
+
+    def test_a_report_id_with_underscores_still_goes(self):
+        from src.core.logging_config import redacted
+
+        got = redacted("SITE_A_12345_hepatic_cysts_simple_v12")
+        assert "12345" not in got
+        assert got.endswith("_hepatic_cysts_simple_v12")
+
+    def test_an_id_of_another_shape_is_hashed_whole(self):
+        """The category stage keys on `{report_id}_{category}`, which no
+        pattern separates safely, so none of it is printed."""
+        from src.core.logging_config import redacted
+
+        assert "A12345678" not in redacted("A12345678_Liver")
+
+    def test_one_report_keeps_one_digest(self):
+        """Which is what makes a log still readable: a report's lines group."""
+        from src.core.logging_config import redacted
+
+        first = redacted("A12345678_ascites_v0").split("_")[0]
+        second = redacted("A12345678_hepatic_cysts_simple_v2").split("_")[0]
+        assert first == second
