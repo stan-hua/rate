@@ -84,19 +84,22 @@ sglang = { version = "==0.4.7", extras = ["all"] }
 # the first thing to check is a dependency sglang left without an upper bound.
 compressed-tensors = "==0.10.2"
 
+# Every line but the last ends in a backslash. A raw newline in a pixi `cmd`
+# is a command separator, so without them the server launches with no
+# arguments at all and each flag is then run as its own command.
 [feature.server.tasks.launch-server]
 description = "Serve the model the extraction asks over HTTP"
 cmd = """
-python -m sglang.launch_server
-  --model-path Qwen/Qwen3-30B-A3B
-  --reasoning-parser qwen3
-  --port 8000
-  --host 127.0.0.1
-  --tp 4
-  --schedule-conservativeness 0.1
-  --attention-backend triton
-  --sampling-backend pytorch
-  --max-running-requests 256
+python -m sglang.launch_server \
+  --model-path Qwen/Qwen3-30B-A3B \
+  --reasoning-parser qwen3 \
+  --port 8000 \
+  --host 127.0.0.1 \
+  --tp 4 \
+  --schedule-conservativeness 0.1 \
+  --attention-backend triton \
+  --sampling-backend pytorch \
+  --max-running-requests 256 \
   --mem-fraction-static 0.80
 """
 
