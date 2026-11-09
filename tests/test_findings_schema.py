@@ -1051,3 +1051,95 @@ class TestThePatternLayer:
         for pattern, level in patterns:
             assert level in allowed, level
             assert pattern.pattern
+
+
+class TestAPhraseIsCleanedAndCheckedAgainstItsEvidence:
+    """Two defects from one live run, pulling in opposite directions.
+
+    A biliary row returned `certainty_phrase` "may be related to contrast
+    bolus timing" and `severity_phrase` "mildly enlarged" beside evidence
+    about ductal dilatation, a stent and soft tissue encasement. Neither
+    phrase was in it, and neither "mildly enlarged" nor the contrast timing
+    appears anywhere in that report's biliary sentence, so `low` and `mild`
+    rested on text the answer never evidenced.
+
+    A free-fluid row returned `severity_phrase` "small volume'}" against
+    evidence "Peritoneum: Small volume ascites." The model wrote the object's
+    closing characters inside the string, where the grammar constrains
+    nothing. That is a correct magnitude with two stray characters, and a rule
+    that dropped unquoted levels would have discarded it.
+
+    So the edges are cleaned and the check only records. `unquoted` is the
+    column to filter on, and its rate is the thing to know first.
+    """
+
+    def answer(self, evidence, certainty="", severity=""):
+        return parse_answer(json.dumps({
+            "answer": "yes",
+            "evidence": evidence,
+            "certainty_phrase": certainty,
+            "severity_phrase": severity,
+            "named_outright": True,
+        }))
+
+    def test_the_closing_characters_are_stripped(self):
+        got = self.answer("Peritoneum: Small volume ascites.", severity="small volume'}")
+        assert got["severity_phrase"] == "small volume"
+
+    def test_and_the_level_survives_them(self):
+        """The defect this guards: two stray characters cost a correct `mild`."""
+        got = self.answer("Peritoneum: Small volume ascites.", severity="small volume'}")
+        assert got["severity"] == "mild"
+        assert got["unquoted"] == ""
+
+    @pytest.mark.parametrize(
+        "dirty", ['"trace"', "trace.", "trace,", " trace ", "trace'}", "{trace}", "(trace)"]
+    )
+    def test_the_edges_it_cleans(self, dirty):
+        got = self.answer("Peritoneum: Trace ascites.", severity=dirty)
+        assert got["severity_phrase"] == "trace"
+        assert got["severity"] == "trace"
+
+    def test_a_phrase_absent_from_the_evidence_is_named(self):
+        got = self.answer(
+            "Redemonstrated mild intrahepatic biliary ductal dilatation and pneumobilia.",
+            certainty="may be related to contrast bolus timing",
+            severity="mildly enlarged",
+        )
+        assert got["unquoted"] == "certainty,severity"
+
+    def test_the_level_is_left_alone_when_it_is(self):
+        """A No has no severity by definition. This is a heuristic, and it has
+        already misfired once, so it reports and changes nothing."""
+        got = self.answer(
+            "Redemonstrated mild intrahepatic biliary ductal dilatation.",
+            certainty="may be related to contrast bolus timing",
+            severity="mildly enlarged",
+        )
+        assert got["certainty"] == "low"
+        assert got["severity"] == "mild"
+
+    def test_one_axis_alone_is_named(self):
+        got = self.answer("Spleen: Mildly enlarged, up to 13.5 cm.",
+                          certainty="concerning for", severity="mildly")
+        assert got["unquoted"] == "certainty"
+
+    def test_a_quoted_phrase_is_not_named(self):
+        got = self.answer("Spleen: Mildly enlarged, up to 13.5 cm.", severity="mildly")
+        assert got["unquoted"] == ""
+
+    def test_case_and_whitespace_do_not_count_as_unquoted(self):
+        """As far as "verbatim" stretches. A reworded phrase is not a quote."""
+        got = self.answer("Peritoneum: Small volume ascites.", severity="Small   Volume")
+        assert got["unquoted"] == ""
+
+    def test_an_empty_evidence_cannot_convict_a_phrase(self):
+        got = self.answer("", severity="trace")
+        assert got["unquoted"] == ""
+
+    def test_a_no_row_names_nothing(self):
+        got = parse_answer('{"answer":"no","evidence":"Liver: Unremarkable.","named_outright":false}')
+        assert got["unquoted"] == ""
+
+    def test_it_is_a_stored_column(self):
+        assert "unquoted" in ANSWER_COLUMNS

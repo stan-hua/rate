@@ -19,6 +19,16 @@ magnitude word as the report writes them, and `lexicon.py` maps those to a
 level afterwards. A mapping is contestable and will be revised; re-asking four
 million questions to revise one is not.
 
+**A phrase has to be in the evidence.** Both phrase fields ask for a verbatim
+quote, and a run returned `severity_phrase` "mildly enlarged" beside evidence
+that says "mild intrahepatic biliary ductal dilatation" -- near enough to look
+right and not a quote. `_quoted` checks the phrase against the sentence the
+answer gave and `unquoted` names the axis where it fails, which makes the rate
+countable before anything is thrown away. The level stays: a No has no
+severity by definition, where this is a heuristic, and the same run also
+returned "small volume\'}" -- a correct magnitude with two stray characters,
+which a stricter rule would have discarded. `_phrase` cleans those edges.
+
 **The `description` strings never reach the model.** The request body is
 `messages` plus `response_format`, and the server compiles the schema into a
 decoding grammar that masks tokens by structure: the property names, the
@@ -146,6 +156,8 @@ ANSWER_COLUMNS = (
     # Set by the reader rather than the model: the generation ran past the end
     # of the object into whitespace and was closed here.
     "truncated",
+    # Also the reader's: which phrases the evidence does not contain.
+    "unquoted",
 )
 
 # The two columns the lexicon computes rather than the model. They are stored
@@ -201,8 +213,8 @@ def parse_answer(raw):
             "verdict": verdict,
             "evidence": body.get("evidence") or "",
             "section": body.get("section") or "",
-            "certainty_phrase": body.get("certainty_phrase") or "",
-            "severity_phrase": body.get("severity_phrase") or "",
+            "certainty_phrase": _phrase(body.get("certainty_phrase")),
+            "severity_phrase": _phrase(body.get("severity_phrase")),
             "chronicity": body.get("chronicity") or "unspecified",
             "attribution": body.get("attribution") or "unknown",
             "named_outright": bool(body.get("named_outright", False)),
@@ -264,6 +276,43 @@ def _load_object(text):
     return None, False
 
 
+# What a phrase may not begin or end with. A run returned `severity_phrase`
+# "small volume\'}" -- the model wrote the object's closing characters inside
+# the string, where the grammar does not constrain what a string contains. The
+# object parsed, so `truncated` was correctly False and only the value was
+# dirty. The lexicon still read "small volume" and graded it `mild`, and the
+# quote check below would have dropped that level over two stray characters.
+_PHRASE_EDGE = " \t\n\r'\"{}[]().,;:"
+
+
+def _phrase(value):
+    """Return a quoted phrase with its whitespace and stray edges cleaned."""
+    return " ".join(str(value or "").split()).strip(_PHRASE_EDGE)
+
+
+def _quoted(phrase, evidence):
+    """Report whether the evidence contains this phrase.
+
+    Both fields ask for a verbatim quote, so the phrase has to be in the
+    sentence the answer gave. A live run returned `certainty_phrase` "may be
+    related to contrast bolus timing" and `severity_phrase` "mildly enlarged"
+    beside evidence about biliary ductal dilatation, a stent and soft tissue
+    encasement. Neither phrase was in it, so `low` and `mild` were computed
+    from text the answer never evidenced.
+
+    The comparison folds case and collapses whitespace, which is as far as
+    "verbatim" stretches. A phrase the model reworded is a phrase it did not
+    quote.
+    """
+    text = _phrase(phrase).lower()
+    if not text:
+        return True
+    source = " ".join(str(evidence or "").split()).lower()
+    if not source:
+        return True
+    return text in source
+
+
 def _graded(record, structured):
     """Add the level each quoted phrase maps to, leaving the phrase alone.
 
@@ -311,12 +360,23 @@ def _graded(record, structured):
     if record["verdict"] != "yes":
         record["certainty"] = UNSPECIFIED
         record["severity"] = UNSPECIFIED
+        record["unquoted"] = ""
         return record
 
     record["certainty"] = certainty_of(record["certainty_phrase"])
     record["severity"] = severity_of(record["severity_phrase"])
     if structured and not record["certainty_phrase"].strip():
         record["certainty"] = STATED
+
+    # Which phrases the evidence does not contain. The level stays, and this
+    # column is the filter: a `no` row has no severity by definition, where an
+    # unquoted phrase is a heuristic that can misfire, and the first thing to
+    # know is how often it fires at all.
+    record["unquoted"] = ",".join(
+        axis
+        for axis, phrase in (("certainty", "certainty_phrase"), ("severity", "severity_phrase"))
+        if not _quoted(record[phrase], record["evidence"])
+    )
     return record
 
 
