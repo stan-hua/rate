@@ -727,16 +727,17 @@ class TestStatedSitsAboveHigh:
         assert not at_least("unspecified", "low", CERTAINTY_ORDER)
 
 
-class TestANonYesKeepsNoPhraseAndNoLevel:
-    """A hedge and a magnitude describe a finding, and a No says there is none.
+class TestANonYesGradesToNoLevel:
+    """Severity is a magnitude and an absent finding has none.
 
     Asked about hepatic cysts on a liver section whose one abnormal sentence
     reported biliary ductal dilatation, three wordings answered No and two put
     that sentence's "Minimal" in `severity_phrase`. The lexicon then graded
     those No rows `trace`, off a finding the question was not about.
 
-    `evidence` is kept. "Liver: Unremarkable" is what settles a No, and the
-    prompt is where a quote about a different abnormality is ruled out.
+    The phrases and the evidence are kept as the model wrote them. They record
+    what the report said, and a phrase on a No row measures whether the prompt
+    is landing.
     """
 
     def answer(self, verdict, **fields):
@@ -744,15 +745,17 @@ class TestANonYesKeepsNoPhraseAndNoLevel:
         body.update(fields)
         return parse_answer(json.dumps(body))
 
-    def test_a_no_keeps_neither_phrase(self):
+    def test_a_no_keeps_the_phrase_the_model_wrote(self):
+        """Which is what makes the defect countable after the prompt change:
+        a No row with a `severity_phrase` is a row the prompt did not reach."""
         got = self.answer(
             "no",
             evidence="Liver: Minimal intrahepatic biliary ductal dilatation.",
             severity_phrase="Minimal intrahepatic biliary ductal dilatation",
             certainty_phrase="consistent with",
         )
-        assert got["severity_phrase"] == ""
-        assert got["certainty_phrase"] == ""
+        assert got["severity_phrase"] == "Minimal intrahepatic biliary ductal dilatation"
+        assert got["certainty_phrase"] == "consistent with"
 
     def test_a_no_grades_neither_level(self):
         """`trace` off another finding's magnitude word is the defect."""
@@ -764,7 +767,7 @@ class TestANonYesKeepsNoPhraseAndNoLevel:
         got = self.answer("not_assessed", severity_phrase="large", certainty_phrase="likely")
         assert got["severity"] == "unspecified"
         assert got["certainty"] == "unspecified"
-        assert got["severity_phrase"] == ""
+        assert got["severity_phrase"] == "large"
 
     def test_a_no_is_never_stated(self):
         """`stated` is a report naming the finding, which a No has not done."""
@@ -788,7 +791,7 @@ class TestANonYesKeepsNoPhraseAndNoLevel:
         assert "answer" in STAGE_CONFIGS["questions"]["columns"]
         raw = '{"answer":"no","evidence":"","severity_phrase":"Minimal","named_outright":false}'
         assert json.loads(raw)["severity_phrase"] == "Minimal"
-        assert parse_answer(raw)["severity_phrase"] == ""
+        assert parse_answer(raw)["severity"] == "unspecified"
 
     def test_the_prompt_says_the_fields_are_about_this_finding(self):
         import yaml

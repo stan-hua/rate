@@ -276,17 +276,21 @@ def _graded(record, structured):
     state. And every answer from before the schema, which asked for no hedge at
     all.
 
-    An answer other than Yes keeps no phrase and no level. A hedge and a
-    magnitude describe a finding, and a No says there is none, so neither field
-    has anything to describe. The model fills them anyway: asked about hepatic
-    cysts on a liver section whose one abnormal sentence reported biliary
-    ductal dilatation, it answered No and put that sentence's "Minimal" in
-    `severity_phrase`, where the lexicon graded the No row `trace`. Clearing
-    them loses nothing, because the raw object stays in the `answer` column.
+    An answer other than Yes grades to no level. Severity is a magnitude and
+    certainty is a degree of belief, and an absent finding has neither, so
+    there is nothing for the lexicon to measure. `trace` on a No row is not a
+    wrong value; it is a value with no referent. The model does produce one:
+    asked about hepatic cysts on a liver section whose one abnormal sentence
+    reported biliary ductal dilatation, it answered No and put that sentence's
+    "Minimal" in `severity_phrase`, which the lexicon graded `trace`.
 
-    `evidence` is kept as the model quoted it. "Liver: Unremarkable" is what
-    settles a No, and the prompt is where a quote about some other abnormality
-    is ruled out.
+    The two phrases survive, and so does `evidence`. Their job is to record
+    what the report said, and a phrase on a No row is the measure of whether
+    the prompt is landing: counting those rows says how often the model still
+    reaches for a different finding's words. Clearing them would leave that
+    only in the raw `answer` column. "Liver: Unremarkable" is what settles a
+    No, and the prompt is where a quote about some other abnormality is ruled
+    out.
 
     Parameters
     ----------
@@ -297,8 +301,6 @@ def _graded(record, structured):
         `certainty_phrase` a claim rather than a field nobody asked for.
     """
     if record["verdict"] != "yes":
-        record["certainty_phrase"] = ""
-        record["severity_phrase"] = ""
         record["certainty"] = UNSPECIFIED
         record["severity"] = UNSPECIFIED
         return record
