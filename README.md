@@ -76,8 +76,8 @@ python -m sglang.launch_server \
     --schedule-conservativeness 0.1 \
     --attention-backend triton \
     --sampling-backend pytorch \
-    --max-running-requests 1024 \
-    --cuda-graph-max-bs 1024 \
+    --max-running-requests 512 \
+    --cuda-graph-max-bs 512 \
     --mem-fraction-static 0.80
 ```
 
