@@ -5,25 +5,11 @@ channels = ["conda-forge"]
 platforms = ["linux-64", "osx-arm64"]
 
 [activation.env]
-# `src` is the package and the CLIs are run as `python -m src.cli`, so the
-# repository root has to be importable whatever the working directory.
+# The CLIs run as `python -m src.cli`, from any working directory.
 PYTHONPATH = "$PIXI_PROJECT_ROOT"
 
-# ---------------------------------------------------------------------------
-# This environment runs the whole pipeline and needs no GPU.
-#
-# `pyproject.toml` declares `sglang[all]`, transformers, accelerate and six
-# more packages. None of them appear in an import anywhere under `src/`: the
-# only two references were `import sglang as sgl` and `from sglang.utils
-# import wait_for_server, print_highlight` in `core/engine.py`, and neither
-# name was ever called. sglang is the *server*, launched separately, and this
-# code talks to it over HTTP through the `openai` client against an
-# OpenAI-compatible endpoint. So the client needs five packages, and a machine
-# without a GPU can run and test everything except the inference itself.
-#
-# Launching the server is a separate concern with its own install. See
-# `README.md`; it wants 8 GPUs and a CUDA build of torch.
-# ---------------------------------------------------------------------------
+# The whole pipeline, with no GPU: sglang is the server and nothing under
+# `src/` imports it. This code reaches it over HTTP through `openai`.
 [dependencies]
 python = "3.12.*"
 pandas = ">=2.0"
@@ -34,27 +20,12 @@ openai = ">=1.0"
 pytest = ">=7.0"
 ruff = ">=0.1"
 
-# ---------------------------------------------------------------------------
-# The server, which is a separate concern with a separate install.
-#
-# `sglang` appears in no import under `src/`: this code reaches the server over
-# HTTP through the `openai` client. So the feature exists to launch and host
-# the model, and nothing in the pipeline needs it.
-#
-# It is kept out of `default` on purpose. sglang pulls a CUDA build of torch
-# and flashinfer, which is several gigabytes and solves only on a machine with
-# a GPU, and `pixi install` with no `-e` solves every environment in the
-# manifest -- so putting it in `default` would make a plain `pixi install` fail
-# on any laptop. Install it with `pixi install -e server` on the GPU host.
-#
-# The version is pinned to what `pyproject.toml` declares, because the batch
-# API this pipeline uses (`/v1/files` and `/v1/batches`) is the reason that pin
-# exists.
-# ---------------------------------------------------------------------------
+# The model host, `pixi install -e server`. Out of `default` because
+# `pixi install` solves every environment, and this one needs a GPU and
+# several GB of CUDA wheels.
 [feature.server]
-# linux-64 only, and no CUDA virtual package: every GPU dependency here comes
-# from PyPI, where the linux wheels of torch and flashinfer are the CUDA
-# builds, so nothing in the conda half needs `__cuda` to solve.
+# No CUDA virtual package: the GPU wheels come from PyPI, so the conda half
+# does not need `__cuda` to solve.
 platforms = ["linux-64"]
 
 [feature.server.dependencies]
@@ -62,51 +33,19 @@ python = "3.12.*"
 
 [feature.server.pypi-dependencies]
 sglang = { version = "==0.4.7", extras = ["all"] }
-# sglang 0.4.7 pins `transformers==4.52.3` exactly and declares
-# `compressed-tensors` with no bound at all, so a resolver takes the newest.
-# compressed-tensors 0.13.0 added `modeling/attention.py`, which imports
-# `transformers.masking_utils` -- a module that first exists in transformers
-# 4.53.0. The two cannot both be satisfied, and the failure is an
-# ImportError at launch rather than anything a solve reports:
-#
-#   from transformers.masking_utils import ALL_MASK_ATTENTION_FUNCTIONS
-#   ModuleNotFoundError: No module named 'transformers.masking_utils'
-#
-# 0.10.2 is the release contemporaneous with sglang 0.4.7. It has no
-# `modeling/` package and no reference to `masking_utils`, verified against the
-# wheel rather than inferred from the dates.
-#
-# 47 other requirements of `sglang[all]` are unbounded the same way, among them
-# sgl-kernel, accelerate, peft, timm, datasets and pydantic. `pixi.lock` is
-# what holds those still, so it is committed and an install reads it. A
-# `pixi update` or a re-lock can reintroduce this class of failure, and the
-# symptom is always an ImportError at launch rather than a solve error -- so
-# the first thing to check is a dependency sglang left without an upper bound.
+# sglang pins `transformers==4.52.3` and leaves this unbounded, so a resolver
+# takes the newest -- and >=0.13.0 imports `transformers.masking_utils`, which
+# needs 4.53. 47 of its other requirements are unbounded the same way, held
+# still only by the committed lock, and the symptom is always an ImportError
+# at launch rather than a solve error.
 compressed-tensors = "==0.10.2"
 
-# Every line but the last ends in a backslash. A raw newline in a pixi `cmd`
-# is a command separator, so without them the server launches with no
-# arguments at all and each flag is then run as its own command.
+# Keep the backslashes: a raw newline in a pixi `cmd` is a command separator,
+# and without them the server launches with no arguments at all.
 #
-# `--max-running-requests` and `--cuda-graph-max-bs` are sized from a live run
-# on four A40s, which logged `#token: 346375` at `token usage: 0.38` with 255
-# requests running. That is a KV cache of about 911,000 tokens and about 1,358
-# tokens resident per request, so 62% of the cache was idle:
-#
-#     384 requests -> 0.57 of capacity
-#     512 requests -> 0.76 of capacity
-#     640 requests -> 0.95 of capacity
-#     768 requests -> 1.14 of capacity, which overflows
-#
-# 512 is twice the concurrency with headroom for a long answer. Going higher
-# makes sglang retract and re-prefill requests when the cache fills, which
-# costs more than the concurrency gains.
-#
-# `--cuda-graph-max-bs` matches it because the same run logged
-# `cuda graph: False` on every decode batch: a decode batch of 255 was larger
-# than the graphs sglang had captured, so decode ran eager. Capturing up to the
-# concurrency limit is what makes the graphs apply. Capture costs startup time
-# and a little memory.
+# The two batch-size limits are sized for four A40s, at about 0.76 of the KV
+# cache. Re-derive them from `#token` and `token usage` in the server log on
+# other hardware; past capacity sglang retracts and re-prefills requests.
 [feature.server.tasks.launch-server]
 description = "Serve the model the extraction asks over HTTP"
 cmd = """
@@ -128,8 +67,6 @@ python -m sglang.launch_server \
 PYTORCH_CUDA_ALLOC_CONF = "expandable_segments:True"
 
 [environments]
-# `default` is implicit and needs no GPU. `server` is the model host, solved
-# and installed only where there is one.
 server = { features = ["server"], no-default-feature = true }
 
 [tasks]
@@ -138,7 +75,6 @@ qc = { cmd = "python -m src.qc_cli", description = "Draw the sheets a human anno
 evaluate = { cmd = "python -m src.eval_cli", description = "Score the annotated sheets" }
 vote = { cmd = "python -m src.vote_cli", description = "Collapse a finding's wordings into one answer per report" }
 test = { cmd = "pytest", description = "The test suite" }
-# Scoped to `tests` on purpose. `ruff check src` reports 738 findings that
-# predate this manifest, so linting the whole tree would be red from the first
-# run and would stop meaning anything. Widen this once `src` is clean.
+# Scoped to `tests`: `ruff check src` reports 738 pre-existing findings.
+# Widen once `src` is clean.
 lint = { cmd = "ruff check tests", description = "ruff check" }
