@@ -338,19 +338,21 @@ class TestTheFastConfigAndItsLock:
         A probe asks whether anything in its compartment is abnormal, so it is
         the compartment's own coarse label. `Multi Organs` and `Device`
         describe findings across organs, so neither has one.
+
+        The lock marks a probe, and an id does not. `any_pericardium` is worded
+        like a probe and is a finding: it asks about the pericardial space,
+        which the subxiphoid view certainly shows, where the `Heart`
+        compartment's probe also covers valves, coronaries and chamber size.
         """
-        config = yaml.safe_load(FAST_ABDOMEN.read_text())
-        probes, flagged = {}, set()
-        for name, body in config["categories"].items():
-            found = [e["id"] for e in body["questions"] if e["id"].startswith("any_")]
-            assert len(found) <= 1, f"{name} has {len(found)} probes"
-            if found:
-                probes[name] = found[0]
-            if body.get("cross_cutting"):
-                flagged.add(name)
+        probes = {i: b["category"] for i, b in LOCK["findings"].items() if b.get("probe")}
         assert len(probes) == 17
+        assert len(set(probes.values())) == 17, "two probes in one compartment"
+        assert not LOCK["findings"]["any_pericardium"].get("probe")
+
+        config = yaml.safe_load(FAST_ABDOMEN.read_text())
+        flagged = {n for n, b in config["categories"].items() if b.get("cross_cutting")}
         assert flagged == {"Multi Organs", "Device"}
-        assert flagged == set(config["categories"]) - set(probes)
+        assert flagged == set(config["categories"]) - set(probes.values())
 
     def test_the_covariates_are_marked_and_counted(self):
         """Tier C questions kept to explain the sweep's mistakes, never labels."""
@@ -358,18 +360,19 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 8
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """110 findings over 330 wordings, so 330 requests per report.
+        """111 findings over 333 wordings, so 333 requests per report.
 
         83 visible findings with a positive in the cohort, 8 tier C questions
-        kept as covariates, 2 free-fluid findings the source never asked about,
-        and one compartment probe per category, each asked three times.
+        kept as covariates, 3 findings the source never asked about -- two for
+        free fluid and one for the pericardium -- and one compartment probe per
+        compartment, each asked three times.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
-        assert len(findings) == 110
-        assert wordings == 330
-        assert len(added) == 19
+        assert len(findings) == 111
+        assert wordings == 333
+        assert len(added) == 20
 
     def test_an_added_finding_is_marked_as_such(self):
         """`ifast` reads this to tell a pending extraction from an orphaned one.
@@ -378,6 +381,5 @@ class TestTheFastConfigAndItsLock:
         exactly like a reworded question whose stored rows were orphaned.
         """
         added = {i for i, b in LOCK["findings"].items() if b.get("added")}
-        assert "hemoperitoneum" in added
-        assert "free_intraperitoneal_fluid" in added
-        assert sum(1 for i in added if i.startswith("any_")) == 17
+        assert {"hemoperitoneum", "free_intraperitoneal_fluid", "any_pericardium"} <= added
+        assert sum(1 for i in added if LOCK["findings"][i].get("probe")) == 17

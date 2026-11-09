@@ -833,6 +833,27 @@ categories:
           - "atrial enlargement"
           - "left atrial enlargement"
           - "ventricular hypertrophy"
+      - id: any_pericardium
+        question: "Does the report describe any abnormality of the pericardium?"
+        variants:
+          - "Is there a pericardial effusion or any other pericardial abnormality?"
+          - "Is anything abnormal described in the pericardial space?"
+        definition: "Anything abnormal in the pericardial space: an effusion, hemopericardium, pericardial thickening or calcification, pneumopericardium, or a pericardial mass. The heart itself is a separate question, so chamber or global enlargement does not count, and neither does a valvular or coronary finding."
+        include_terms:
+          - "pericardial effusion"
+          - "pericardial fluid"
+          - "hemopericardium"
+          - "pericardial thickening"
+          - "pericardial calcification"
+          - "pneumopericardium"
+          - "pericardial mass"
+        exclude_terms:
+          - "cardiomegaly"
+          - "enlarged heart"
+          - "atrial enlargement"
+          - "coronary artery calcification"
+          - "aortic valve"
+        severity_scale: "volume"
       - id: any_heart
         question: "Does the report describe any abnormality of the heart or the pericardium?"
         variants:

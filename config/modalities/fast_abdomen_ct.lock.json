@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "8f9ae4ea2a277618",
-    "question_set": "4985bf9b78f4d7e9"
+    "file": "10936df9e7dbfaa9",
+    "question_set": "0ec35a9a54cb595f"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -192,6 +192,7 @@
       "added": true,
       "category": "Adrenal gland",
       "covariate": false,
+      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -216,6 +217,7 @@
       "added": true,
       "category": "Biliary Tree",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -240,6 +242,7 @@
       "added": true,
       "category": "Gastrointestinal",
       "covariate": false,
+      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -264,6 +267,7 @@
       "added": true,
       "category": "Female pelvis",
       "covariate": false,
+      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -288,6 +292,7 @@
       "added": true,
       "category": "Gallbladder",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -312,6 +317,7 @@
       "added": true,
       "category": "Great Vessel",
       "covariate": false,
+      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -336,6 +342,7 @@
       "added": true,
       "category": "Heart",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -360,6 +367,7 @@
       "added": true,
       "category": "Kidney",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -384,6 +392,7 @@
       "added": true,
       "category": "Liver",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -408,6 +417,7 @@
       "added": true,
       "category": "Male Pelvis",
       "covariate": false,
+      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -432,6 +442,7 @@
       "added": true,
       "category": "Musculoskeletal",
       "covariate": false,
+      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -456,6 +467,7 @@
       "added": true,
       "category": "Pancreas",
       "covariate": false,
+      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -476,10 +488,35 @@
       ],
       "window": "-"
     },
+    "any_pericardium": {
+      "added": true,
+      "category": "Heart",
+      "covariate": false,
+      "tier": "A",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "a5c7d7f7",
+          "question": "Does the report describe any abnormality of the pericardium?"
+        },
+        {
+          "index": 1,
+          "md5": "3f6ccbbe",
+          "question": "Is there a pericardial effusion or any other pericardial abnormality?"
+        },
+        {
+          "index": 2,
+          "md5": "711e5de7",
+          "question": "Is anything abnormal described in the pericardial space?"
+        }
+      ],
+      "window": "cardiac"
+    },
     "any_peritoneum": {
       "added": true,
       "category": "Peritoneum",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -504,6 +541,7 @@
       "added": true,
       "category": "Pleura and lung bases",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -528,6 +566,7 @@
       "added": true,
       "category": "Retroperitoneum",
       "covariate": false,
+      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -552,6 +591,7 @@
       "added": true,
       "category": "Spleen",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -576,6 +616,7 @@
       "added": true,
       "category": "Urinary tract",
       "covariate": false,
+      "probe": true,
       "tier": "A",
       "variants": [
         {
