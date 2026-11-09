@@ -43,9 +43,11 @@ compressed-tensors = "==0.10.2"
 # Keep the backslashes: a raw newline in a pixi `cmd` is a command separator,
 # and without them the server launches with no arguments at all.
 #
-# The two batch-size limits are sized for four A40s, at about 0.76 of the KV
-# cache. Re-derive them from `#token` and `token usage` in the server log on
-# other hardware; past capacity sglang retracts and re-prefills requests.
+# The two batch-size limits are sized for four A40s. Measured there: 545 KV
+# tokens resident per request, against a cache of about 900,000, so 1024
+# concurrent sits near 0.62. Re-derive from `#token` and `token usage` in the
+# server log on other hardware; past capacity sglang retracts and re-prefills
+# requests, and `--cuda-graph-max-bs` has to match or decode runs eager.
 [feature.server.tasks.launch-server]
 description = "Serve the model the extraction asks over HTTP"
 cmd = """
@@ -58,8 +60,8 @@ python -m sglang.launch_server \
   --schedule-conservativeness 0.1 \
   --attention-backend triton \
   --sampling-backend pytorch \
-  --max-running-requests 512 \
-  --cuda-graph-max-bs 512 \
+  --max-running-requests 1024 \
+  --cuda-graph-max-bs 1024 \
   --mem-fraction-static 0.80
 """
 
