@@ -360,19 +360,33 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 8
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """111 findings over 333 wordings, so 333 requests per report.
+        """113 findings over 339 wordings, so 339 requests per report.
 
         83 visible findings with a positive in the cohort, 8 tier C questions
-        kept as covariates, 3 findings the source never asked about -- two for
-        free fluid and one for the pericardium -- and one compartment probe per
-        compartment, each asked three times.
+        kept as covariates, 5 findings the source never asked about, and one
+        compartment probe per compartment, each asked three times. Of the five,
+        two are for free fluid, one is for the pericardium, and two are halves
+        of a compound question the source asked as one.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
-        assert len(findings) == 111
-        assert wordings == 333
-        assert len(added) == 20
+        assert len(findings) == 113
+        assert wordings == 339
+        assert len(added) == 22
+
+    def test_a_rescoped_finding_records_the_change(self):
+        """`ifast`'s QC sheet reads this to flag the rows needing a re-read.
+
+        A reworded question that counts something different turns an existing
+        annotation into an answer to the old question. A paraphrase does not,
+        and carries no mark.
+        """
+        changed = {i: b["change"] for i, b in LOCK["findings"].items() if b.get("change")}
+        assert set(changed.values()) <= {"scope_change", "paraphrase"}
+        assert changed.get("ascites") == "scope_change"
+        assert changed.get("spleen_absent") == "scope_change"
+        assert "splenomegaly" not in changed
 
     def test_an_added_finding_is_marked_as_such(self):
         """`ifast` reads this to tell a pending extraction from an orphaned one.

@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "10936df9e7dbfaa9",
-    "question_set": "0ec35a9a54cb595f"
+    "file": "14d5dc92d2c9bbd6",
+    "question_set": "bc346098da101a44"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -144,6 +144,7 @@
     },
     "anasarca": {
       "category": "Multi Organs",
+      "change": "scope_change",
       "covariate": false,
       "tier": "B",
       "variants": [
@@ -685,6 +686,7 @@
     },
     "ascites": {
       "category": "Peritoneum",
+      "change": "scope_change",
       "covariate": false,
       "tier": "A",
       "variants": [
@@ -1238,6 +1240,7 @@
     },
     "gallbladder_wall_thickening": {
       "category": "Gallbladder",
+      "change": "scope_change",
       "covariate": false,
       "tier": "A",
       "variants": [
@@ -1423,6 +1426,7 @@
     },
     "hepatic_mass_indeterminate": {
       "category": "Liver",
+      "change": "scope_change",
       "covariate": false,
       "tier": "A",
       "variants": [
@@ -1469,6 +1473,7 @@
     },
     "hepatic_steatosis": {
       "category": "Liver",
+      "change": "scope_change",
       "covariate": false,
       "tier": "A",
       "variants": [
@@ -1768,6 +1773,7 @@
     },
     "metastatic_disease_general": {
       "category": "Multi Organs",
+      "change": "scope_change",
       "covariate": false,
       "tier": "B",
       "variants": [
@@ -1812,8 +1818,33 @@
       ],
       "window": "RUQ/LUQ"
     },
+    "omental_caking": {
+      "added": true,
+      "category": "Peritoneum",
+      "covariate": false,
+      "tier": "B",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "0f8d768a",
+          "question": "Is there omental caking?"
+        },
+        {
+          "index": 1,
+          "md5": "3fced122",
+          "question": "Does the report describe an omental cake or omental thickening?"
+        },
+        {
+          "index": 2,
+          "md5": "f8edb175",
+          "question": "Is the omentum infiltrated or replaced by soft tissue?"
+        }
+      ],
+      "window": "all windows"
+    },
     "peritoneal_carcinomatosis": {
       "category": "Peritoneum",
+      "change": "scope_change",
       "covariate": false,
       "tier": "B",
       "variants": [
@@ -2087,6 +2118,30 @@
         }
       ],
       "window": "RUQ/LUQ"
+    },
+    "post_splenectomy_changes": {
+      "added": true,
+      "category": "Spleen",
+      "covariate": false,
+      "tier": "B",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "6c447e39",
+          "question": "Are there any post-splenectomy changes?"
+        },
+        {
+          "index": 1,
+          "md5": "533fc6e4",
+          "question": "Does the report describe surgical change in the splenic bed?"
+        },
+        {
+          "index": 2,
+          "md5": "a6efa66a",
+          "question": "Are there splenectomy clips, a splenic surgical bed or splenosis?"
+        }
+      ],
+      "window": "LUQ"
     },
     "prostatomegaly_bph": {
       "category": "Male Pelvis",
@@ -2366,6 +2421,7 @@
     },
     "spleen_absent": {
       "category": "Spleen",
+      "change": "scope_change",
       "covariate": false,
       "tier": "A",
       "variants": [

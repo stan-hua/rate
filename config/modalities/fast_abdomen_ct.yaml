@@ -55,17 +55,36 @@ categories:
         variants:
           - "Is the spleen absent?"
           - "Does the report describe a splenectomy or post-splenectomy change?"
-        definition: "The spleen is absent, or the report describes post-splenectomy change."
+        definition: "The spleen is not in the splenic fossa, for any reason: a splenectomy, congenital asplenia, or an autosplenectomy. The operative change a splenectomy leaves behind has its own question from this round."
         include_terms:
           - "splenectomy"
           - "surgically absent spleen"
           - "asplenia"
+          - "absent spleen"
+        exclude_terms:
+          - "splenosis"
+          - "splenectomy clips"
       - id: accessory_spleen
         question: "Are there any accessory spleens?"
         variants:
           - "Is there a splenule?"
           - "Does the report describe an accessory spleen near the splenic hilum?"
 
+      - id: post_splenectomy_changes
+        question: "Are there any post-splenectomy changes?"
+        variants:
+          - "Does the report describe surgical change in the splenic bed?"
+          - "Are there splenectomy clips, a splenic surgical bed or splenosis?"
+        definition: "The report describes operative change from a splenectomy: clips or sutures in the splenic bed, a surgical bed or cavity, or splenosis. An absent spleen with no operative change described answers the spleen-absent question instead."
+        include_terms:
+          - "post-splenectomy change"
+          - "splenectomy clips"
+          - "splenic bed"
+          - "splenosis"
+          - "surgical bed in the left upper quadrant"
+        exclude_terms:
+          - "asplenia"
+          - "congenitally absent spleen"
       - id: any_spleen
         question: "Does the report describe any abnormality of the spleen?"
         variants:
@@ -555,7 +574,7 @@ categories:
         variants:
           - "Does the report describe tumour deposits on the peritoneum?"
           - "Is there peritoneal carcinomatosis, peritoneal implants or peritoneal nodularity?"
-        definition: "Tumour deposits stud the peritoneum as nodules or plaques. Omental caking has its own question as of this round."
+        definition: "Tumour deposits stud the peritoneum as nodules or plaques. Omental caking has its own question, so an infiltrated omentum does not count here."
         include_terms:
           - "peritoneal carcinomatosis"
           - "peritoneal implants"
@@ -600,6 +619,24 @@ categories:
           - "low-density fluid"
           - "ascites"
         severity_scale: "volume"
+      - id: omental_caking
+        question: "Is there omental caking?"
+        variants:
+          - "Does the report describe an omental cake or omental thickening?"
+          - "Is the omentum infiltrated or replaced by soft tissue?"
+        definition: "Soft tissue replaces the fat of the omentum, as a thickened, nodular or infiltrated omental mass. Discrete peritoneal nodules or plaques elsewhere answer the carcinomatosis question."
+        include_terms:
+          - "omental caking"
+          - "omental cake"
+          - "omental thickening"
+          - "omental nodularity"
+          - "omental infiltration"
+          - "infiltrated omentum"
+        exclude_terms:
+          - "peritoneal carcinomatosis"
+          - "peritoneal implants"
+          - "peritoneal nodularity"
+        severity_scale: "generic"
       - id: any_peritoneum
         question: "Does the report describe any abnormality of the peritoneal cavity?"
         variants:
