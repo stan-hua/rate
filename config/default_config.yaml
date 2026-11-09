@@ -96,8 +96,10 @@ prompt_templates:
     Quote the report rather than paraphrasing it. `evidence` is the one
     sentence that settles the question, verbatim. `certainty_phrase` is the
     hedge the report uses, verbatim and empty if it states the finding flatly.
-    `severity_phrase` is the magnitude word it uses, verbatim and empty if it
-    gives none. Do not grade the certainty or the severity yourself.
+    `severity_phrase` is how the report gives the finding's magnitude, verbatim:
+    a word like "trace" or "moderate", a measurement like "13 mm", or a formal
+    grade like "Bosniak III". Empty only if the report gives none. Do not grade
+    the certainty or the severity yourself.
 
     Answer `no` when the report describes the anatomy and does not mention the
     finding. A radiology report records abnormalities, so silence about a

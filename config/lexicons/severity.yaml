@@ -104,20 +104,11 @@ graded_systems:
       IV: marked
       "4": marked
 
-  aneurysm_diameter:
-    pattern: '(?i)(\d+(?:\.\d+)?)\s*cm\b'
-    # The NHS AAA screening programme's bands, which is where these numbers
-    # come from rather than from a judgment made here: no aneurysm below
-    # 3.0 cm, small at 3.0 to 4.4, medium at 4.5 to 5.4, and large at 5.5 and
-    # above, which is the referral threshold. Small and medium go to annual
-    # and quarterly surveillance respectively.
-    # https://www.gov.uk/government/publications/abdominal-aortic-aneurysm-screening-pathway-requirements-specification/abdominal-aortic-aneurysm-screening-pathway-requirements-specification
-    bands:
-      - below: 3.0
-        level: unspecified
-      - below: 4.5
-        level: mild
-      - below: 5.5
-        level: moderate
-      - below: null
-        level: marked
+  # No entry for a bare measurement. `severity_of` sees a phrase and not the
+  # finding it belongs to, so a `N cm` rule would grade every finding by
+  # whichever scale happened to be written here: "6 cm simple renal cyst"
+  # came out `marked` on the aortic repair threshold. Bosniak and the SFU
+  # grade are safe because their text names the system. A measurement stays
+  # verbatim in `severity_phrase`, ungraded, and grading it needs the finding's
+  # own scale -- which is a change to `severity_of`'s signature, not a lexicon
+  # entry.

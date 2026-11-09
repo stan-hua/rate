@@ -78,9 +78,10 @@ RESPONSE_SCHEMA = {
         "severity_phrase": {
             "type": "string",
             "description": (
-                "The magnitude word the report uses, quoted verbatim -- "
-                "'trace', 'small', 'moderate', 'large', or a formal grade such "
-                "as 'Bosniak III'. Empty when the report gives none."
+                "How the report gives the finding's magnitude, quoted "
+                "verbatim: a word such as 'trace' or 'moderate', a measurement "
+                "such as '13 mm', or a formal grade such as 'Bosniak III'. "
+                "Empty only when the report gives none."
             ),
         },
         "chronicity": {

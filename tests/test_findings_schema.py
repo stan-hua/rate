@@ -336,24 +336,37 @@ class TestTheGradedSystems:
     def test_the_sfu_grades(self, phrase, level):
         assert severity_of(phrase) == level
 
-    @pytest.mark.parametrize(
-        "phrase,level",
-        [
-            ("2.4 cm", "unspecified"),
-            ("3.2 cm", "mild"),
-            ("4.9 cm", "moderate"),
-            ("5.5 cm", "marked"),
-            ("6 cm", "marked"),
-        ],
-    )
-    def test_an_aortic_diameter_takes_its_surveillance_band(self, phrase, level):
-        """Under 3.0 is not an aneurysm and 5.5 is the repair threshold."""
-        assert severity_of(phrase) == level
+    @pytest.mark.parametrize("phrase", ["2.4 cm", "3.2 cm", "6 cm", "13 mm"])
+    def test_a_bare_measurement_is_not_graded(self, phrase):
+        """`severity_of` sees a phrase, not the finding it belongs to.
 
-    def test_a_magnitude_word_still_wins_over_a_grade(self):
+        An aortic surveillance band was briefly applied to every `N cm`, so
+        "6 cm simple renal cyst" came out `marked` on the repair threshold for
+        an aneurysm. Bosniak and the SFU grade are safe because their text
+        names the system; a measurement is not self-identifying. It stays
+        verbatim in `severity_phrase` and grading it needs the finding's own
+        scale.
+        """
+        assert severity_of(phrase) == "unspecified"
+
+    def test_a_magnitude_word_beside_a_measurement_still_reads(self):
         """The word is the radiologist's own reading of the magnitude."""
         assert severity_of("large, 6 cm") == "marked"
         assert severity_of("mild, 3.2 cm") == "mild"
+
+    def test_the_prompt_asks_for_a_measurement_as_well_as_a_word(self):
+        """"13 mm exophytic cyst" came back with an empty severity_phrase,
+        because the instruction said "magnitude word" and a measurement is not
+        one. Size is the modifier that decides whether a sweep would show it."""
+        import yaml
+
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+        prompt = config["prompt_templates"]["findings_question"]
+        assert "a measurement like" in prompt
+        said = RESPONSE_SCHEMA["properties"]["severity_phrase"]["description"]
+        assert "measurement" in said
 
     def test_a_phrase_with_no_grade_is_unspecified(self):
         assert severity_of("in the right kidney") == "unspecified"
