@@ -76,7 +76,7 @@ python -m sglang.launch_server \
     --schedule-conservativeness 0.1 \
     --attention-backend triton \
     --sampling-backend pytorch \
-    --grammar-backend outlines \
+    --grammar-backend llguidance \
     --constrained-json-whitespace-pattern "[ ]?" \
     --max-running-requests 512 \
     --cuda-graph-max-bs 512 \
