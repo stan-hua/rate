@@ -34,6 +34,59 @@ openai = ">=1.0"
 pytest = ">=7.0"
 ruff = ">=0.1"
 
+# ---------------------------------------------------------------------------
+# The server, which is a separate concern with a separate install.
+#
+# `sglang` appears in no import under `src/`: this code reaches the server over
+# HTTP through the `openai` client. So the feature exists to launch and host
+# the model, and nothing in the pipeline needs it.
+#
+# It is kept out of `default` on purpose. sglang pulls a CUDA build of torch
+# and flashinfer, which is several gigabytes and solves only on a machine with
+# a GPU, and `pixi install` with no `-e` solves every environment in the
+# manifest -- so putting it in `default` would make a plain `pixi install` fail
+# on any laptop. Install it with `pixi install -e server` on the GPU host.
+#
+# The version is pinned to what `pyproject.toml` declares, because the batch
+# API this pipeline uses (`/v1/files` and `/v1/batches`) is the reason that pin
+# exists.
+# ---------------------------------------------------------------------------
+[feature.server]
+# linux-64 only, and no CUDA virtual package: every GPU dependency here comes
+# from PyPI, where the linux wheels of torch and flashinfer are the CUDA
+# builds, so nothing in the conda half needs `__cuda` to solve.
+platforms = ["linux-64"]
+
+[feature.server.dependencies]
+python = "3.12.*"
+
+[feature.server.pypi-dependencies]
+sglang = { version = "==0.4.7", extras = ["all"] }
+
+[feature.server.tasks.launch-server]
+description = "Serve the model the extraction asks over HTTP"
+cmd = """
+python -m sglang.launch_server
+  --model-path Qwen/Qwen3-30B-A3B
+  --reasoning-parser qwen3
+  --port 8000
+  --host 127.0.0.1
+  --tp 4
+  --schedule-conservativeness 0.1
+  --attention-backend triton
+  --sampling-backend pytorch
+  --max-running-requests 256
+  --mem-fraction-static 0.80
+"""
+
+[feature.server.activation.env]
+PYTORCH_CUDA_ALLOC_CONF = "expandable_segments:True"
+
+[environments]
+# `default` is implicit and needs no GPU. `server` is the model host, solved
+# and installed only where there is one.
+server = { features = ["server"], no-default-feature = true }
+
 [tasks]
 extract = { cmd = "python -m src.cli", description = "Run the extraction stages over a set of reports" }
 qc = { cmd = "python -m src.qc_cli", description = "Draw the sheets a human annotates" }

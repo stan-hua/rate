@@ -159,6 +159,112 @@ class BatchProcessor:
         
         return batch_response
     
+    def _parse_result_lines(self, result_content: str) -> Tuple[Dict[str, str], Dict[str, int]]:
+        """Read a batch output file into answers, and count what went wrong.
+
+        Separated from the download so it can be exercised without a server.
+        This is the half most likely to be wrong, because the shape of a
+        response depends on the sglang version and on which of the grammar
+        backend and the reasoning parser got to the tokens first.
+
+        Args:
+            result_content: The batch output file, one JSON object per line.
+
+        Returns:
+            The answers keyed by `custom_id`, and the counts of empty answers
+            and of answers readable only in `reasoning_content`.
+        """
+        lines = result_content.split("\n")
+        results = {}
+        # Two counts worth seeing per batch rather than at the end of a
+        # four-million-request run: how many answers arrived empty, and how
+        # many were readable only in `reasoning_content`.
+        empty = 0
+        reasoning_only = 0
+        for line_num, line in enumerate(lines):
+            if line.strip():
+                try:
+                    result = json.loads(line)
+                    custom_id = result['custom_id']
+                    
+                    # Try parsing the sglang response format
+                    content = ""
+                    parsing_success = False
+                    
+                    # Log full structure for first result to help with debugging
+                    if line_num == 0:
+                        self.logger.debug(f"First result structure: {json.dumps(result, indent=2)}")
+                    
+                    # sglang format: choices is an object, not an array
+                    if 'response' in result and 'body' in result['response']:
+                        try:
+                            choices = result['response']['body']['choices']
+                            # Handle both object and array formats
+                            message = (
+                                choices['message']
+                                if isinstance(choices, dict)
+                                else choices[0]['message']
+                            )
+                            content = message.get('content') or ''
+                            # A reasoning parser and a grammar together put
+                            # the constrained output in `reasoning_content`
+                            # and leave `content` empty, because sglang
+                            # defers the grammar mask until the end-of-think
+                            # token. Reading `content` alone then returns ""
+                            # for every answer in the run. See sgl-project
+                            # issues #6675 and #9282 and ai-dynamo #9006.
+                            if not content.strip():
+                                content = message.get('reasoning_content') or ''
+                                if content.strip():
+                                    reasoning_only += 1
+                            parsing_success = True
+                            if line_num == 0:
+                                self.logger.debug("Successfully parsed sglang response format")
+                        except (KeyError, IndexError, TypeError) as e:
+                            self.logger.debug(f"Failed to parse expected format: {e}")
+                    
+                    # Handle error responses
+                    if not parsing_success and 'error' in result:
+                        self.logger.warning(f"Error in batch response for {custom_id}: {result['error']}")
+                        content = ""
+                        parsing_success = True
+                    
+                    if not parsing_success:
+                        self.logger.warning(f"Could not parse response for {custom_id}, available keys: {list(result.keys())}")
+                        content = ""
+                    
+                    # Clean up content (remove thinking tags if present)
+                    if content and "</think>" in content:
+                        content = content.split("</think>")[-1]
+                    
+                    content = content.strip() if content else ""
+                    if not content:
+                        empty += 1
+                    results[custom_id] = content
+                    
+                except json.JSONDecodeError as e:
+                    self.logger.warning(f"Could not parse result line {line_num}: {line[:100]}... Error: {e}")
+                    continue
+                except Exception as e:
+                    self.logger.warning(f"Unexpected error parsing line {line_num}: {e}")
+                    continue
+        
+        if reasoning_only:
+            self.logger.warning(
+                f"{reasoning_only} of {len(results)} answers were empty in `content` "
+                f"and read from `reasoning_content` instead. The reasoning parser and "
+                f"the response schema are both on, and sglang defers the grammar mask "
+                f"until the end-of-think token. Set model.structured_output to false "
+                f"to drop the schema, or launch the server without --reasoning-parser."
+            )
+        if empty:
+            self.logger.warning(
+                f"{empty} of {len(results)} answers in this batch came back empty. "
+                f"Stop the run and check one response before spending more GPU time."
+            )
+
+        return results, {"empty": empty, "reasoning_only": reasoning_only}
+
     def _extract_batch_results(self, batch_response: Any, requests: List[Tuple[str, str]], stage_name: str) -> Dict[str, str]:
         """Extract results from completed batch."""
         try:
@@ -170,61 +276,24 @@ class BatchProcessor:
             self.logger.debug(f"Batch response has {len([l for l in lines if l.strip()])} lines")
             if lines and lines[0].strip():
                 self.logger.debug(f"First response line: {lines[0][:200]}...")
-            
-            # Parse results
-            results = {}
-            for line_num, line in enumerate(lines):
-                if line.strip():
-                    try:
-                        result = json.loads(line)
-                        custom_id = result['custom_id']
-                        
-                        # Try parsing the sglang response format
-                        content = ""
-                        parsing_success = False
-                        
-                        # Log full structure for first result to help with debugging
-                        if line_num == 0:
-                            self.logger.debug(f"First result structure: {json.dumps(result, indent=2)}")
-                        
-                        # sglang format: choices is an object, not an array
-                        if 'response' in result and 'body' in result['response']:
-                            try:
-                                choices = result['response']['body']['choices']
-                                # Handle both object and array formats
-                                if isinstance(choices, dict):
-                                    content = choices['message']['content']
-                                elif isinstance(choices, list):
-                                    content = choices[0]['message']['content']
-                                parsing_success = True
-                                if line_num == 0:
-                                    self.logger.debug("Successfully parsed sglang response format")
-                            except (KeyError, IndexError, TypeError) as e:
-                                self.logger.debug(f"Failed to parse expected format: {e}")
-                        
-                        # Handle error responses
-                        if not parsing_success and 'error' in result:
-                            self.logger.warning(f"Error in batch response for {custom_id}: {result['error']}")
-                            content = ""
-                            parsing_success = True
-                        
-                        if not parsing_success:
-                            self.logger.warning(f"Could not parse response for {custom_id}, available keys: {list(result.keys())}")
-                            content = ""
-                        
-                        # Clean up content (remove thinking tags if present)
-                        if content and "</think>" in content:
-                            content = content.split("</think>")[-1]
-                        
-                        results[custom_id] = content.strip() if content else ""
-                        
-                    except json.JSONDecodeError as e:
-                        self.logger.warning(f"Could not parse result line {line_num}: {line[:100]}... Error: {e}")
-                        continue
-                    except Exception as e:
-                        self.logger.warning(f"Unexpected error parsing line {line_num}: {e}")
-                        continue
-            
+
+            results, counts = self._parse_result_lines(result_content)
+
+            if counts["reasoning_only"]:
+                self.logger.warning(
+                    f"{counts['reasoning_only']} of {len(results)} answers were empty in "
+                    f"`content` and read from `reasoning_content` instead. The reasoning "
+                    f"parser and the response schema are both on, and sglang defers the "
+                    f"grammar mask until the end-of-think token. Set model.structured_output "
+                    f"to false to drop the schema, or launch the server without "
+                    f"--reasoning-parser."
+                )
+            if counts["empty"]:
+                self.logger.warning(
+                    f"{counts['empty']} of {len(results)} answers in this batch came back "
+                    f"empty. Stop the run and check one response before spending more GPU time."
+                )
+
             # Clean up API files
             try:
                 self.client.files.delete(batch_response.output_file_id)

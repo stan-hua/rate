@@ -1,6 +1,15 @@
 # Model settings
+#
+# `name` goes into the `model` field of every request, so it has to be the
+# model the server was launched with. The FP8 build and the bf16 build are
+# different names to sglang.
 model:
-  name: "Qwen/Qwen3-30B-A3B-FP8"
+  name: "Qwen/Qwen3-30B-A3B"
+  # Constrain the questions stage's decoding to the answer schema. Set this to
+  # false if `content` comes back empty and the answers are readable only in
+  # `reasoning_content`: sglang's grammar backend defers its token mask until
+  # the end-of-think token, so a reasoning parser and a schema can fight.
+  structured_output: true
   temperature: 0.1
   top_p: 0.1
   max_tokens: 4096

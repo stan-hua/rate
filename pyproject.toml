@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "rad-report-engine"
 version = "0.1.0"
-description = "A Python-based engine for processing radiology reports using Qwen3-30B-A3B-FP8 model with sglang"
+description = "A Python-based engine for processing radiology reports using Qwen3-30B-A3B model with sglang"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.9,<3.13"

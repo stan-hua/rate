@@ -415,9 +415,15 @@ class Engine:
             try:
                 # Use new batch processor with validation
                 # Only the questions stage asks for an object, so only it
-                # constrains decoding to a schema.
+                # constrains decoding to a schema. `structured_output: false`
+                # in the config drops the schema without a code edit, which is
+                # the way out if the server's grammar backend and its reasoning
+                # parser turn out to fight each other on this model.
+                structured = self.config.get("model", {}).get("structured_output", True)
                 self.batch_processor.body_extras = (
-                    {"response_format": response_format()} if stage_name == "questions" else {}
+                    {"response_format": response_format()}
+                    if stage_name == "questions" and structured
+                    else {}
                 )
                 chunk_results = self.batch_processor.process_batch(chunk, stage_name)
                 

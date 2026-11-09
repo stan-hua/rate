@@ -1,6 +1,6 @@
 # Radiology Text Engine (RATE)
 
-A Python-based engine for processing radiology reports using the Qwen3-30B-A3B-FP8 model with sglang for efficient batch inference. Includes quality control file generation and performance evaluation tools for comprehensive validation workflows with debug mode for faster iteration.
+A Python-based engine for processing radiology reports using the Qwen3-30B-A3B model with sglang for efficient batch inference. Includes quality control file generation and performance evaluation tools for comprehensive validation workflows with debug mode for faster iteration.
 
 ## Installation with uv
 ```bash
@@ -14,16 +14,49 @@ source .venv/bin/activate
 
 ### 1. Launch sglang Server
 
-First, launch the sglang server with the Qwen model:
+`pixi run -e server launch-server` serves the 4-GPU configuration below.
+Install that environment with `pixi install -e server`; it is kept out of
+`default` because sglang pulls a CUDA build of torch and solves only where
+there is a GPU, and a plain `pixi install` solves every environment.
+
+**If `content` comes back empty and the answers are readable only in
+`reasoning_content`, the reasoning parser and the response schema are
+fighting.** sglang defers the grammar token mask until the end-of-think token,
+so a request with both can leave the constrained output in the reasoning
+channel ([sgl-project #6675](https://github.com/sgl-project/sglang/issues/6675),
+[#9282](https://github.com/sgl-project/sglang/issues/9282),
+[ai-dynamo #9006](https://github.com/ai-dynamo/dynamo/issues/9006)). The reader
+falls back to that field and logs a count per batch, so a run survives it. To
+settle it either way, set `model.structured_output: false` in the config, or
+launch without `--reasoning-parser`.
+
+Or launch it by hand:
 
 ```bash
 python -m sglang.launch_server \
-    --model-path Qwen/Qwen3-30B-A3B-FP8 \
+    --model-path Qwen/Qwen3-30B-A3B \
     --reasoning-parser qwen3 \
     --port 8000 \
     --host 127.0.0.1 \
     --dp 8 \
     --schedule-conservativeness 0.1
+```
+
+When running on 4 x A40 GPUs,
+```bash
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+python -m sglang.launch_server \
+    --model-path Qwen/Qwen3-30B-A3B \
+    --reasoning-parser qwen3 \
+    --port 8000 \
+    --host 127.0.0.1 \
+    --tp 4 \
+    --schedule-conservativeness 0.1 \
+    --attention-backend triton \
+    --sampling-backend pytorch \
+    --max-running-requests 256 \
+    --mem-fraction-static 0.80
 ```
 
 Key parameters:
@@ -41,7 +74,7 @@ export NO_PROXY=localhost,127.0.0.1
 ```
 
 Expected server output:
-```
+
 [2025-06-03 17:55:56] INFO:     Started server process [3645360]
 [2025-06-03 17:55:56] INFO:     Waiting for application startup.
 [2025-06-03 17:55:56] INFO:     Application startup complete.
@@ -535,7 +568,7 @@ Modify `config/default_config.yaml` for model and server settings:
 
 ```yaml
 model:
-  name: "Qwen/Qwen3-30B-A3B-FP8"
+  name: "Qwen/Qwen3-30B-A3B"
   temperature: 0.1
   top_p: 0.1
   max_tokens: 4096
