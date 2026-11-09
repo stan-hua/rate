@@ -75,9 +75,24 @@ class QCEvaluator:
                     binary_values.append(1 if val >= 0.5 else 0)
             elif isinstance(val, str):
                 val_lower = val.lower().strip()
-                if val_lower in ['yes', 'true', '1', 'correct', 'good']:
+                # A graded number arrives here as text whenever anything else
+                # in the column is not a number -- one note anywhere in the
+                # sheet types the whole column as text in pandas. Reading only
+                # the words dropped every row in the 0.5-0.9 and <0.5 bands,
+                # which is 544 of the 1 158 annotations, and inflated agreement
+                # by scoring the outright 1s and 0s alone.
+                try:
+                    numeric = float(val_lower)
+                except ValueError:
+                    numeric = None
+                if numeric is not None:
+                    if numeric < 0:
+                        binary_values.append(np.nan)
+                    else:
+                        binary_values.append(1 if numeric >= 0.5 else 0)
+                elif val_lower in ['yes', 'true', 'correct', 'good']:
                     binary_values.append(1)
-                elif val_lower in ['no', 'false', '0', 'incorrect', 'bad', 'wrong']:
+                elif val_lower in ['no', 'false', 'incorrect', 'bad', 'wrong']:
                     binary_values.append(0)
                 else:
                     binary_values.append(np.nan)

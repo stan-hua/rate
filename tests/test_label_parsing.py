@@ -16,6 +16,7 @@ are written first on purpose, so the change is visible as a decision.
 """
 
 # Standard libraries
+import io
 import sys
 from pathlib import Path
 
@@ -82,3 +83,43 @@ class TestTheGradedScale:
         assert np.isnan(got[4])
         assert got[5] == 1
         assert np.isnan(got[6])
+
+
+class TestAColumnPandasTypedAsText:
+    """One note anywhere in the sheet types the whole column as text.
+
+    The graded scale was implemented on the numeric branch only, so every row
+    in the 0.5-0.9 and below-0.5 bands fell to NaN and left the denominator.
+    That is 544 of the 1 158 annotations, and dropping them scores the outright
+    1s and 0s alone, which inflates the agreement figure this project exists to
+    measure.
+    """
+
+    @pytest.fixture
+    def from_csv(self):
+        """A column read back the way `pandas` reads a sheet with a note in it."""
+
+        def read(cells):
+            body = "human_label\n" + "\n".join(cells) + "\n"
+            return pd.read_csv(io.StringIO(body), dtype=str)["human_label"]
+
+        return read
+
+    def test_the_column_really_is_text(self, from_csv):
+        column = from_csv(["1", "0.5", "a reader's note"])
+        assert all(isinstance(value, str) for value in column)
+
+    def test_a_graded_number_written_as_text_still_scores(self, convert, from_csv):
+        column = from_csv(["1", "0.9", "0.5", "0.3", "0", "a reader's note"])
+        assert list(convert(column)) == [1, 1, 1, 0, 0, pytest.approx(np.nan, nan_ok=True)]
+
+    def test_minus_one_written_as_text_still_leaves_the_denominator(
+        self, convert, from_csv
+    ):
+        column = from_csv(["-1", "1", "note"])
+        got = convert(column)
+        assert np.isnan(got[0])
+        assert got[1] == 1
+
+    def test_the_words_still_read(self, convert, from_csv):
+        assert list(convert(from_csv(["yes", "no", "Correct"]))) == [1, 0, 1]
