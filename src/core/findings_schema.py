@@ -31,6 +31,14 @@ ANSWER_VALUES = ("yes", "no", "not_assessed")
 CHRONICITY_VALUES = ("acute", "chronic", "indeterminate", "unspecified")
 ATTRIBUTION_VALUES = ("spontaneous", "postoperative", "unknown")
 
+# Every string field is bounded. An unbounded one is still *valid* under the
+# schema however long it runs, so a model with no thinking channel can use the
+# first free string as a scratchpad: a smoke run generated over 980 tokens per
+# answer with nothing completing, where a well-formed object closes in about
+# 80. The bounds make the grammar itself end the string, which terminates the
+# generation properly rather than truncating it at `max_tokens` and leaving
+# unparseable JSON. xgrammar implements `maxLength`; checked in the 0.1.19
+# binding.
 RESPONSE_SCHEMA = {
     "type": "object",
     "properties": {
@@ -45,6 +53,7 @@ RESPONSE_SCHEMA = {
         },
         "evidence": {
             "type": "string",
+            "maxLength": 400,
             "description": (
                 "The one sentence from the report that settles it, quoted "
                 "verbatim. Empty when the answer is no and nothing is quoted."
@@ -52,10 +61,12 @@ RESPONSE_SCHEMA = {
         },
         "section": {
             "type": "string",
+            "maxLength": 60,
             "description": "The report heading the evidence came from.",
         },
         "certainty_phrase": {
             "type": "string",
+            "maxLength": 60,
             "description": (
                 "The hedge the report uses, quoted verbatim -- 'consistent "
                 "with', 'concerning for', 'may represent'. Empty when the "
@@ -64,6 +75,7 @@ RESPONSE_SCHEMA = {
         },
         "severity_phrase": {
             "type": "string",
+            "maxLength": 60,
             "description": (
                 "The magnitude word the report uses, quoted verbatim -- "
                 "'trace', 'small', 'moderate', 'large', or a formal grade such "

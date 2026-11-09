@@ -12,6 +12,7 @@ the model, so the mapping has to be total and the longest phrase has to win --
 
 # Standard libraries
 import json
+from pathlib import Path
 
 # Non-standard libraries
 import pytest
@@ -394,3 +395,54 @@ class TestTheTieBreak:
         assert len(eight) > 1, "the tie-break has nothing to break"
         assert certainty_of("possible") == "low"
         assert certainty_of("unlikely") == "negated"
+
+
+class TestTheStringsAreBounded:
+    """An unbounded string is valid however long it runs.
+
+    A smoke run with thinking off generated over 980 tokens per answer with
+    nothing completing, where a well-formed object closes in about 80. A model
+    with no thinking channel can use the first free string as a scratchpad, and
+    the schema would call that valid. The grammar has to end the string itself.
+    """
+
+    FREE_TEXT = ("evidence", "section", "certainty_phrase", "severity_phrase")
+
+    @pytest.mark.parametrize("field", FREE_TEXT)
+    def test_every_free_text_field_has_a_maximum(self, field):
+        assert "maxLength" in RESPONSE_SCHEMA["properties"][field]
+
+    def test_the_bounds_leave_room_for_a_sentence_but_not_a_report(self):
+        props = RESPONSE_SCHEMA["properties"]
+        assert props["evidence"]["maxLength"] == 400
+        for field in ("section", "certainty_phrase", "severity_phrase"):
+            assert props[field]["maxLength"] == 60
+
+    def test_the_other_fields_are_bounded_by_their_enum(self):
+        """So nothing in the object is open-ended."""
+        props = RESPONSE_SCHEMA["properties"]
+        for field, spec in props.items():
+            bounded = "maxLength" in spec or "enum" in spec or spec["type"] == "boolean"
+            assert bounded, f"{field} is unbounded"
+
+    def test_the_worst_case_object_fits_well_inside_max_tokens(self):
+        """`max_tokens` is the backstop; the schema is the real bound."""
+        import yaml
+
+        props = RESPONSE_SCHEMA["properties"]
+        chars = sum(spec.get("maxLength", 0) for spec in props.values())
+        chars += sum(max(len(v) for v in s["enum"]) for s in props.values() if "enum" in s)
+        chars += 200  # keys, quotes, commas, braces
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+        # a conservative 3 characters per token
+        assert chars / 3 < config["model"]["max_tokens"]
+
+    def test_a_long_evidence_string_still_parses(self):
+        """The bound is on the grammar, not on the reader."""
+        got = parse_answer(
+            json.dumps({"answer": "yes", "evidence": "x" * 400, "named_outright": True})
+        )
+        assert got["verdict"] == "yes"
+        assert len(got["evidence"]) == 400

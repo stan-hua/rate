@@ -40,8 +40,10 @@ model:
   top_p: 0.8
   top_k: 20
   min_p: 0
-  # A ceiling rather than a target: an answer is now a small JSON object.
-  max_tokens: 4096
+  # A backstop, not a target. The schema bounds every string, so a well-formed
+  # answer is about 80 tokens and 200 at the very most. 4096 was 8x of wasted
+  # generation per request on any run where the schema failed to apply.
+  max_tokens: 512
 
 # Server settings
 server:
