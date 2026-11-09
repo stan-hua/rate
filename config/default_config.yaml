@@ -1,16 +1,19 @@
 # Model settings
 #
-# `name` goes into the `model` field of every request, so it has to be the
-# model the server was launched with. The FP8 build and the bf16 build are
-# different names to sglang.
+# `name` goes into the `model` field of every request, so it should be the
+# model the server was launched with.
 #
-# **This is bf16 where the first extraction was FP8**, which is the one model
-# difference a comparison between the two runs carries. It is forced rather
-# than chosen: FP8 needs Ada or Hopper tensor cores and an A40 is Ampere, so
-# the FP8 build cannot run on that host at all. That is why `README.md` has a
-# separate launch command for four A40s without the `-FP8` suffix. Quantisation
-# shifts logits slightly, so a finding whose answer changes between the two
-# runs has two candidate causes, not one: the new wording and the new build.
+# It said `Qwen/Qwen3-30B-A3B-FP8` until 2026-11-09 and the server has always
+# served the bf16 build: FP8 needs Ada or Hopper tensor cores and an A40 is
+# Ampere, which is why `README.md` carries a separate four-A40 command without
+# the suffix. So the first extraction ran with this field naming a model the
+# server was not serving, and produced 2.85 million answers regardless --
+# sglang's batch API evidently does not check the name against what it hosts.
+# The correction is hygiene rather than a fix for anything that was broken.
+#
+# **Both runs are therefore the same build**, which is what a comparison
+# between them needs: a finding whose answer moves between the two has the new
+# wording as its only candidate cause.
 model:
   name: "Qwen/Qwen3-30B-A3B"
   # Constrain the questions stage's decoding to the answer schema. Set this to
