@@ -87,6 +87,26 @@ compressed-tensors = "==0.10.2"
 # Every line but the last ends in a backslash. A raw newline in a pixi `cmd`
 # is a command separator, so without them the server launches with no
 # arguments at all and each flag is then run as its own command.
+#
+# `--max-running-requests` and `--cuda-graph-max-bs` are sized from a live run
+# on four A40s, which logged `#token: 346375` at `token usage: 0.38` with 255
+# requests running. That is a KV cache of about 911,000 tokens and about 1,358
+# tokens resident per request, so 62% of the cache was idle:
+#
+#     384 requests -> 0.57 of capacity
+#     512 requests -> 0.76 of capacity
+#     640 requests -> 0.95 of capacity
+#     768 requests -> 1.14 of capacity, which overflows
+#
+# 512 is twice the concurrency with headroom for a long answer. Going higher
+# makes sglang retract and re-prefill requests when the cache fills, which
+# costs more than the concurrency gains.
+#
+# `--cuda-graph-max-bs` matches it because the same run logged
+# `cuda graph: False` on every decode batch: a decode batch of 255 was larger
+# than the graphs sglang had captured, so decode ran eager. Capturing up to the
+# concurrency limit is what makes the graphs apply. Capture costs startup time
+# and a little memory.
 [feature.server.tasks.launch-server]
 description = "Serve the model the extraction asks over HTTP"
 cmd = """
@@ -99,7 +119,8 @@ python -m sglang.launch_server \
   --schedule-conservativeness 0.1 \
   --attention-backend triton \
   --sampling-backend pytorch \
-  --max-running-requests 256 \
+  --max-running-requests 512 \
+  --cuda-graph-max-bs 512 \
   --mem-fraction-static 0.80
 """
 

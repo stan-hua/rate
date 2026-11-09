@@ -59,7 +59,11 @@ python -m sglang.launch_server \
     --schedule-conservativeness 0.1
 ```
 
-When running on 4 x A40 GPUs,
+When running on 4 x A40 GPUs, which is what `pixi run -e server
+launch-server` does. The concurrency and the graph-capture limit are sized
+from a measured run on that hardware — see the comment above the task in
+`pixi.toml` for the arithmetic, and re-derive them from `#token` and
+`token usage` in the server log if the hardware changes.
 ```bash
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
@@ -72,7 +76,8 @@ python -m sglang.launch_server \
     --schedule-conservativeness 0.1 \
     --attention-backend triton \
     --sampling-backend pytorch \
-    --max-running-requests 256 \
+    --max-running-requests 512 \
+    --cuda-graph-max-bs 512 \
     --mem-fraction-static 0.80
 ```
 
