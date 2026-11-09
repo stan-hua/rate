@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 import logging
 
+from .findings_schema import parse_answer
+
 logger = logging.getLogger(__name__)
 
 class QCGenerator:
@@ -157,6 +159,19 @@ class QCGenerator:
         logger.warning("No category samples found for QC generation")
         return ""
     
+    @staticmethod
+    def _wordings(qa_dict):
+        """Yield (question, answer) for either in-memory shape.
+
+        A run before the schema stored `{question_text: answer}`. A run after
+        it stores a record with its finding id and variant index beside the
+        wording, because a finding has more than one of them.
+        """
+        if "question" in qa_dict and "answer" in qa_dict:
+            yield qa_dict["question"], qa_dict["answer"]
+            return
+        yield from qa_dict.items()
+
     def generate_questions_qc(self, budget: int = 50) -> str:
         """
         Generate a consolidated QC file for all questions with mixed positive/negative examples.
@@ -171,6 +186,8 @@ class QCGenerator:
         """
         # Get all question-answer pairs from all reports
         question_examples = {}  # question -> {"positive": [...], "negative": [...]}
+        unreadable = 0
+        not_assessed = 0
         
         for query_id, report in self.results.items():
             if "qa_results" not in report:
@@ -180,20 +197,22 @@ class QCGenerator:
                 if isinstance(category_qa, list):
                     for qa_dict in category_qa:
                         if isinstance(qa_dict, dict):
-                            for question, answer in qa_dict.items():
-                                # Convert answer to binary
-                                if isinstance(answer, str):
-                                    answer_lower = answer.lower().strip()
-                                    if answer_lower in ['yes', 'true', '1']:
-                                        binary_label = 1
-                                    elif answer_lower in ['no', 'false', '0']:
-                                        binary_label = 0
-                                    else:
-                                        continue
-                                elif isinstance(answer, (int, float)):
-                                    binary_label = 1 if answer > 0 else 0
-                                else:
+                            for question, answer in self._wordings(qa_dict):
+                                # An answer that cannot be read was dropped here
+                                # silently, with no counter and no log line, so
+                                # a sheet only ever sampled the rows the model
+                                # had answered cleanly and the accuracy it
+                                # measured was conditioned on that.
+                                parsed = parse_answer(answer)
+                                if parsed is None:
+                                    unreadable += 1
                                     continue
+                                if parsed["verdict"] == "not_assessed":
+                                    # The report defers elsewhere, so there is
+                                    # nothing for a reader to check against it.
+                                    not_assessed += 1
+                                    continue
+                                binary_label = 1 if parsed["verdict"] == "yes" else 0
                                 
                                 if question not in question_examples:
                                     question_examples[question] = {"positive": [], "negative": []}
@@ -270,6 +289,11 @@ class QCGenerator:
             total_available_questions = len(question_examples)
             questions_with_both = len(set(questions_with_pos) & set(questions_with_neg))
             
+            if unreadable or not_assessed:
+                logger.info(
+                    f"Passed over {unreadable} unreadable answer(s) and "
+                    f"{not_assessed} the report could not answer"
+                )
             logger.info(f"Generated questions QC file with {len(results)} samples "
                        f"({pos_count} positive, {neg_count} negative, {unique_questions} unique questions): {output_path}")
             logger.info(f"Stratified sampling from {total_available_questions} total questions "

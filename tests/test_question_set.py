@@ -170,10 +170,41 @@ def test_question_id_changes_with_wording(tmp_path):
 
 
 def test_the_questions_stage_writes_the_columns_the_sheets_read():
-    """`ifast` and `eval_cli` both read these names."""
+    """`ifast` and `eval_cli` both read these names.
+
+    `answer` keeps the raw model string whatever shape it has, so a field added
+    to the schema later needs no re-extraction. The parsed columns beside it
+    are what the sheets and the metrics read.
+    """
     config = STAGE_CONFIGS["questions"]
-    assert config["columns"] == ["report_id", "category", "question_id", "question", "answer"]
-    assert config["request_id_pattern"] == "{report_id}_{category}_{question_id}"
+    assert config["columns"] == [
+        "report_id",
+        "category",
+        "finding_id",
+        "variant_index",
+        "question_id",
+        "question",
+        "answer",
+        "verdict",
+        "evidence",
+        "section",
+        "certainty_phrase",
+        "severity_phrase",
+        "chronicity",
+        "attribution",
+        "named_outright",
+    ]
+
+
+def test_the_resume_key_is_one_wording_of_one_finding():
+    """Keying on the finding alone would collapse its variants onto one row.
+
+    Two of the three answers would then be dropped by the append-time dedupe,
+    after the inference was already paid for, and the agreement the variants
+    exist to measure would be unmeasurable.
+    """
+    config = STAGE_CONFIGS["questions"]
+    assert config["request_id_pattern"] == "{report_id}_{finding_id}_v{variant_index}"
 
 
 class TestTheFastConfigAndItsLock:

@@ -1,0 +1,73 @@
+# How firmly a report states a finding, as a phrase-to-level map.
+#
+# There is no agreed standard. The ACR Commission on Quality and Safety
+# reports insufficient agreement to recommend one scale, so this follows the
+# Memorial Sloan Kettering lexicon of Panicek and Hricak (AJR 2016), the most
+# cited of them, collapsed from five points to three. Their approximate
+# probabilities are in the comments.
+#
+# The level is computed from the phrase after extraction, never asked of the
+# model, so changing a mapping is an edit here and not a re-run of 4 million
+# requests.
+#
+# `concerning for` is at medium deliberately. The project's annotator placed it
+# at the bottom of their own scale, and the radiologists surveyed in the
+# literature put "concerning" at about 75%, alongside "suspicious" and
+# "probably". Following the literature means some early annotations understate
+# their rows, acute cholecystitis most of all.
+version: 1
+
+levels:
+  # > 90%: the report states the finding
+  high:
+    - consistent with
+    - compatible with
+    - diagnostic of
+    - characteristic of
+    - typical of
+    - represents
+    - demonstrates
+    - consistent in appearance with
+
+  # ~ 75%: the report leans on it
+  medium:
+    - suspicious for
+    - concerning for
+    - worrisome for
+    - probable
+    - probably
+    - favored to be
+    - favored to represent
+    - most likely
+    - likely
+    - similar in appearance to
+
+  # ~ 50%: the report raises it
+  low:
+    - possible
+    - possibly
+    - may represent
+    - may reflect
+    - may be
+    - could represent
+    - cannot be excluded
+    - cannot exclude
+    - not excluded
+    - differential includes
+    - questionable
+    - versus
+    - vs
+    - vs.
+
+# <= 25%, and below the scale. A report that raises a finding only to set it
+# aside has not reported it, so these map to an absent answer rather than to a
+# low certainty.
+negated:
+  - less likely
+  - unlikely
+  - very unlikely
+  - doubt
+  - doubtful
+  - no evidence of
+  - without evidence of
+  - rather than

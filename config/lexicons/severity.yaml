@@ -1,0 +1,65 @@
+# How much of a finding a report describes, as a phrase-to-level map.
+#
+# Four steps rather than three, because radiological magnitude runs
+# trace -> mild -> moderate -> marked and collapsing it loses the distinction
+# that matters most here. Detection by FAST is volume-dependent: the older
+# literature puts the minimum detectable free fluid between 100 and 620 mL, a
+# recent prospective study finds reliable detection only beyond 1000 mL, and
+# Morison's pouch has the lowest threshold of the spaces tested. So the line
+# between what a sweep shows and what it misses falls between `mild` and
+# `moderate`, which a three-step scale cannot express.
+#
+# `unspecified` is a level, not a gap. Most findings are reported with no
+# magnitude word at all, and folding those into the middle would invent a
+# severity the radiologist never wrote.
+version: 1
+
+levels:
+  trace:
+    - trace
+    - tiny
+    - minimal
+    - minimally
+    - scant
+    - a few
+    - punctate
+
+  mild:
+    - mild
+    - mildly
+    - small
+    - slight
+    - slightly
+    - low-volume
+    - small volume
+    - subcentimeter
+
+  moderate:
+    - moderate
+    - moderately
+    - moderate volume
+    - moderate-sized
+    # Between two steps, and mapped up on purpose: whether a sweep would show
+    # it is the question, so the upper bound is the one that matters.
+    - small to moderate
+    - mild to moderate
+
+  marked:
+    - marked
+    - markedly
+    - severe
+    - severely
+    - large
+    - large volume
+    - massive
+    - extensive
+    - gross
+    - high-volume
+
+# Formal grading systems, kept verbatim where a report uses one. These are not
+# mapped onto the four steps, because each has its own meaning and a reader
+# comparing a Bosniak III against a `moderate` would be comparing nothing.
+graded_systems:
+  bosniak: '(?i)bosniak\s+(I{1,3}F?|IV|[1-4]F?)'
+  hydronephrosis_sfu: '(?i)(?:SFU\s+)?grade\s+(I{1,4}|IV|[0-4])\s+hydronephrosis'
+  aneurysm_diameter: '(?i)(\d+(?:\.\d+)?)\s*cm\b'

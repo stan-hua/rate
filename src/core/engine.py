@@ -13,6 +13,7 @@ from .storage import StorageManager
 from .exceptions import BatchProcessingError, ValidationError
 from .validators import ResultValidator
 from .batch_processor import BatchProcessor
+from .findings_schema import question_guidance, response_format
 
 class Engine:
     def __init__(self, config: Union[str, Dict]):
@@ -217,7 +218,7 @@ class Engine:
                 if result_dict:
                     all_report_ids.update(result_dict.keys())
             
-            # Create results for all known report IDs
+            # Create results for every report id seen
             for report_id in all_report_ids:
                 results[report_id] = {
                     'raw_text': "",  # Not available when running intermediate stages
@@ -320,14 +321,29 @@ class Engine:
         for report_id, raw_text in reports_data.items():
             for category_name, category in self.findings_categories.items():
                 for question in category['questions']:
-                    question_text = question['question']
-                    question_id = self.storage._generate_question_id(question_text)
-                    request_id = f"{report_id}_{category_name}_{question_id}"
-                    prompt = self.config['prompt_templates']['findings_question'].format(
-                        report=raw_text, question=question_text
+                    finding_id = question.get('id') or self.storage._generate_question_id(
+                        question['question']
                     )
-                    requests.append((request_id, prompt))
-                    id_mapping[request_id] = (report_id, category_name, question_text)
+                    wordings = [question['question'], *(question.get('variants') or [])]
+                    for index, question_text in enumerate(wordings):
+                        # The variants have to be asked independently. A model
+                        # shown all three wordings in one context answers them
+                        # consistently, which is exactly the agreement the
+                        # variants exist to measure.
+                        request_id = f"{report_id}_{finding_id}_v{index}"
+                        prompt = self.config['prompt_templates']['findings_question'].format(
+                            report=raw_text,
+                            question=question_text,
+                            guidance=question_guidance(question),
+                        )
+                        requests.append((request_id, prompt))
+                        id_mapping[request_id] = (
+                            report_id,
+                            category_name,
+                            question_text,
+                            finding_id,
+                            index,
+                        )
         
         return requests, id_mapping
 
@@ -343,9 +359,14 @@ class Engine:
         """Process question results into nested structure."""
         chunk_nested_results = {}
         for request_id, answer in chunk_results.items():
-            report_id, category_name, question_text = id_mapping[request_id]
+            report_id, category_name, question_text, finding_id, variant_index = id_mapping[
+                request_id
+            ]
             chunk_nested_results.setdefault(report_id, {}).setdefault(category_name, []).append({
-                question_text: answer
+                "finding_id": finding_id,
+                "variant_index": variant_index,
+                "question": question_text,
+                "answer": answer,
             })
         return chunk_nested_results
 
@@ -393,6 +414,11 @@ class Engine:
         for i, chunk in enumerate(tqdm(chunks, desc=f"Processing {stage_name} batches", unit="batch")):
             try:
                 # Use new batch processor with validation
+                # Only the questions stage asks for an object, so only it
+                # constrains decoding to a schema.
+                self.batch_processor.body_extras = (
+                    {"response_format": response_format()} if stage_name == "questions" else {}
+                )
                 chunk_results = self.batch_processor.process_batch(chunk, stage_name)
                 
                 # Apply result processor if provided

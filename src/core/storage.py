@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Dict, List, Union, Optional, Any
 import hashlib
 from .exceptions import StorageError
+from .findings_schema import ANSWER_COLUMNS, parse_answer
 
 # Stage configuration registry
 STAGE_CONFIGS = {
@@ -31,10 +32,15 @@ STAGE_CONFIGS = {
     },
     'questions': {
         'filename': 'questions.csv',
-        'columns': ['report_id', 'category', 'question_id', 'question', 'answer'],
-        'key_column': 'report_id', 
+        'columns': [
+            'report_id', 'category', 'finding_id', 'variant_index',
+            'question_id', 'question', 'answer',
+            'verdict', 'evidence', 'section', 'certainty_phrase',
+            'severity_phrase', 'chronicity', 'attribution', 'named_outright',
+        ],
+        'key_column': 'report_id',
         'data_type': 'complex',  # Dict[str, Dict[str, List[Dict]]]
-        'request_id_pattern': '{report_id}_{category}_{question_id}',
+        'request_id_pattern': '{report_id}_{finding_id}_v{variant_index}',
     }
 }
 
@@ -255,18 +261,23 @@ class StorageManager:
         records = []
         for report_id, categories in results.items():
             for category, qa_list in categories.items():
-                for qa_dict in qa_list:
-                    # Each qa_dict is {question_text: answer_text}
-                    for question, answer in qa_dict.items():
-                        # Generate question ID from question text
-                        question_id = self._generate_question_id(question)
-                        records.append({
-                            "report_id": report_id,
-                            "category": category,
-                            "question_id": question_id,
-                            "question": question,
-                            "answer": answer
-                        })
+                for record in qa_list:
+                    question = record["question"]
+                    answer = record["answer"]
+                    # The raw string is kept whatever shape it has, so a field
+                    # added to the schema later costs no re-extraction. The
+                    # parsed columns beside it are what the sheets read.
+                    parsed = parse_answer(answer) or {}
+                    records.append({
+                        "report_id": report_id,
+                        "category": category,
+                        "finding_id": record["finding_id"],
+                        "variant_index": record["variant_index"],
+                        "question_id": self._generate_question_id(question),
+                        "question": question,
+                        "answer": answer,
+                        **{column: parsed.get(column, "") for column in ANSWER_COLUMNS},
+                    })
         return pd.DataFrame(records)
     
     def _transform_df_to_results(self, stage_name: str, df: pd.DataFrame) -> Dict:
@@ -309,14 +320,12 @@ class StorageManager:
     def _transform_complex_df(self, df: pd.DataFrame) -> Dict[str, Dict[str, List[Dict]]]:
         """Transform complex DataFrame back to Dict[str, Dict[str, List[Dict]]]."""
         # Sort by question_id for consistent ordering
-        df = df.sort_values(['report_id', 'category', 'question_id'])
+        df = df.sort_values(['report_id', 'category', 'finding_id', 'variant_index'])
         
         results = {}
         for _, row in df.iterrows():
             report_id = str(row["report_id"])
             category = row["category"]
-            question = row["question"]
-            answer = row["answer"]
             
             if report_id not in results:
                 results[report_id] = {}
@@ -324,7 +333,10 @@ class StorageManager:
                 results[report_id][category] = []
             
             results[report_id][category].append({
-                question: answer
+                "finding_id": row["finding_id"],
+                "variant_index": int(row["variant_index"]),
+                "question": row["question"],
+                "answer": row["answer"],
             })
         
         return results
@@ -335,8 +347,8 @@ class StorageManager:
         
         if pattern == '{report_id}_{category}':
             return {f"{row['report_id']}_{row['category']}" for _, row in df.iterrows()}
-        elif pattern == '{report_id}_{category}_{question_id}':
-            return {f"{row['report_id']}_{row['category']}_{row['question_id']}" 
+        elif pattern == '{report_id}_{finding_id}_v{variant_index}':
+            return {f"{row['report_id']}_{row['finding_id']}_v{row['variant_index']}"
                    for _, row in df.iterrows()}
         else:
             raise ValueError(f"Unsupported request ID pattern: {pattern}")
@@ -412,14 +424,15 @@ class StorageManager:
             return new_df[~new_ids.isin(existing_ids)]
             
         elif filename == 'questions.csv':
-            # For questions, unique identifier is (report_id, category, question_id)
-            existing_ids = set(existing_df['report_id'].astype(str) + '_' + 
-                             existing_df['category'].astype(str) + '_' + 
-                             existing_df['question_id'].astype(str))
-            new_ids = (new_df['report_id'].astype(str) + '_' + 
-                      new_df['category'].astype(str) + '_' + 
-                      new_df['question_id'].astype(str))
-            return new_df[~new_ids.isin(existing_ids)]
+            # One row per (report, finding, wording). Keying on the finding
+            # alone would collapse its variants onto one row and discard two of
+            # the three answers after the GPU time was already spent.
+            def key(frame):
+                return (frame['report_id'].astype(str) + '_'
+                        + frame['finding_id'].astype(str) + '_v'
+                        + frame['variant_index'].astype(str))
+
+            return new_df[~key(new_df).isin(set(key(existing_df)))]
             
         else:
             # For simple files (no_comparisons.csv, findings.csv), use report_id

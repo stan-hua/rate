@@ -21,6 +21,10 @@ class BatchProcessor:
         self.validator = validator
         self.max_retries = config.get('processing', {}).get('max_retries', 2)
         self.retry_delay = config.get('processing', {}).get('retry_delay', 5)
+        # Extra request-body fields, set per stage. The questions stage puts a
+        # `response_format` here so the server constrains decoding to the answer
+        # schema; every other stage leaves it empty and asks for free text.
+        self.body_extras = {}
     
     def process_batch(self, requests: List[Tuple[str, str]], stage_name: str) -> Dict[str, str]:
         """Process a batch of requests with improved error handling and validation."""
@@ -59,6 +63,8 @@ class BatchProcessor:
     def _submit_and_wait_for_batch(self, requests: List[Tuple[str, str]], attempt: int) -> Any:
         """Submit batch and wait for completion."""
         # Create batch requests
+        # A stage that asks for an object constrains decoding to its schema, so
+        # the server guarantees valid JSON instead of the prompt requesting it.
         batch_requests = [
             {
                 "custom_id": request_id,
@@ -72,7 +78,8 @@ class BatchProcessor:
                     ],
                     "temperature": self.config['model']['temperature'],
                     "top_p": self.config['model']['top_p'],
-                    "max_tokens": self.config['model']['max_tokens']
+                    "max_tokens": self.config['model']['max_tokens'],
+                    **self.body_extras,
                 }
             }
             for request_id, prompt in requests

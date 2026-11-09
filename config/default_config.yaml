@@ -48,8 +48,19 @@ prompt_templates:
   findings_question: |
     Based on the following radiology report:
     {report}
-    
-    {question} Answer Yes or No only.
+
+    Question: {question}
+    {guidance}
+    Answer with a JSON object and nothing else.
+
+    Quote the report rather than paraphrasing it. `evidence` is the one
+    sentence that settles the question, verbatim. `certainty_phrase` is the
+    hedge the report uses, verbatim and empty if it states the finding flatly.
+    `severity_phrase` is the magnitude word it uses, verbatim and empty if it
+    gives none. Do not grade the certainty or the severity yourself.
+
+    Answer `not_assessed` if this report cannot answer -- the organ was not
+    imaged, or the report defers to another study. That is not the same as `no`.
 
   map_category_findings: |
     Given the following findings from a radiology report:
