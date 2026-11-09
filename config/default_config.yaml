@@ -96,6 +96,16 @@ prompt_templates:
     Quote the report rather than paraphrasing it. `evidence` is the one
     sentence that settles the question, verbatim.
 
+    Every field is about the finding the question names, and about no other.
+    `evidence` is the sentence that settles this question: on a no, the
+    sentence denying this finding or describing the organ as unremarkable,
+    never a sentence reporting some different abnormality. If the report
+    denies nothing and describes nothing, leave it empty.
+
+    `certainty_phrase` and `severity_phrase` are empty whenever the answer is
+    not yes. An absent finding has no hedge and no magnitude, so a magnitude
+    word belonging to another finding in the same section does not go here.
+
     `certainty_phrase` is the hedge the report uses about this finding,
     verbatim: "consistent with", "concerning for", "may represent". Leave it
     empty if the report states the finding flatly, and leave it empty if the

@@ -727,6 +727,89 @@ class TestStatedSitsAboveHigh:
         assert not at_least("unspecified", "low", CERTAINTY_ORDER)
 
 
+class TestANonYesKeepsNoPhraseAndNoLevel:
+    """A hedge and a magnitude describe a finding, and a No says there is none.
+
+    Asked about hepatic cysts on a liver section whose one abnormal sentence
+    reported biliary ductal dilatation, three wordings answered No and two put
+    that sentence's "Minimal" in `severity_phrase`. The lexicon then graded
+    those No rows `trace`, off a finding the question was not about.
+
+    `evidence` is kept. "Liver: Unremarkable" is what settles a No, and the
+    prompt is where a quote about a different abnormality is ruled out.
+    """
+
+    def answer(self, verdict, **fields):
+        body = {"answer": verdict, "evidence": "Liver: Unremarkable.", "named_outright": False}
+        body.update(fields)
+        return parse_answer(json.dumps(body))
+
+    def test_a_no_keeps_neither_phrase(self):
+        got = self.answer(
+            "no",
+            evidence="Liver: Minimal intrahepatic biliary ductal dilatation.",
+            severity_phrase="Minimal intrahepatic biliary ductal dilatation",
+            certainty_phrase="consistent with",
+        )
+        assert got["severity_phrase"] == ""
+        assert got["certainty_phrase"] == ""
+
+    def test_a_no_grades_neither_level(self):
+        """`trace` off another finding's magnitude word is the defect."""
+        got = self.answer("no", severity_phrase="Minimal", certainty_phrase="consistent with")
+        assert got["severity"] == "unspecified"
+        assert got["certainty"] == "unspecified"
+
+    def test_not_assessed_likewise(self):
+        got = self.answer("not_assessed", severity_phrase="large", certainty_phrase="likely")
+        assert got["severity"] == "unspecified"
+        assert got["certainty"] == "unspecified"
+        assert got["severity_phrase"] == ""
+
+    def test_a_no_is_never_stated(self):
+        """`stated` is a report naming the finding, which a No has not done."""
+        assert self.answer("no", certainty_phrase="")["certainty"] == "unspecified"
+
+    def test_the_evidence_on_a_no_is_kept(self):
+        got = self.answer("no", evidence="Liver: Unremarkable.")
+        assert got["evidence"] == "Liver: Unremarkable."
+
+    def test_a_yes_is_untouched(self):
+        got = self.answer("yes", severity_phrase="trace", certainty_phrase="concerning for")
+        assert got["severity"] == "trace"
+        assert got["certainty"] == "medium"
+        assert got["severity_phrase"] == "trace"
+
+    def test_nothing_is_lost_because_the_raw_answer_is_stored(self):
+        """`questions.csv` keeps the model's object in its own column, so a
+        cleared phrase is still recoverable from the row."""
+        from src.core.storage import STAGE_CONFIGS
+
+        assert "answer" in STAGE_CONFIGS["questions"]["columns"]
+        raw = '{"answer":"no","evidence":"","severity_phrase":"Minimal","named_outright":false}'
+        assert json.loads(raw)["severity_phrase"] == "Minimal"
+        assert parse_answer(raw)["severity_phrase"] == ""
+
+    def test_the_prompt_says_the_fields_are_about_this_finding(self):
+        import yaml
+
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+        prompt = config["prompt_templates"]["findings_question"]
+        assert "empty whenever the answer is\nnot yes" in prompt
+        assert "never a sentence reporting some different abnormality" in prompt
+        assert "describing the organ as unremarkable" in prompt
+
+    def test_the_schema_says_it_too(self):
+        evidence = RESPONSE_SCHEMA["properties"]["evidence"]["description"]
+        severity = RESPONSE_SCHEMA["properties"]["severity_phrase"]["description"]
+        certainty = RESPONSE_SCHEMA["properties"]["certainty_phrase"]["description"]
+        assert "different abnormality" in evidence
+        assert "unremarkable" in evidence
+        assert "not yes" in severity and "not yes" in certainty
+
+
 class TestTheLogsDoNotNameAReport:
     """A request id opens with the report id, which here is a real accession.
 

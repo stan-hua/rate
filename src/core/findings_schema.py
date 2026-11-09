@@ -25,7 +25,7 @@ import json
 import re
 
 # Custom libraries
-from .lexicon import STATED, certainty_of, severity_of
+from .lexicon import STATED, UNSPECIFIED, certainty_of, severity_of
 
 ANSWER_VALUES = ("yes", "no", "not_assessed")
 CHRONICITY_VALUES = ("acute", "chronic", "indeterminate", "unspecified")
@@ -60,7 +60,10 @@ RESPONSE_SCHEMA = {
             "type": "string",
             "description": (
                 "The one sentence from the report that settles it, quoted "
-                "verbatim. Empty when the answer is no and nothing is quoted."
+                "verbatim. On a no it is the sentence showing this finding "
+                "absent -- a denial, or the organ described as unremarkable -- "
+                "and empty when the report has neither. Never a sentence about "
+                "a different abnormality."
             ),
         },
         "section": {
@@ -76,7 +79,8 @@ RESPONSE_SCHEMA = {
                 "only hedge belongs to another diagnosis: a report calling a "
                 "hypodensity 'likely a cyst' states the hypodensity flatly and "
                 "hedges the cyst. A word about size or amount is not a hedge, so "
-                "'mildly', 'small' and 'subcentimeter' go in severity_phrase."
+                "'mildly', 'small' and 'subcentimeter' go in severity_phrase. Empty "
+                "whenever the answer is not yes."
             ),
         },
         "severity_phrase": {
@@ -87,7 +91,9 @@ RESPONSE_SCHEMA = {
                 "such as '13 mm', or a formal grade such as 'Bosniak III'. The "
                 "magnitude alone, and never the finding's own name: 'enlarged' "
                 "and 'hyperdense renal lesion' name the finding and give no "
-                "magnitude. Empty when the report gives none."
+                "magnitude. Empty when the report gives none, and empty "
+                "whenever the answer is not yes: an absent finding has no "
+                "magnitude."
             ),
         },
         "chronicity": {
@@ -270,6 +276,18 @@ def _graded(record, structured):
     state. And every answer from before the schema, which asked for no hedge at
     all.
 
+    An answer other than Yes keeps no phrase and no level. A hedge and a
+    magnitude describe a finding, and a No says there is none, so neither field
+    has anything to describe. The model fills them anyway: asked about hepatic
+    cysts on a liver section whose one abnormal sentence reported biliary
+    ductal dilatation, it answered No and put that sentence's "Minimal" in
+    `severity_phrase`, where the lexicon graded the No row `trace`. Clearing
+    them loses nothing, because the raw object stays in the `answer` column.
+
+    `evidence` is kept as the model quoted it. "Liver: Unremarkable" is what
+    settles a No, and the prompt is where a quote about some other abnormality
+    is ruled out.
+
     Parameters
     ----------
     record : dict
@@ -278,9 +296,16 @@ def _graded(record, structured):
         Whether the answer was a JSON object, which is what makes an empty
         `certainty_phrase` a claim rather than a field nobody asked for.
     """
+    if record["verdict"] != "yes":
+        record["certainty_phrase"] = ""
+        record["severity_phrase"] = ""
+        record["certainty"] = UNSPECIFIED
+        record["severity"] = UNSPECIFIED
+        return record
+
     record["certainty"] = certainty_of(record["certainty_phrase"])
     record["severity"] = severity_of(record["severity_phrase"])
-    if structured and record["verdict"] == "yes" and not record["certainty_phrase"].strip():
+    if structured and not record["certainty_phrase"].strip():
         record["certainty"] = STATED
     return record
 
