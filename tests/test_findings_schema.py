@@ -892,3 +892,73 @@ class TestThePromptIsOrderedForThePrefixCache:
             "never a hedge",
         ):
             assert claim in prompt, claim
+
+
+class TestTheSystemMessage:
+    """One message per stage, because the stages want opposite formats.
+
+    It read "Please output in plain text without any formatting" for every
+    stage, the questions stage included, where decoding is constrained to a
+    JSON schema. The model could obey that only by disobeying the grammar it
+    was decoded into.
+    """
+
+    def test_the_free_text_stages_still_ask_for_plain_text(self):
+        from src.core.batch_processor import DEFAULT_SYSTEM_PROMPT
+
+        assert "plain text" in DEFAULT_SYSTEM_PROMPT
+
+    def test_the_questions_stage_does_not(self):
+        from src.core.batch_processor import QUESTION_SYSTEM_PROMPT
+
+        assert "plain text" not in QUESTION_SYSTEM_PROMPT
+        assert "formatting" not in QUESTION_SYSTEM_PROMPT
+
+    def test_it_names_the_task_instead(self):
+        """The per-question prompt opens on a report, so nothing else says
+        what the model is doing."""
+        from src.core.batch_processor import QUESTION_SYSTEM_PROMPT
+
+        assert "report" in QUESTION_SYSTEM_PROMPT
+        assert "finding" in QUESTION_SYSTEM_PROMPT
+
+    def test_the_processor_defaults_to_the_free_text_one(self):
+        """A stage that forgets to set it gets the old behaviour."""
+        from src.core.batch_processor import DEFAULT_SYSTEM_PROMPT, BatchProcessor
+
+        processor = BatchProcessor.__new__(BatchProcessor)
+        processor.__init__(None, {}, None, None)
+        assert processor.system_prompt == DEFAULT_SYSTEM_PROMPT
+
+
+class TestTheSchemaDescriptionsAreDocumentation:
+    """They never reach the model, and the tests above should say so.
+
+    The request body is `messages` plus `response_format`. The server compiles
+    the schema into a decoding grammar, which masks tokens by structure --
+    property names, the `answer` enum, the required fields, the boolean -- and
+    reads no `description`. Nothing rewrites the prompt. So every rule the
+    model has to follow belongs in the prompt, and the descriptions duplicate
+    them for a reader.
+    """
+
+    def test_the_grammar_constrains_the_structure(self):
+        fmt = response_format()
+        assert fmt["json_schema"]["strict"] is True
+        schema = fmt["json_schema"]["schema"]
+        assert schema["additionalProperties"] is False
+        assert schema["properties"]["answer"]["enum"] == list(ANSWER_VALUES)
+        assert set(schema["required"]) == {"answer", "evidence", "named_outright"}
+
+    def test_the_prompt_carries_every_rule_on_its_own(self):
+        """Which is the property that matters: strip the descriptions and the
+        model is told the same things."""
+        prompt = findings_prompt()
+        for claim in (
+            "records abnormalities",
+            "never `not_assessed`",
+            "belongs to another diagnosis",
+            "never the finding's own name",
+            "empty whenever the answer is not yes",
+        ):
+            assert claim in prompt, claim

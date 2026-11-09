@@ -18,6 +18,14 @@ from a run after this change, or the bare `Yes` or `No` of every run before it.
 magnitude word as the report writes them, and `lexicon.py` maps those to a
 level afterwards. A mapping is contestable and will be revised; re-asking four
 million questions to revise one is not.
+
+**The `description` strings never reach the model.** The request body is
+`messages` plus `response_format`, and the server compiles the schema into a
+decoding grammar that masks tokens by structure: the property names, the
+`answer` enum, the required fields, the boolean. It reads no `description`,
+and nothing rewrites the prompt. So every rule the model has to follow lives
+in `config/default_config.yaml`, and the descriptions here restate them for a
+reader. Changing one changes no answer.
 """
 
 # Standard libraries

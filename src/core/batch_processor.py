@@ -25,6 +25,19 @@ SAMPLING_FIELDS = (
 from .logging_config import redacted
 from .validators import ResultValidator
 
+# The free-text stages return prose, and this keeps markdown out of it.
+DEFAULT_SYSTEM_PROMPT = (
+    "You are a helpful assistant. Please output in plain text without any formatting."
+)
+
+# The questions stage is decoded against a JSON schema, so the format needs no
+# asking for. What the model is doing needs saying, because the per-question
+# prompt opens on a report and never names the task.
+QUESTION_SYSTEM_PROMPT = (
+    "You are a radiologist reading a CT report and answering one question "
+    "about one imaging finding. Quote the report rather than paraphrasing it."
+)
+
 
 
 class BatchProcessor:
@@ -41,6 +54,12 @@ class BatchProcessor:
         # `response_format` here so the server constrains decoding to the answer
         # schema; every other stage leaves it empty and asks for free text.
         self.body_extras = {}
+        # The system message, set per stage for the same reason. The default
+        # tells a free-text stage to leave markdown out. It read "Please output
+        # in plain text without any formatting" for the questions stage too,
+        # where the grammar requires JSON -- an instruction the model could
+        # only obey by disobeying the format it was decoded into.
+        self.system_prompt = DEFAULT_SYSTEM_PROMPT
     
     def process_batch(self, requests: List[Tuple[str, str]], stage_name: str) -> Dict[str, str]:
         """Process a batch of requests with improved error handling and validation."""
@@ -130,7 +149,7 @@ class BatchProcessor:
                 "body": {
                     "model": self.config['model']['name'],
                     "messages": [
-                        {"role": "system", "content": "You are a helpful assistant. Please output in plain text without any formatting."},
+                        {"role": "system", "content": self.system_prompt},
                         {"role": "user", "content": prompt}
                     ],
                     **self._sampling(),

@@ -12,7 +12,11 @@ from .logging_config import setup_logging
 from .storage import StorageManager
 from .exceptions import BatchProcessingError, ValidationError
 from .validators import ResultValidator
-from .batch_processor import BatchProcessor
+from .batch_processor import (
+    DEFAULT_SYSTEM_PROMPT,
+    QUESTION_SYSTEM_PROMPT,
+    BatchProcessor,
+)
 from .findings_schema import question_guidance, response_format
 
 class Engine:
@@ -424,6 +428,11 @@ class Engine:
                     {"response_format": response_format()}
                     if stage_name == "questions" and structured
                     else {}
+                )
+                self.batch_processor.system_prompt = (
+                    QUESTION_SYSTEM_PROMPT
+                    if stage_name == "questions"
+                    else DEFAULT_SYSTEM_PROMPT
                 )
                 chunk_results = self.batch_processor.process_batch(chunk, stage_name)
                 
