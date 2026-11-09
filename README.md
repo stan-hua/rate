@@ -2,13 +2,30 @@
 
 A Python-based engine for processing radiology reports using the Qwen3-30B-A3B model with sglang for efficient batch inference. Includes quality control file generation and performance evaluation tools for comprehensive validation workflows with debug mode for faster iteration.
 
-## Installation with uv
+## Installation with pixi
+
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH"
-uv sync
-source .venv/bin/activate
+curl -fsSL https://pixi.sh/install.sh | sh
+pixi install                   # the client: five packages, no GPU needed
+pixi task list                 # the index of what this project can do
 ```
+
+Two environments. `default` runs the whole pipeline and needs no GPU, because
+sglang appears in no import under `src/` — this code reaches the server over
+HTTP through the `openai` client. `server` hosts the model:
+
+```bash
+pixi install -e server         # linux-64 and a GPU; several GB of CUDA wheels
+```
+
+`server` is deliberately separate. `pixi install` with no `-e` solves every
+environment in the manifest, so folding sglang into `default` would make a
+plain install fail on any machine without a GPU.
+
+`pyproject.toml` still declares the older dependency set and is no longer the
+source of truth; `pixi.toml` is the manifest and `pixi.lock` is committed.
+Three of sglang's requirements are pinned there beyond what sglang asks for —
+see the comments beside them before running `pixi update`.
 
 ## Setup and Usage
 
@@ -90,7 +107,7 @@ Expected server output:
 The easiest way to process reports is using the command-line interface:
 
 ```bash
-python src/cli.py \
+pixi run extract \
     --input-files /path/to/your/reports.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir output
@@ -99,7 +116,7 @@ python src/cli.py \
 If you just want to try the CLI wiring without preparing your own dataset, a tiny sample file lives at `docs/examples/reports_dummy.csv`. It follows the default column names (`Accession`, `Report Text`), so you can run:
 
 ```bash
-python src/cli.py \
+pixi run extract \
     --input-files docs/examples/reports_dummy.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir output
@@ -137,7 +154,7 @@ python src/cli.py \
 
 **Basic usage:**
 ```bash
-python src/cli.py \
+pixi run extract \
     --input-files data/mimic_reports.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir results
@@ -145,7 +162,7 @@ python src/cli.py \
 
 **Debug mode for rapid iteration:**
 ```bash
-python src/cli.py \
+pixi run extract \
     --input-files data/mimic_reports.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir debug_test \
@@ -158,7 +175,7 @@ python src/cli.py \
 
 **Process multiple files with custom batch size:**
 ```bash
-python src/cli.py \
+pixi run extract \
     --input-files data/file1.csv data/file2.csv data/file3.csv \
     --modality-config config/modalities/breast_mr.yaml \
     --save-dir results \
@@ -167,7 +184,7 @@ python src/cli.py \
 
 **Custom column names:**
 ```bash
-python src/cli.py \
+pixi run extract \
     --input-files data/reports.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir results \
@@ -228,10 +245,10 @@ When you restart a stage that was previously interrupted:
 Example:
 ```bash
 # Initial run processes 5000 reports, fails at report 3500
-python src/cli.py --stages extract-findings --input-files data.csv
+pixi run extract --stages extract-findings --input-files data.csv
 
 # Restart automatically detects completed reports and continues from report 3501
-python src/cli.py --stages extract-findings --input-files data.csv
+pixi run extract --stages extract-findings --input-files data.csv
 ```
 
 #### Stage-Based Examples
@@ -239,14 +256,14 @@ python src/cli.py --stages extract-findings --input-files data.csv
 **Run individual stages:**
 ```bash
 # Stage 1: Remove comparisons only
-python src/cli.py \
+pixi run extract \
     --stages remove-comparisons \
     --input-files data.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir results
 
 # Stage 2: Extract findings using previous results
-python src/cli.py \
+pixi run extract \
     --stages extract-findings \
     --input-no-comparisons results/no_comparisons.csv \
     --modality-config config/modalities/cxr.yaml \
@@ -255,7 +272,7 @@ python src/cli.py \
 
 **Run multiple dependent stages:**
 ```bash
-python src/cli.py \
+pixi run extract \
     --stages remove-comparisons extract-findings map-categories \
     --input-files data.csv \
     --modality-config config/modalities/cxr.yaml \
@@ -340,6 +357,42 @@ save_dir/
 }
 ```
 
+### 4. Collapse Each Finding's Wordings into One Answer
+
+`questions.csv` has one row per (report, finding, wording). Each finding is
+asked under three wordings as three independent requests, because a model shown
+all three answers consistently and the point is to measure how far the answer
+depends on the question. A label is one answer per (report, finding), so the
+wordings have to be combined:
+
+```bash
+# Writes finding_votes.csv beside the input
+pixi run vote --questions results/questions.csv
+
+# Report what each rule would do, and write nothing
+pixi run vote --questions results/questions.csv --compare
+
+# Override the rule for one run
+pixi run vote --questions results/questions.csv --rule majority
+```
+
+One row per (report, finding) with the verdict, the counts behind it, a
+`discordant` flag, and the certainty and severity the carrying wordings
+reached.
+
+**The rule comes from the lock file's `vote_rule`**, not from a flag.
+`fast_abdomen_ct.lock.json` is generated by the downstream project, which owns
+the decision, so the switch is in one place across two repositories that cannot
+import each other. `max` as of 2026-11-09.
+
+Nothing here re-extracts. Every rule is computable from the stored rows, so
+re-voting under a different rule is this command again rather than millions of
+requests.
+
+`discordant` marks the reports where a finding's wordings disagree. Under `max`
+the stratum that matters is one Yes against two No, where the label rests on a
+single wording — that is the queue a reader reviews.
+
 ## Quality Control and Evaluation
 
 After processing your reports, generate QC files for human annotation and evaluate performance metrics without leaving this README.
@@ -350,11 +403,11 @@ After processing your reports, generate QC files for human annotation and evalua
 - Produces QC files for four validation tasks: no-comparisons, findings extraction, category assignments, and binary question answering
 - Consolidates all questions into a single CSV with balanced positive/negative sampling
 - Allows per-task budgets, random seeding, and verbose logging
-- Designed for Python ≥3.9 and installs automatically with `pip install .`
+- Runs on the `default` pixi environment, which needs no GPU
 
 ```bash
 # Quick start: generate all QC artifacts in a target directory
-python src/qc_cli.py \
+pixi run qc \
     --results-path final_results.json \
     --qc-dir qc_validation/ \
     --questions-budget 20 \
@@ -365,10 +418,10 @@ python src/qc_cli.py \
 
 ```bash
 # Generate specific QC types
-python src/qc_cli.py --results-path results.json --qc-dir qc_output/ --qc-types findings categories
+pixi run qc --results-path results.json --qc-dir qc_output/ --qc-types findings categories
 
 # Custom sample budgets and reproducibility
-python src/qc_cli.py \
+pixi run qc \
     --results-path results.json \
     --qc-dir qc_output/ \
     --findings-budget 50 \
@@ -377,7 +430,7 @@ python src/qc_cli.py \
     --seed 123
 
 # Verbose logging
-python src/qc_cli.py --results-path results.json --qc-dir qc_output/ --verbose
+pixi run qc --results-path results.json --qc-dir qc_output/ --verbose
 ```
 
 **Command line arguments**
@@ -430,7 +483,7 @@ python src/qc_cli.py --results-path results.json --qc-dir qc_output/ --verbose
 
 ```bash
 # Quick start: evaluate every QC artifact in a directory
-python src/eval_cli.py --qc-dir qc_validation/ --output-file performance_metrics.json
+pixi run evaluate --qc-dir qc_validation/ --output-file performance_metrics.json
 ```
 
 **Questions QC evaluation**
@@ -455,10 +508,10 @@ python src/eval_cli.py --qc-dir qc_validation/ --output-file performance_metrics
 
 ```bash
 # Evaluate only questions and categories
-python src/eval_cli.py --qc-dir qc_output/ --qc-types questions categories
+pixi run evaluate --qc-dir qc_output/ --qc-types questions categories
 
 # Persist metrics and imperfect tasks
-python src/eval_cli.py \
+pixi run evaluate \
     --qc-dir qc_output/ \
     --output-file evaluation_results.json \
     --imperfect-csv tasks_to_review.csv \
@@ -519,13 +572,13 @@ python src/eval_cli.py \
 **QC → Evaluation workflow**
 1. **Generate QC files**
    ```bash
-   python src/qc_cli.py --results-path final_results.json --qc-dir qc_output/
+   pixi run qc --results-path final_results.json --qc-dir qc_output/
    ```
 2. **Human annotation**
    - Fill in `correct` columns (extraction/categorization) and `human_label` columns (questions)
 3. **Evaluate**
    ```bash
-   python src/eval_cli.py \
+   pixi run evaluate \
        --qc-dir qc_output/ \
        --output-file performance_metrics.json \
        --imperfect-csv review.csv
@@ -604,10 +657,10 @@ For an 8x H100 server, I found a batch size of ~24,000 (~3000 per GPU) to be eff
 4. **Batch size optimization examples**:
    ```bash
    # Memory-constrained environments
-   python src/cli.py --batch-size 512 --input-files data.csv
+   pixi run extract --batch-size 512 --input-files data.csv
    
    # High-memory systems (faster processing)
-   python src/cli.py --batch-size 4096 --input-files data.csv
+   pixi run extract --batch-size 4096 --input-files data.csv
    ```
 
 ## Troubleshooting
@@ -633,7 +686,7 @@ Start with debug mode for rapid iteration using a subset of your dataset:
 
 ```bash
 # Test with debug mode first - processes 50 reports with 2 categories
-python src/cli.py \
+pixi run extract \
     --input-files large_dataset.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir debug \
@@ -643,7 +696,7 @@ python src/cli.py \
     --debug-num-questions 5
 
 # Scale up once you've validated the approach
-python src/cli.py \
+pixi run extract \
     --input-files large_dataset.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir production
@@ -669,7 +722,7 @@ Here's a complete pipeline from debug to production with QC validation:
 **1. Start with Debug Mode (2-3 minutes):**
 ```bash
 # Test configuration with small subset
-python src/cli.py \
+pixi run extract \
     --input-files data/mimic_reports.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir debug_test \
@@ -683,7 +736,7 @@ python src/cli.py \
 **2. Generate Debug QC Files:**
 ```bash
 # Generate QC files for validation
-python src/qc_cli.py \
+pixi run qc \
     --results-path debug_test/final_results.json \
     --qc-dir debug_test/qc \
     --combined-findings-budget 20 \
@@ -694,7 +747,7 @@ python src/qc_cli.py \
 **3. Evaluate Debug Results:**
 ```bash
 # Check performance metrics
-python src/eval_cli.py \
+pixi run evaluate \
     --qc-dir debug_test/qc \
     --output-file debug_test/eval_results.json \
     --verbose
@@ -703,17 +756,23 @@ python src/eval_cli.py \
 **4. Scale to Production (hours):**
 ```bash
 # Full dataset processing
-python src/cli.py \
+pixi run extract \
     --input-files data/mimic_reports.csv \
     --modality-config config/modalities/cxr.yaml \
     --save-dir production \
     --batch-size 2048
 ```
 
-**5. Production QC and Evaluation:**
+**5. Collapse the Wordings:**
+```bash
+# One answer per (report, finding), from the rule the lock file names
+pixi run vote --questions production/questions.csv
+```
+
+**6. Production QC and Evaluation:**
 ```bash
 # Generate production QC files
-python src/qc_cli.py \
+pixi run qc \
     --results-path production/final_results.json \
     --qc-dir production/qc \
     --combined-findings-budget 100 \
@@ -721,7 +780,7 @@ python src/qc_cli.py \
     --questions-budget 50
 
 # Evaluate production results
-python src/eval_cli.py \
+pixi run evaluate \
     --qc-dir production/qc \
     --output-file production/eval_results.json \
     --imperfect-csv production/needs_review.csv
