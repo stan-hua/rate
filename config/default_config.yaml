@@ -99,8 +99,15 @@ prompt_templates:
     `severity_phrase` is the magnitude word it uses, verbatim and empty if it
     gives none. Do not grade the certainty or the severity yourself.
 
-    Answer `not_assessed` if this report cannot answer -- the organ was not
-    imaged, or the report defers to another study. That is not the same as `no`.
+    Answer `no` when the report describes the anatomy and does not mention the
+    finding. A radiology report records abnormalities, so silence about a
+    finding in an organ the report describes means the finding is absent:
+    "Spleen: Unremarkable" answers no to every question about the spleen.
+
+    Answer `not_assessed` only when this report could not have answered: the
+    anatomy lies outside the imaged volume, or the report hands the question to
+    another study, as in "see CT chest for thoracic findings". A report that
+    simply does not mention the finding is a `no`, never `not_assessed`.
 
   map_category_findings: |
     Given the following findings from a radiology report:

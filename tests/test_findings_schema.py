@@ -484,3 +484,46 @@ class TestClosingAnOpenObject:
 
     def test_truncated_is_a_stored_column(self):
         assert "truncated" in ANSWER_COLUMNS
+
+
+class TestWhatNotAssessedMeans:
+    """The narrow case, because the loose reading destroys the negative class.
+
+    A smoke run answered `not_assessed` for an accessory spleen on a report
+    whose spleen section read "Unremarkable". The spleen was imaged and
+    described, so the finding is absent and the answer is `no`. Read loosely,
+    `not_assessed` becomes "the report does not mention this", which is true of
+    almost every finding in almost every report -- and those rows leave the
+    denominator instead of counting as negatives.
+    """
+
+    def test_the_schema_states_the_exception_convention(self):
+        """Silence about a finding in a described organ means absent."""
+        said = RESPONSE_SCHEMA["properties"]["answer"]["description"]
+        assert "without" in said and "mentioning" in said
+        assert "silence" in said.lower()
+
+    def test_the_schema_narrows_not_assessed(self):
+        said = RESPONSE_SCHEMA["properties"]["answer"]["description"]
+        assert "only when" in said
+        assert "outside the imaged volume" in said
+        assert "another study" in said
+
+    def test_the_prompt_says_the_same_thing(self):
+        """The schema description and the prompt both reach the model."""
+        import yaml
+
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+        prompt = config["prompt_templates"]["findings_question"]
+        assert "never `not_assessed`" in prompt
+        assert "records abnormalities" in prompt
+        assert "see CT chest" in prompt
+
+    def test_not_assessed_is_still_a_value_the_reader_accepts(self):
+        """Narrowing what it means does not remove it: the chest-deferral case
+        is the one it exists for."""
+        assert "not_assessed" in ANSWER_VALUES
+        got = parse_answer('{"answer": "not_assessed", "evidence": "", "named_outright": false}')
+        assert got["verdict"] == "not_assessed"

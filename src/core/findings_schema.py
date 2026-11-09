@@ -47,9 +47,13 @@ RESPONSE_SCHEMA = {
             "type": "string",
             "enum": list(ANSWER_VALUES),
             "description": (
-                "yes if the report states the finding, no if it is absent or "
-                "denied, not_assessed if this report cannot answer -- the organ "
-                "was not imaged, or the report defers to another study."
+                "yes if the report states the finding. no if it is absent or "
+                "denied, and also when the report describes the anatomy without "
+                "mentioning the finding -- a report records abnormalities, so "
+                "silence about a finding in an organ it describes means absent. "
+                "not_assessed only when this report could not have answered: the "
+                "anatomy is outside the imaged volume, or the report hands the "
+                "question to another study."
             ),
         },
         "evidence": {
