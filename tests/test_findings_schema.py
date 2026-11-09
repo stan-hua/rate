@@ -52,6 +52,41 @@ def findings_prompt():
     return " ".join(config["prompt_templates"]["findings_question"].split())
 
 
+# Every rule the prompt has to state, each with the words that evidence it.
+# The prompt is the only channel to the model -- the schema's `description`
+# strings reach a grammar and not a context -- so a rule dropped from here is
+# a rule the extraction stops following, and each of these came from a
+# measured defect.
+#
+# One rule is deliberately absent. The prompt once explained *why* silence
+# means absent ("a report records abnormalities, so..."), and the 2026-11-09
+# rewrite cut it, keeping the "Spleen: Unremarkable" example to carry the rule
+# on its own. The `not_assessed` rate per category is what shows whether the
+# example is enough.
+PROMPT_RULES = {
+    "the fields describe the finding in the question": "Answer about the finding the question names",
+    "a second finding is another question's": "belongs to a different question",
+    "yes is the report stating it": "Answer `yes` when the report states the finding",
+    "silence in a described organ is no": "describes the organ and leaves the finding out",
+    "and an example of it": "Spleen: Unremarkable",
+    "not_assessed is anatomy out of frame": "outside the imaged volume",
+    "or a deferral, with an example": "see CT chest",
+    "unmentioned is never not_assessed": "A finding the report leaves out is a `no`",
+    "evidence is one sentence": "Quote the one sentence that settles the question",
+    "evidence on a no": "describing the organ as unremarkable",
+    "a flat statement takes no hedge": "when the report states the finding flatly",
+    "a hedge has to govern this finding": "belongs to a second diagnosis",
+    "and an example of that": "likely a cyst",
+    "a measurement is a magnitude": "13 mm",
+    "so is a formal grade": "Bosniak III",
+    "the magnitude is not the finding's name": '"enlarged" names the finding',
+    "a size word is a magnitude": "A word about size or amount is a magnitude",
+    "one phrase goes to one field": "One phrase belongs to one field",
+    "no phrase unless the answer is yes": "empty unless the answer is `yes`",
+    "the model grades nothing": "Do not grade the certainty or the severity yourself",
+}
+
+
 class TestTheSchema:
     """What the server is told to constrain decoding to."""
 
@@ -381,7 +416,7 @@ class TestTheGradedSystems:
         because the instruction said "magnitude word" and a measurement is not
         one. Size is the modifier that decides whether a sweep would show it."""
         prompt = findings_prompt()
-        assert "a measurement like" in prompt
+        assert "13 mm" in prompt
         said = RESPONSE_SCHEMA["properties"]["severity_phrase"]["description"]
         assert "measurement" in said
 
@@ -542,8 +577,8 @@ class TestWhatNotAssessedMeans:
     def test_the_prompt_says_the_same_thing(self):
         """The schema description and the prompt both reach the model."""
         prompt = findings_prompt()
-        assert "never `not_assessed`" in prompt
-        assert "records abnormalities" in prompt
+        assert "A finding the report leaves out is a `no`" in prompt
+        assert "describes the organ and leaves the finding out" in prompt
         assert "see CT chest" in prompt
 
     def test_not_assessed_is_still_a_value_the_reader_accepts(self):
@@ -574,17 +609,17 @@ class TestTheTwoPhraseFieldsStayApart:
 
     def test_the_prompt_says_a_size_word_is_not_a_hedge(self):
         prompt = self.prompt()
-        assert "never a hedge" in prompt
+        assert "A word about size or amount is a magnitude" in prompt
         assert "subcentimeter" in prompt
 
     def test_the_prompt_forbids_splitting_one_phrase_across_both(self):
-        assert "do not split one phrase across" in self.prompt()
+        assert "One phrase belongs to one field" in self.prompt()
 
     def test_the_prompt_says_the_magnitude_is_not_the_finding_name(self):
         """"Mildly enlarged" is the case: the magnitude is "mildly"."""
         prompt = self.prompt()
-        assert "never the finding's own name" in prompt
-        assert "Mildly enlarged spleen" in prompt
+        assert '"enlarged" names the finding' in prompt
+        assert '"mildly enlarged" gives "mildly"' in prompt
 
     def test_the_schema_says_both(self):
         """The description reaches the model even where the prompt is reworded."""
@@ -621,7 +656,7 @@ class TestAHedgeOnAnotherDiagnosis:
 
     def test_the_prompt_states_the_rule(self):
         prompt = findings_prompt()
-        assert "belongs to another diagnosis" in prompt
+        assert "belongs to a second diagnosis" in prompt
         assert "likely a cyst" in prompt
 
     def test_the_schema_states_it_too(self):
@@ -790,8 +825,8 @@ class TestANonYesGradesToNoLevel:
 
     def test_the_prompt_says_the_fields_are_about_this_finding(self):
         prompt = findings_prompt()
-        assert "empty whenever the answer is not yes" in prompt
-        assert "never a sentence reporting some different abnormality" in prompt
+        assert "empty unless the answer is `yes`" in prompt
+        assert "Answer about the finding the question names" in prompt
         assert "describing the organ as unremarkable" in prompt
 
     def test_the_schema_says_it_too(self):
@@ -881,17 +916,8 @@ class TestThePromptIsOrderedForThePrefixCache:
 
     def test_every_rule_survived_the_reorder(self):
         prompt = findings_prompt()
-        for claim in (
-            "records abnormalities",
-            "never `not_assessed`",
-            "see CT chest",
-            "belongs to another diagnosis",
-            "never the finding's own name",
-            "never a sentence reporting some different abnormality",
-            "empty whenever the answer is not yes",
-            "never a hedge",
-        ):
-            assert claim in prompt, claim
+        for rule, evidence in PROMPT_RULES.items():
+            assert evidence in prompt, rule
 
 
 class TestTheSystemMessage:
@@ -955,11 +981,5 @@ class TestTheSchemaDescriptionsAreDocumentation:
         """Which is the property that matters: strip the descriptions and the
         model is told the same things."""
         prompt = findings_prompt()
-        for claim in (
-            "records abnormalities",
-            "never `not_assessed`",
-            "belongs to another diagnosis",
-            "never the finding's own name",
-            "empty whenever the answer is not yes",
-        ):
-            assert claim in prompt, claim
+        for rule, evidence in PROMPT_RULES.items():
+            assert evidence in prompt, rule

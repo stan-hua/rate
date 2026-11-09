@@ -89,56 +89,43 @@ prompt_templates:
   # instructions come first, so all 4.3M requests share them; the report comes
   # next, so one report's 339 wordings share it; the question comes last,
   # because it is the only part that differs between them. Written the other
-  # way round -- report, question, then 596 tokens of instructions -- nothing
-  # after the question can be cached, and a live run showed 57% of the prompt
-  # cached where the first ordering reached 78%.
+  # way round -- report, question, then the instructions -- nothing after the
+  # question can be cached, and a live run showed 57% of the prompt cached and
+  # 9.3 requests a second, against 96% and 19.6 on this ordering.
   findings_question: |
-    You read a radiology report and answer one question about one finding
-    with a JSON object and nothing else.
+    Given a radiology text report, you will be asked about the presence of a
+    specific imaging finding and asked to extract verbatim the evidence for your
+    answer, as well as phrases on the certainty and severity of the finding.
 
-    Quote the report rather than paraphrasing it. Every field is about the
-    finding the question names, and about no other.
+    Answer about the finding the question names. A sentence may report a second
+    finding beside it. That second finding belongs to a different question.
 
-    `answer` is `yes` when the report states the finding. It is `no` when the
-    report denies the finding, and also when the report describes the anatomy
-    and does not mention it: a radiology report records abnormalities, so
-    silence about a finding in an organ the report describes means the finding
-    is absent, and "Spleen: Unremarkable" answers no to every question about
-    the spleen.
+    `answer`
+      Answer `yes` when the report states the finding. Answer `no` when the
+      report denies the finding, and when the report describes the organ and
+      leaves the finding out: "Spleen: Unremarkable" answers `no` for the
+      spleen. Answer `not_assessed` when the anatomy lies outside the imaged
+      volume, or when the report defers to another study, as in "see CT chest".
+      A finding the report leaves out is a `no`.
 
-    `answer` is `not_assessed` only when this report could not have answered:
-    the anatomy lies outside the imaged volume, or the report hands the
-    question to another study, as in "see CT chest for thoracic findings". A
-    report that simply does not mention the finding is a `no`, never
-    `not_assessed`.
+    `evidence`
+      Quote the one sentence that settles the question. On a `no`, quote the
+      denial, or the sentence describing the organ as unremarkable.
 
-    `evidence` is the one sentence that settles the question, verbatim. On a
-    no, that is the sentence denying this finding or describing the organ as
-    unremarkable, never a sentence reporting some different abnormality. If
-    the report denies nothing and describes nothing, leave it empty.
+    `certainty_phrase`
+      Quote the hedge the report puts on this finding: "concerning for", "may
+      represent". Leave it empty when the report states the finding flatly, and
+      when the hedge belongs to a second diagnosis: "hypodensity, likely a cyst"
+      hedges the cyst.
 
-    `certainty_phrase` is the hedge the report uses about this finding,
-    verbatim: "consistent with", "concerning for", "may represent". Leave it
-    empty if the report states the finding flatly, and leave it empty if the
-    only hedge belongs to another diagnosis. "Subcentimeter hypodensity,
-    likely a cyst" states the hypodensity flatly and hedges the cyst, so a
-    question about the hypodensity has no hedge and a question about the cyst
-    has "likely".
+    `severity_phrase`
+      Quote the magnitude: "trace", "13 mm", "Bosniak III". Quote it by itself,
+      so "mildly enlarged" gives "mildly", because "enlarged" names the finding.
 
-    `severity_phrase` is how the report gives this finding's magnitude,
-    verbatim: a word like "trace" or "moderate", a measurement like "13 mm",
-    or a formal grade like "Bosniak III". Give the magnitude alone and never
-    the finding's own name: in "Mildly enlarged spleen", "mildly" is the
-    magnitude and "enlarged" is the finding. Leave it empty if the report
-    gives no magnitude.
-
-    A word about size or amount is never a hedge, so "mildly", "small" and
-    "subcentimeter" go in `severity_phrase` and never in `certainty_phrase`.
-    The two fields are read separately, so do not split one phrase across
-    them. Both are empty whenever the answer is not yes: an absent finding has
-    no hedge and no magnitude, so a magnitude word belonging to another
-    finding in the same section does not go here. Do not grade the certainty
-    or the severity yourself.
+    A word about size or amount is a magnitude, so "mildly" and "subcentimeter"
+    belong in `severity_phrase`. One phrase belongs to one field. Leave both
+    phrases empty unless the answer is `yes`. Do not grade the certainty or the
+    severity yourself.
 
     Report:
     {report}
