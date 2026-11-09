@@ -37,6 +37,21 @@ from src.core.lexicon import (
 )
 
 
+def findings_prompt():
+    """Return the question prompt with its line wrapping collapsed.
+
+    Every assertion below reads this rather than the raw template. A claim
+    about what the prompt says should not break when a sentence rewraps, and
+    two did when the template was reordered for prefix caching.
+    """
+    import yaml
+
+    config = yaml.safe_load(
+        (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+    )
+    return " ".join(config["prompt_templates"]["findings_question"].split())
+
+
 class TestTheSchema:
     """What the server is told to constrain decoding to."""
 
@@ -365,12 +380,7 @@ class TestTheGradedSystems:
         """"13 mm exophytic cyst" came back with an empty severity_phrase,
         because the instruction said "magnitude word" and a measurement is not
         one. Size is the modifier that decides whether a sweep would show it."""
-        import yaml
-
-        config = yaml.safe_load(
-            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
-        )
-        prompt = config["prompt_templates"]["findings_question"]
+        prompt = findings_prompt()
         assert "a measurement like" in prompt
         said = RESPONSE_SCHEMA["properties"]["severity_phrase"]["description"]
         assert "measurement" in said
@@ -531,12 +541,7 @@ class TestWhatNotAssessedMeans:
 
     def test_the_prompt_says_the_same_thing(self):
         """The schema description and the prompt both reach the model."""
-        import yaml
-
-        config = yaml.safe_load(
-            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
-        )
-        prompt = config["prompt_templates"]["findings_question"]
+        prompt = findings_prompt()
         assert "never `not_assessed`" in prompt
         assert "records abnormalities" in prompt
         assert "see CT chest" in prompt
@@ -565,12 +570,7 @@ class TestTheTwoPhraseFieldsStayApart:
     """
 
     def prompt(self):
-        import yaml
-
-        config = yaml.safe_load(
-            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
-        )
-        return config["prompt_templates"]["findings_question"]
+        return findings_prompt()
 
     def test_the_prompt_says_a_size_word_is_not_a_hedge(self):
         prompt = self.prompt()
@@ -583,7 +583,7 @@ class TestTheTwoPhraseFieldsStayApart:
     def test_the_prompt_says_the_magnitude_is_not_the_finding_name(self):
         """"Mildly enlarged" is the case: the magnitude is "mildly"."""
         prompt = self.prompt()
-        assert "never\nthe finding's own name" in prompt
+        assert "never the finding's own name" in prompt
         assert "Mildly enlarged spleen" in prompt
 
     def test_the_schema_says_both(self):
@@ -620,12 +620,7 @@ class TestAHedgeOnAnotherDiagnosis:
     """
 
     def test_the_prompt_states_the_rule(self):
-        import yaml
-
-        config = yaml.safe_load(
-            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
-        )
-        prompt = config["prompt_templates"]["findings_question"]
+        prompt = findings_prompt()
         assert "belongs to another diagnosis" in prompt
         assert "likely a cyst" in prompt
 
@@ -794,13 +789,8 @@ class TestANonYesGradesToNoLevel:
         assert parse_answer(raw)["severity"] == "unspecified"
 
     def test_the_prompt_says_the_fields_are_about_this_finding(self):
-        import yaml
-
-        config = yaml.safe_load(
-            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
-        )
-        prompt = config["prompt_templates"]["findings_question"]
-        assert "empty whenever the answer is\nnot yes" in prompt
+        prompt = findings_prompt()
+        assert "empty whenever the answer is not yes" in prompt
         assert "never a sentence reporting some different abnormality" in prompt
         assert "describing the organ as unremarkable" in prompt
 
@@ -849,3 +839,56 @@ class TestTheLogsDoNotNameAReport:
         first = redacted("A12345678_ascites_v0").split("_")[0]
         second = redacted("A12345678_hepatic_cysts_simple_v2").split("_")[0]
         assert first == second
+
+
+class TestThePromptIsOrderedForThePrefixCache:
+    """Most-shared text first, because that is what a radix cache can hold.
+
+    The instructions are the same for all 4.3M requests, the report is the
+    same for one report's 339 wordings, and the question differs between them.
+    Written the other way round -- report, question, then 596 tokens of
+    instructions -- nothing after the question can be cached. A live run
+    showed 57% of the prompt cached and 9.3 requests a second, against 78% on
+    the earlier ordering.
+    """
+
+    def template(self):
+        import yaml
+
+        config = yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+        return config["prompt_templates"]["findings_question"]
+
+    def test_the_placeholders_run_shared_to_unique(self):
+        tpl = self.template()
+        assert tpl.index("{report}") < tpl.index("{question}") < tpl.index("{guidance}")
+
+    def test_the_instructions_lead(self):
+        """They are cached once instead of recomputed per request."""
+        tpl = self.template()
+        assert len(tpl[: tpl.index("{report}")]) > 1500
+
+    def test_almost_nothing_follows_the_question(self):
+        """Every character after the variable part is recomputed 4.3M times."""
+        tpl = self.template()
+        tail = tpl[tpl.index("{guidance}") + len("{guidance}") :]
+        assert len(tail) < 100, f"{len(tail)} chars after the question"
+
+    def test_the_tail_still_asks_for_the_object(self):
+        """The one instruction worth repeating at the end."""
+        assert self.template().rstrip().endswith("Answer with a JSON object and nothing else.")
+
+    def test_every_rule_survived_the_reorder(self):
+        prompt = findings_prompt()
+        for claim in (
+            "records abnormalities",
+            "never `not_assessed`",
+            "see CT chest",
+            "belongs to another diagnosis",
+            "never the finding's own name",
+            "never a sentence reporting some different abnormality",
+            "empty whenever the answer is not yes",
+            "never a hedge",
+        ):
+            assert claim in prompt, claim

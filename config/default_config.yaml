@@ -85,26 +85,37 @@ prompt_templates:
     Remove the section heading but do not omit any part of the radioligst analysis. Put all the extracted content verbatim under section heading called FINDINGS. 
     If there is no findings section, output "No such section". 
 
+  # The order is deliberate, and it is what prefix caching reads. The static
+  # instructions come first, so all 4.3M requests share them; the report comes
+  # next, so one report's 339 wordings share it; the question comes last,
+  # because it is the only part that differs between them. Written the other
+  # way round -- report, question, then 596 tokens of instructions -- nothing
+  # after the question can be cached, and a live run showed 57% of the prompt
+  # cached where the first ordering reached 78%.
   findings_question: |
-    Based on the following radiology report:
-    {report}
+    You read a radiology report and answer one question about one finding
+    with a JSON object and nothing else.
 
-    Question: {question}
-    {guidance}
-    Answer with a JSON object and nothing else.
+    Quote the report rather than paraphrasing it. Every field is about the
+    finding the question names, and about no other.
 
-    Quote the report rather than paraphrasing it. `evidence` is the one
-    sentence that settles the question, verbatim.
+    `answer` is `yes` when the report states the finding. It is `no` when the
+    report denies the finding, and also when the report describes the anatomy
+    and does not mention it: a radiology report records abnormalities, so
+    silence about a finding in an organ the report describes means the finding
+    is absent, and "Spleen: Unremarkable" answers no to every question about
+    the spleen.
 
-    Every field is about the finding the question names, and about no other.
-    `evidence` is the sentence that settles this question: on a no, the
-    sentence denying this finding or describing the organ as unremarkable,
-    never a sentence reporting some different abnormality. If the report
-    denies nothing and describes nothing, leave it empty.
+    `answer` is `not_assessed` only when this report could not have answered:
+    the anatomy lies outside the imaged volume, or the report hands the
+    question to another study, as in "see CT chest for thoracic findings". A
+    report that simply does not mention the finding is a `no`, never
+    `not_assessed`.
 
-    `certainty_phrase` and `severity_phrase` are empty whenever the answer is
-    not yes. An absent finding has no hedge and no magnitude, so a magnitude
-    word belonging to another finding in the same section does not go here.
+    `evidence` is the one sentence that settles the question, verbatim. On a
+    no, that is the sentence denying this finding or describing the organ as
+    unremarkable, never a sentence reporting some different abnormality. If
+    the report denies nothing and describes nothing, leave it empty.
 
     `certainty_phrase` is the hedge the report uses about this finding,
     verbatim: "consistent with", "concerning for", "may represent". Leave it
@@ -124,17 +135,17 @@ prompt_templates:
     A word about size or amount is never a hedge, so "mildly", "small" and
     "subcentimeter" go in `severity_phrase` and never in `certainty_phrase`.
     The two fields are read separately, so do not split one phrase across
-    them. Do not grade the certainty or the severity yourself.
+    them. Both are empty whenever the answer is not yes: an absent finding has
+    no hedge and no magnitude, so a magnitude word belonging to another
+    finding in the same section does not go here. Do not grade the certainty
+    or the severity yourself.
 
-    Answer `no` when the report describes the anatomy and does not mention the
-    finding. A radiology report records abnormalities, so silence about a
-    finding in an organ the report describes means the finding is absent:
-    "Spleen: Unremarkable" answers no to every question about the spleen.
+    Report:
+    {report}
 
-    Answer `not_assessed` only when this report could not have answered: the
-    anatomy lies outside the imaged volume, or the report hands the question to
-    another study, as in "see CT chest for thoracic findings". A report that
-    simply does not mention the finding is a `no`, never `not_assessed`.
+    Question: {question}
+    {guidance}
+    Answer with a JSON object and nothing else.
 
   map_category_findings: |
     Given the following findings from a radiology report:
