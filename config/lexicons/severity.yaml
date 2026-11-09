@@ -106,8 +106,12 @@ graded_systems:
 
   aneurysm_diameter:
     pattern: '(?i)(\d+(?:\.\d+)?)\s*cm\b'
-    # The surveillance bands: under 3.0 is not an aneurysm, 3.0 to 4.4 small,
-    # 4.5 to 5.4 medium, 5.5 and above is the repair threshold.
+    # The NHS AAA screening programme's bands, which is where these numbers
+    # come from rather than from a judgment made here: no aneurysm below
+    # 3.0 cm, small at 3.0 to 4.4, medium at 4.5 to 5.4, and large at 5.5 and
+    # above, which is the referral threshold. Small and medium go to annual
+    # and quarterly surveillance respectively.
+    # https://www.gov.uk/government/publications/abdominal-aortic-aneurysm-screening-pathway-requirements-specification/abdominal-aortic-aneurysm-screening-pathway-requirements-specification
     bands:
       - below: 3.0
         level: unspecified

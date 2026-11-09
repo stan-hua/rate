@@ -31,7 +31,7 @@
     "accessory_spleen": {
       "category": "Spleen",
       "covariate": false,
-      "tier": "A",
+      "tier": "B",
       "variants": [
         {
           "index": 0,
@@ -1570,7 +1570,7 @@
     "horseshoe_kidney": {
       "category": "Kidney",
       "covariate": false,
-      "tier": "A",
+      "tier": "B",
       "variants": [
         {
           "index": 0,
@@ -2120,7 +2120,7 @@
           "question": "Does the report describe a renal allograft or post-transplantation change in an iliac fossa?"
         }
       ],
-      "window": "RUQ/LUQ"
+      "window": "suprapubic"
     },
     "post_splenectomy_changes": {
       "added": true,
