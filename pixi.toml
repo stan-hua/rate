@@ -43,6 +43,13 @@ compressed-tensors = "==0.10.2"
 # Keep the backslashes: a raw newline in a pixi `cmd` is a command separator,
 # and without them the server launches with no arguments at all.
 #
+# No `--reasoning-parser`, which pairs with `enable_thinking: false` in
+# `config/default_config.yaml`. The flag makes sglang wrap the grammar backend
+# in `ReasonerGrammarBackend`, which enforces nothing until a `</think>` token
+# arrives -- so with thinking off the schema would never apply at all. To put
+# thinking back, set that config key true and add `--reasoning-parser qwen3`
+# here; the two have to move together.
+#
 # The two batch-size limits are sized for four A40s. Measured there: 545 KV
 # tokens resident per request, against a cache of about 900,000, so 1024
 # concurrent sits near 0.62. Re-derive from `#token` and `token usage` in the
@@ -53,7 +60,6 @@ description = "Serve the model the extraction asks over HTTP"
 cmd = """
 python -m sglang.launch_server \
   --model-path Qwen/Qwen3-30B-A3B \
-  --reasoning-parser qwen3 \
   --port 8000 \
   --host 127.0.0.1 \
   --tp 4 \

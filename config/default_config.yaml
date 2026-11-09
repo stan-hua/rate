@@ -21,21 +21,26 @@ model:
   # `reasoning_content`: sglang's grammar backend defers its token mask until
   # the end-of-think token, so a reasoning parser and a schema can fight.
   structured_output: true
-  # Qwen3's own thinking-mode settings. The model card gives temperature 0.6,
-  # top_p 0.95, top_k 20 and min_p 0, and says not to use greedy decoding
-  # because it degrades the output and produces endless repetitions. This was
-  # 0.1 / 0.1 through the first extraction, which is near-greedy: the server
-  # was generating about 785 tokens per yes/no answer, most of it reasoning
-  # that repeated itself.
+  # Thinking off. Extraction from a report is close to a lookup, and the
+  # reasoning block was most of every answer's tokens.
   #
-  # The cost of the change is that sampling is no longer near-deterministic, so
-  # two asks of the *same* wording can differ. A finding's three wordings
-  # therefore disagree for two reasons now, not one, and the discordance
-  # review has to read it that way.
-  temperature: 0.6
-  top_p: 0.95
+  # **Launch the server without `--reasoning-parser` when this is false.**
+  # sglang wraps the grammar backend in `ReasonerGrammarBackend` whenever that
+  # flag is set, and the wrapper enforces nothing until a `</think>` token
+  # arrives. With thinking off none ever does, so the schema would never apply
+  # -- sgl-project #6675 and #9282. Without the flag the plain backend
+  # constrains from the first token.
+  enable_thinking: false
+
+  # Qwen3's non-thinking settings. The thinking-mode pair is 0.6 / 0.95, and
+  # the card warns against greedy decoding there because it repeats endlessly;
+  # that warning is about thinking mode, so a lower temperature is defensible
+  # here if the answers vary too much between wordings.
+  temperature: 0.7
+  top_p: 0.8
   top_k: 20
   min_p: 0
+  # A ceiling rather than a target: an answer is now a small JSON object.
   max_tokens: 4096
 
 # Server settings

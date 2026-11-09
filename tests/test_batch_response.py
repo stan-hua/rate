@@ -114,16 +114,19 @@ class TestTheSamplingBlock:
         )
         return processor._sampling()
 
-    def test_the_committed_config_sends_qwen3s_thinking_settings(self):
-        """The model card's values. Greedy decoding degrades thinking mode."""
+    def test_the_committed_config_sends_the_cards_values_for_its_mode(self):
+        """Qwen3 publishes a different pair for each mode: 0.6 / 0.95 with
+        thinking on, 0.7 / 0.8 with it off. The two have to match."""
         import yaml
 
         config = yaml.safe_load(
             (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
         )
         sampling = self.build(config["model"])
-        assert sampling["temperature"] == 0.6
-        assert sampling["top_p"] == 0.95
+        thinking = config["model"].get("enable_thinking", True)
+        assert (sampling["temperature"], sampling["top_p"]) == (
+            (0.6, 0.95) if thinking else (0.7, 0.8)
+        )
         assert sampling["top_k"] == 20
         assert sampling["min_p"] == 0
 
@@ -154,3 +157,66 @@ class TestTheSamplingBlock:
             client=None, config={}, logger=logger, validator=ResultValidator(logger)
         )
         assert processor._sampling() == {}
+
+
+class TestTheThinkingSwitch:
+    """sglang reads `enable_thinking` out of `chat_template_kwargs`."""
+
+    def build(self, model):
+        logger = logging.getLogger("test_thinking")
+        processor = BatchProcessor(
+            client=None,
+            config={"model": model},
+            logger=logger,
+            validator=ResultValidator(logger),
+        )
+        return processor._thinking()
+
+    def test_off_sends_the_template_kwarg(self):
+        assert self.build({"enable_thinking": False}) == {
+            "chat_template_kwargs": {"enable_thinking": False}
+        }
+
+    def test_on_sends_it_too(self):
+        """Explicit either way, so the request never relies on a template default."""
+        assert self.build({"enable_thinking": True}) == {
+            "chat_template_kwargs": {"enable_thinking": True}
+        }
+
+    def test_absent_sends_nothing(self):
+        assert self.build({"temperature": 0.7}) == {}
+
+    def test_it_is_not_a_sampling_field(self):
+        """It is a chat-template kwarg, and a top-level `enable_thinking` is
+        not a field sglang's `ChatCompletionRequest` has at all."""
+        logger = logging.getLogger("test_thinking")
+        processor = BatchProcessor(
+            client=None,
+            config={"model": {"enable_thinking": False, "temperature": 0.7}},
+            logger=logger,
+            validator=ResultValidator(logger),
+        )
+        assert "enable_thinking" not in processor._sampling()
+
+    def test_the_committed_config_and_the_launch_task_agree(self):
+        """The one pairing that silently breaks the schema.
+
+        sglang wraps the grammar backend in `ReasonerGrammarBackend` whenever
+        `--reasoning-parser` is set, and that wrapper masks nothing until a
+        `</think>` token. With thinking off the model never emits one, so the
+        schema would never be enforced and every answer would be free text.
+        """
+        import yaml
+
+        root = Path(__file__).resolve().parents[1]
+        config = yaml.safe_load((root / "config" / "default_config.yaml").read_text())
+        manifest = (root / "pixi.toml").read_text()
+        launch = manifest[manifest.index("[feature.server.tasks.launch-server]"):]
+        launch = launch[: launch.index('"""', launch.index('cmd = """') + 10)]
+
+        thinking = config["model"].get("enable_thinking", True)
+        parser = "--reasoning-parser" in launch
+        assert thinking == parser, (
+            "enable_thinking and --reasoning-parser have to move together: "
+            f"config says {thinking}, launch task says {parser}"
+        )

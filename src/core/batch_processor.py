@@ -89,6 +89,32 @@ class BatchProcessor:
         model = self.config.get('model', {})
         return {field: model[field] for field in SAMPLING_FIELDS if field in model}
 
+    def _thinking(self) -> Dict[str, Any]:
+        """Return the chat-template switch that turns Qwen3's thinking on or off.
+
+        sglang reads `enable_thinking` out of `chat_template_kwargs`; there is
+        no top-level field for it. Absent from the config, nothing is sent and
+        the template's own default applies.
+
+        **This has to agree with how the server was launched.** sglang decides
+        at launch whether to wrap the grammar backend:
+
+            if server_args.reasoning_parser and hasattr(tokenizer, "think_end_id"):
+                grammar_backend = ReasonerGrammarBackend(grammar_backend, ...)
+
+        and `ReasonerGrammarObject` starts with `is_in_reasoning = True`, so it
+        masks nothing until a `</think>` token arrives. With thinking off the
+        model never emits one, so a server started with `--reasoning-parser`
+        would never enforce the schema -- the failure reported in sgl-project
+        #6675 and #9282. Thinking off therefore means launching without
+        `--reasoning-parser`, which leaves the plain grammar backend applying
+        from the first token.
+        """
+        model = self.config.get('model', {})
+        if 'enable_thinking' not in model:
+            return {}
+        return {"chat_template_kwargs": {"enable_thinking": bool(model['enable_thinking'])}}
+
     def _submit_and_wait_for_batch(self, requests: List[Tuple[str, str]], attempt: int) -> Any:
         """Submit batch and wait for completion."""
         # Create batch requests
@@ -106,6 +132,7 @@ class BatchProcessor:
                         {"role": "user", "content": prompt}
                     ],
                     **self._sampling(),
+                    **self._thinking(),
                     **self.body_extras,
                 }
             }
