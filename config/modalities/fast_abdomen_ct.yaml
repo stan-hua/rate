@@ -310,7 +310,7 @@ categories:
         variants:
           - "Is anything abnormal described in the gallbladder?"
           - "Does the report record gallstones, wall thickening, inflammation, a polyp, a mass or any other gallbladder abnormality?"
-  Genitourinary:
+  Kidney:
     description: "Kidney and urinary tract findings"
     questions:
       - id: hydronephrosis
@@ -379,35 +379,6 @@ categories:
           - "ureteral stone"
           - "ureterolithiasis"
           - "bladder stone"
-      - id: ureteral_stones
-        question: "Are there any ureteral stones?"
-        variants:
-          - "Is there a calculus in a ureter?"
-          - "Does the report describe ureterolithiasis, a ureteric calculus or a stone at the ureterovesical junction?"
-        definition: "A calculus in a ureter, at any level including the ureterovesical junction."
-        include_terms:
-          - "ureteral stone"
-          - "ureterolithiasis"
-          - "UVJ stone"
-          - "ureteric calculus"
-        exclude_terms:
-          - "renal stone"
-          - "nephrolithiasis"
-          - "bladder stone"
-      - id: bladder_stones
-        question: "Are there any bladder stones?"
-        variants:
-          - "Is there a calculus in the bladder?"
-          - "Does the report describe a bladder stone or a vesical calculus?"
-        definition: "A calculus in the bladder, including one in a bladder diverticulum. A stone at the ureterovesical junction counts as ureteral."
-        include_terms:
-          - "bladder stone"
-          - "bladder calculus"
-          - "vesical calculus"
-        exclude_terms:
-          - "ureteral stone"
-          - "UVJ stone"
-          - "renal stone"
       - id: nephrocalcinosis
         question: "Is there nephrocalcinosis?"
         variants:
@@ -431,11 +402,6 @@ categories:
         variants:
           - "Are the kidneys fused across the midline?"
           - "Does the report describe a horseshoe kidney or a renal fusion anomaly?"
-      - id: ureteroceles
-        question: "Are there any ureteroceles?"
-        variants:
-          - "Is the distal ureter dilated within the bladder wall?"
-          - "Does the report describe a ureterocele?"
       - id: renal_cell_carcinoma_rcc
         question: "Are there any renal cell carcinomas?"
         variants:
@@ -460,11 +426,6 @@ categories:
           - "myelolipoma"
           - "myolipoma"
           - "adrenal myelolipoma"
-      - id: bladder_tcc
-        question: "Are there any bladder transitional cell carcinomas?"
-        variants:
-          - "Does the report describe a mass arising from the bladder wall?"
-          - "Is there a transitional cell carcinoma, a urothelial carcinoma or a bladder tumour?"
       - id: post_nephrectomy
         question: "Are there any post-nephrectomy changes?"
         variants:
@@ -485,22 +446,12 @@ categories:
         variants:
           - "Does the report describe a tear or a traumatic injury of the renal parenchyma?"
           - "Is there a renal laceration or a renal fracture?"
-      - id: bladder_rupture
-        question: "Is there bladder rupture?"
-        variants:
-          - "Is the bladder wall disrupted with extravasation of urine?"
-          - "Does the report describe bladder rupture, bladder perforation or a bladder injury?"
 
       - id: any_kidneys
         question: "Does the report describe any abnormality of the kidneys?"
         variants:
           - "Is anything abnormal described in either kidney?"
           - "Does the report record a renal cyst, mass, stone, hydronephrosis, scarring, injury or any other renal abnormality?"
-      - id: any_urinary_tract
-        question: "Does the report describe any abnormality of the ureters or bladder?"
-        variants:
-          - "Is anything abnormal described in the ureters or the bladder?"
-          - "Does the report record ureteral dilation, a ureteral or bladder stone, bladder wall thickening, a bladder mass or any other abnormality there?"
   Adrenal gland:
     description: "Adrenal gland findings"
     questions:
@@ -558,6 +509,7 @@ categories:
           - "Does the report record bowel wall thickening, obstruction, dilated loops, inflammation, a mass or any other gastrointestinal abnormality?"
   Device:
     description: "Medical devices/hardware/implants"
+    cross_cutting: true
     questions:
       - id: intra_uterine_devices
         question: "Are there any intra-uterine devices?"
@@ -694,6 +646,7 @@ categories:
           - "Does the report record retroperitoneal fluid, hemorrhage, lymphadenopathy, fibrosis, a mass or any other retroperitoneal abnormality?"
   Multi Organs:
     description: "Findings affecting multiple organ systems"
+    cross_cutting: true
     questions:
       - id: metastatic_disease_general
         question: "Is metastatic disease suspected based on the imaging findings?"
@@ -783,7 +736,7 @@ categories:
         variants:
           - "Is anything abnormal described in the bones or the body wall?"
           - "Does the report record a fracture, a bone lesion, degenerative change, a body wall hernia or any other musculoskeletal abnormality?"
-  Visible Thoracic:
+  Pleura and lung bases:
     description: "Findings visible in the lower thorax"
     questions:
       - id: atelectasis
@@ -796,6 +749,76 @@ categories:
         variants:
           - "Is there fluid in a pleural space?"
           - "Does the report describe a pleural effusion or pleural fluid?"
+      - id: consolidation
+        question: "Is there any consolidation?"
+        variants:
+          - "Is there airspace opacification in the visible lung?"
+          - "Does the report describe consolidation or a dense airspace opacity at a lung base?"
+      - id: lung_mass_or_nodule
+        question: "Are there any lung masses or nodules?"
+        variants:
+          - "Is there a nodule or a mass in the visible lung?"
+          - "Does the report describe a pulmonary nodule or a lung mass?"
+      - id: any_pleura
+        question: "Does the report describe any abnormality of the pleural spaces or lung bases?"
+        variants:
+          - "Is anything abnormal described in the pleural spaces or the lung bases?"
+          - "Does the report record a pleural effusion, pleural thickening, atelectasis, consolidation, a nodule or any other abnormality there?"
+  Urinary tract:
+    description: "Ureter and bladder findings"
+    questions:
+      - id: ureteral_stones
+        question: "Are there any ureteral stones?"
+        variants:
+          - "Is there a calculus in a ureter?"
+          - "Does the report describe ureterolithiasis, a ureteric calculus or a stone at the ureterovesical junction?"
+        definition: "A calculus in a ureter, at any level including the ureterovesical junction."
+        include_terms:
+          - "ureteral stone"
+          - "ureterolithiasis"
+          - "UVJ stone"
+          - "ureteric calculus"
+        exclude_terms:
+          - "renal stone"
+          - "nephrolithiasis"
+          - "bladder stone"
+      - id: bladder_stones
+        question: "Are there any bladder stones?"
+        variants:
+          - "Is there a calculus in the bladder?"
+          - "Does the report describe a bladder stone or a vesical calculus?"
+        definition: "A calculus in the bladder, including one in a bladder diverticulum. A stone at the ureterovesical junction counts as ureteral."
+        include_terms:
+          - "bladder stone"
+          - "bladder calculus"
+          - "vesical calculus"
+        exclude_terms:
+          - "ureteral stone"
+          - "UVJ stone"
+          - "renal stone"
+      - id: ureteroceles
+        question: "Are there any ureteroceles?"
+        variants:
+          - "Is the distal ureter dilated within the bladder wall?"
+          - "Does the report describe a ureterocele?"
+      - id: bladder_tcc
+        question: "Are there any bladder transitional cell carcinomas?"
+        variants:
+          - "Does the report describe a mass arising from the bladder wall?"
+          - "Is there a transitional cell carcinoma, a urothelial carcinoma or a bladder tumour?"
+      - id: bladder_rupture
+        question: "Is there bladder rupture?"
+        variants:
+          - "Is the bladder wall disrupted with extravasation of urine?"
+          - "Does the report describe bladder rupture, bladder perforation or a bladder injury?"
+      - id: any_urinary_tract
+        question: "Does the report describe any abnormality of the ureters or bladder?"
+        variants:
+          - "Is anything abnormal described in the ureters or the bladder?"
+          - "Does the report record ureteral dilation, a ureteral or bladder stone, bladder wall thickening, a bladder mass or any other abnormality there?"
+  Pericardium:
+    description: "Pericardial and cardiac findings"
+    questions:
       - id: cardiomegaly
         question: "Is there cardiomegaly?"
         variants:
@@ -810,23 +833,8 @@ categories:
           - "atrial enlargement"
           - "left atrial enlargement"
           - "ventricular hypertrophy"
-      - id: consolidation
-        question: "Is there any consolidation?"
-        variants:
-          - "Is there airspace opacification in the visible lung?"
-          - "Does the report describe consolidation or a dense airspace opacity at a lung base?"
-      - id: lung_mass_or_nodule
-        question: "Are there any lung masses or nodules?"
-        variants:
-          - "Is there a nodule or a mass in the visible lung?"
-          - "Does the report describe a pulmonary nodule or a lung mass?"
       - id: any_pericardium
         question: "Does the report describe any abnormality of the pericardium?"
         variants:
           - "Is anything abnormal described in the pericardium?"
           - "Does the report record a pericardial effusion, pericardial thickening, pericardial calcification or any other pericardial abnormality?"
-      - id: any_pleura
-        question: "Does the report describe any abnormality of the pleural spaces or lung bases?"
-        variants:
-          - "Is anything abnormal described in the pleural spaces or the lung bases?"
-          - "Does the report record a pleural effusion, pleural thickening, atelectasis, consolidation, a nodule or any other abnormality there?"

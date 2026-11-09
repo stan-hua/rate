@@ -311,6 +311,47 @@ class TestTheFastConfigAndItsLock:
         ):
             assert LOCK["findings"][identifier]["variants"][1]["question"] == inherited
 
+    def test_a_category_body_has_only_the_documented_keys(self):
+        """`cross_cutting` is the third, and the loader ignores what it adds."""
+        config = yaml.safe_load(FAST_ABDOMEN.read_text())
+        for name, body in config["categories"].items():
+            assert set(body) <= {"description", "questions", "cross_cutting"}, name
+
+    def test_the_regroup_splits_the_two_categories_that_mixed_windows(self):
+        """A compartment has to map onto one FAST window.
+
+        `abdomen_ct.yaml` puts the kidneys and the bladder in `Genitourinary`,
+        which the RUQ/LUQ views and the suprapubic view show respectively, and
+        the pericardium with the pleura in `Visible Thoracic`. `ifast` splits
+        both when it generates this config, so the source still has 17
+        categories and this file has 19.
+        """
+        config = yaml.safe_load(FAST_ABDOMEN.read_text())
+        names = set(config["categories"])
+        assert len(names) == 19
+        assert not names & {"Genitourinary", "Visible Thoracic"}
+        assert {"Kidney", "Urinary tract", "Pericardium", "Pleura and lung bases"} <= names
+
+    def test_every_compartment_has_one_probe_and_the_cross_cutting_two_have_none(self):
+        """Which is what separates a compartment from a cross-cutting category.
+
+        A probe asks whether anything in its compartment is abnormal, so it is
+        the compartment's own coarse label. `Multi Organs` and `Device`
+        describe findings across organs, so neither has one.
+        """
+        config = yaml.safe_load(FAST_ABDOMEN.read_text())
+        probes, flagged = {}, set()
+        for name, body in config["categories"].items():
+            found = [e["id"] for e in body["questions"] if e["id"].startswith("any_")]
+            assert len(found) <= 1, f"{name} has {len(found)} probes"
+            if found:
+                probes[name] = found[0]
+            if body.get("cross_cutting"):
+                flagged.add(name)
+        assert len(probes) == 17
+        assert flagged == {"Multi Organs", "Device"}
+        assert flagged == set(config["categories"]) - set(probes)
+
     def test_the_covariates_are_marked_and_counted(self):
         """Tier C questions kept to explain the sweep's mistakes, never labels."""
         covariates = [i for i, b in LOCK["findings"].items() if b["covariate"]]
