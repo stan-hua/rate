@@ -238,6 +238,7 @@ def test_the_questions_stage_writes_the_columns_the_sheets_read():
         "chronicity",
         "attribution",
         "named_outright",
+        "truncated",
     ]
 
 

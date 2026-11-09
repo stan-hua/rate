@@ -43,6 +43,17 @@ compressed-tensors = "==0.10.2"
 # Keep the backslashes: a raw newline in a pixi `cmd` is a command separator,
 # and without them the server launches with no arguments at all.
 #
+# `--grammar-backend outlines` with a whitespace pattern, rather than the
+# xgrammar default. The JSON grammar lets arbitrary whitespace sit between
+# tokens, and sglang 0.4.7 calls `compile_json_schema` without xgrammar's
+# `any_whitespace=False`, so a model can emit `\t\n` forever and stay
+# grammar-legal. A live run did exactly that: correct fields, then hundreds of
+# tabs instead of the closing brace, until `max_tokens`.
+# `--constrained-json-whitespace-pattern` is wired into the outlines and
+# llguidance backends and not into xgrammar, so the fix needs one of those.
+# `[ ]?` allows at most a single space. Swap in `llguidance` if grammar
+# compilation turns out slow; both are already in the lock.
+#
 # No `--reasoning-parser`, which pairs with `enable_thinking: false` in
 # `config/default_config.yaml`. The flag makes sglang wrap the grammar backend
 # in `ReasonerGrammarBackend`, which enforces nothing until a `</think>` token
@@ -76,6 +87,8 @@ python -m sglang.launch_server \
   --schedule-conservativeness 0.1 \
   --attention-backend triton \
   --sampling-backend pytorch \
+  --grammar-backend outlines \
+  --constrained-json-whitespace-pattern "[ ]?" \
   --max-running-requests 512 \
   --cuda-graph-max-bs 512 \
   --mem-fraction-static 0.80

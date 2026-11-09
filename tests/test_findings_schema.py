@@ -446,3 +446,58 @@ class TestTheStringsAreBounded:
         )
         assert got["verdict"] == "yes"
         assert len(got["evidence"]) == 400
+
+
+class TestClosingAnOpenObject:
+    """The generation can run past the end of the object into whitespace.
+
+    sglang 0.4.7 compiles the schema without xgrammar's `any_whitespace=False`,
+    so arbitrary whitespace between JSON tokens stays grammar-legal and a model
+    can emit `\t\n` until `max_tokens`. Observed live: a complete and correct
+    set of fields, then hundreds of tabs instead of the closing brace. The
+    fields are the answer, so they are kept.
+    """
+
+    FLOOD = "\t\n" * 200
+
+    def test_a_flood_after_a_field_is_closed_and_marked(self):
+        raw = (
+            '{\n  "answer": "no",\n  "evidence": "Pancreas:  Unremarkable",\n'
+            '  "certainty_phrase": "",\n  "severity_phrase": ""' + self.FLOOD
+        )
+        got = parse_answer(raw)
+        assert got["verdict"] == "no"
+        assert got["evidence"] == "Pancreas:  Unremarkable"
+        assert got["truncated"] is True
+
+    def test_a_flood_inside_a_string_closes_the_string_first(self):
+        raw = '{"answer": "yes", "evidence": "Trace free fluid' + self.FLOOD
+        got = parse_answer(raw)
+        assert got["verdict"] == "yes"
+        assert got["evidence"] == "Trace free fluid"
+        assert got["truncated"] is True
+
+    def test_a_trailing_comma_is_dropped(self):
+        raw = '{"answer": "no", "evidence": "x",' + self.FLOOD
+        got = parse_answer(raw)
+        assert got["verdict"] == "no"
+        assert got["truncated"] is True
+
+    def test_a_complete_object_is_not_marked(self):
+        raw = (
+            '{"answer": "not_assessed", "evidence": "", "certainty_phrase": "",\n'
+            '  "severity_phrase": ""\n  ,\n  "named_outright": false\n}'
+        )
+        got = parse_answer(raw)
+        assert got["verdict"] == "not_assessed"
+        assert got["truncated"] is False
+
+    def test_a_flood_before_the_verdict_is_still_unreadable(self):
+        """No answer field means no answer, and inventing one would be worse."""
+        assert parse_answer('{"evidence": "x"' + self.FLOOD) is None
+
+    def test_a_legacy_text_answer_is_not_marked(self):
+        assert parse_answer("Yes")["truncated"] is False
+
+    def test_truncated_is_a_stored_column(self):
+        assert "truncated" in ANSWER_COLUMNS

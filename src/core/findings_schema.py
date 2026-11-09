@@ -121,6 +121,9 @@ ANSWER_COLUMNS = (
     "chronicity",
     "attribution",
     "named_outright",
+    # Set by the reader rather than the model: the generation ran past the end
+    # of the object into whitespace and was closed here.
+    "truncated",
 )
 
 # The two columns the lexicon computes rather than the model. They are stored
@@ -166,9 +169,8 @@ def parse_answer(raw):
         return None
 
     if text.startswith("{"):
-        try:
-            body = json.loads(text)
-        except json.JSONDecodeError:
+        body, truncated = _load_object(text)
+        if body is None:
             return None
         verdict = str(body.get("answer", "")).strip().lower()
         if verdict not in ANSWER_VALUES:
@@ -182,6 +184,7 @@ def parse_answer(raw):
             "chronicity": body.get("chronicity") or "unspecified",
             "attribution": body.get("attribution") or "unknown",
             "named_outright": bool(body.get("named_outright", False)),
+            "truncated": truncated,
         })
 
     # Every run before the schema answered in words. The first line that opens
@@ -199,8 +202,44 @@ def parse_answer(raw):
                 "chronicity": "unspecified",
                 "attribution": "unknown",
                 "named_outright": False,
+                "truncated": False,
             })
     return None
+
+
+def _load_object(text):
+    """Read an answer object, closing one the generation left open.
+
+    The JSON grammar permits arbitrary whitespace between tokens, and sglang
+    0.4.7 compiles a schema without xgrammar's `any_whitespace=False`, so a
+    model can emit `\t\n` indefinitely and stay grammar-legal. Observed on a
+    live run: a complete and correct set of fields, then hundreds of tabs and
+    newlines instead of the closing brace, until `max_tokens` cut it off.
+
+    The fields before the flood are the answer, so they are kept and the object
+    is closed here. A repaired row is marked `truncated`, because its
+    `evidence` may have lost its tail and nothing else would say so.
+
+    Returns
+    -------
+    tuple of (dict or None, bool)
+        The object and whether it had to be repaired.
+    """
+    try:
+        return json.loads(text), False
+    except json.JSONDecodeError:
+        pass
+
+    body = text.rstrip().rstrip(",")
+    # An odd number of unescaped quotes means the flood began inside a string.
+    if len(re.findall(r'(?<!\\)"', body)) % 2:
+        body += '"'
+    for suffix in ('}', ',"named_outright":false}'):
+        try:
+            return json.loads(body + suffix), True
+        except json.JSONDecodeError:
+            continue
+    return None, False
 
 
 def _graded(record):
