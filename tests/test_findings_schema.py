@@ -983,3 +983,71 @@ class TestTheSchemaDescriptionsAreDocumentation:
         prompt = findings_prompt()
         for rule, evidence in PROMPT_RULES.items():
             assert evidence in prompt, rule
+
+
+class TestThePatternLayer:
+    """An exact-phrase list cannot close an open family.
+
+    The file listed `may represent`, `may reflect`, `may be` and `may
+    indicate`, and a run returned "may relate to", which graded
+    `unspecified`. The same had happened with `favored`, where only `favored
+    to be` and `favored to represent` were listed. Two misses from two samples
+    of the same shape, so the families are covered by pattern now.
+    """
+
+    @pytest.mark.parametrize(
+        "phrase",
+        [
+            "may relate to",
+            "may correspond to",
+            "could arise from",
+            "might reflect",
+            "Slight heterogeneous enhancement which may relate to prior infarction",
+        ],
+    )
+    def test_the_may_family_is_low(self, phrase):
+        assert certainty_of(phrase) == "low"
+
+    @pytest.mark.parametrize("phrase", ["suggestive of", "suggests", "suggesting", "suggested by"])
+    def test_the_suggest_family_is_medium(self, phrase):
+        """"Nodular contour suggestive of cirrhosis" is where this was found."""
+        assert certainty_of(phrase) == "medium"
+
+    @pytest.mark.parametrize("phrase", ["favoring", "favours", "favored"])
+    def test_the_favor_family_is_medium(self, phrase):
+        assert certainty_of(phrase) == "medium"
+
+    @pytest.mark.parametrize("phrase", ["may not represent", "might not be", "could not be"])
+    def test_a_negation_is_read_before_the_family_it_negates(self, phrase):
+        """The patterns are ordered and the first match wins, so the negations
+        come above `may <verb>` in the file."""
+        assert certainty_of(phrase) == "negated"
+
+    def test_an_exact_phrase_still_decides_its_own_level(self):
+        """`likely` is medium by name. A pattern never overrides a listed
+        phrase, because every exact phrase is read first."""
+        assert certainty_of("likely") == "medium"
+        assert certainty_of("most likely") == "medium"
+        assert certainty_of("less likely") == "negated"
+        assert certainty_of("consistent with") == "high"
+
+    def test_a_phrase_in_no_family_is_still_unspecified(self):
+        assert certainty_of("in the right kidney") == "unspecified"
+        assert certainty_of("reminiscent of") == "unspecified"
+
+    def test_severity_has_no_patterns_and_does_not_break(self):
+        """Only certainty needs them. The block is optional."""
+        from src.core.lexicon import load_patterns
+
+        assert load_patterns("severity") == ()
+        assert severity_of("trace") == "trace"
+
+    def test_every_pattern_compiles_and_names_a_known_level(self):
+        from src.core.lexicon import CERTAINTY_LEVELS, NEGATED, load_patterns
+
+        allowed = set(CERTAINTY_LEVELS) | {NEGATED}
+        patterns = load_patterns("certainty")
+        assert patterns
+        for pattern, level in patterns:
+            assert level in allowed, level
+            assert pattern.pattern

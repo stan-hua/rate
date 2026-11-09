@@ -14,6 +14,12 @@ rather than on the `small` that mild also lists, and on whole words, so
 `large`. A tie between two phrases of the same length goes to the level that
 claims the least, so "possible but unlikely" is negated.
 
+Three layers decide a level, in order: an exact phrase, then a pattern that
+covers an open family such as `may <verb>`, then a formal grading system. The
+exact list is where a judgment goes; the patterns are there because an
+authored list of `may represent`, `may reflect`, `may be` and `may indicate`
+still missed "may relate to".
+
 `stated` is the one certainty level no phrase produces. A report that names
 the finding and hedges it not at all is firmer than "consistent with", so the
 scale `CERTAINTY_ORDER` ranks on runs low, medium, high, stated, and
@@ -173,6 +179,38 @@ def graded_level(phrase, name, directory=None):
     return None
 
 
+@lru_cache(maxsize=None)
+def load_patterns(name, directory=None):
+    """Read the lexicon's patterns, which close an open family of phrases.
+
+    An exact-phrase list cannot cover `may <verb>`. The file listed `may
+    represent`, `may reflect`, `may be` and `may indicate`, and a run then
+    returned "may relate to", which graded `unspecified`. The same happened
+    with `favored`, where only `favored to be` and `favored to represent` were
+    listed. A pattern covers the family and a reader can see its shape.
+
+    The list is ordered, and the first match wins, so a negation goes above
+    the family it negates.
+
+    Parameters
+    ----------
+    name : str
+        `certainty` or `severity`.
+    directory : str or pathlib.Path, optional
+        Where the lexicons are, for the tests.
+
+    Returns
+    -------
+    tuple of tuple
+        One (compiled pattern, level) per entry, in the file's order.
+    """
+    path = Path(directory or LEXICON_DIR) / f"{name}.yaml"
+    body = yaml.safe_load(path.read_text())
+    return tuple(
+        (re.compile(entry["pattern"]), entry["level"]) for entry in (body.get("patterns") or ())
+    )
+
+
 def level_of(phrase, name, directory=None):
     """Return the level a phrase maps to.
 
@@ -198,6 +236,11 @@ def level_of(phrase, name, directory=None):
     for candidate in ordered:
         if re.search(rf"(?<!\w){re.escape(candidate)}(?!\w)", text):
             return mapping[candidate]
+    # An exact phrase decides where the file names one. A pattern covers the
+    # rest of its family, which is what an authored list keeps missing.
+    for pattern, level in load_patterns(name, directory):
+        if pattern.search(text):
+            return level
     graded = graded_level(phrase, name, directory)
     if graded:
         return graded

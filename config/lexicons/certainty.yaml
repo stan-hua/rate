@@ -28,6 +28,14 @@ levels:
     - represents
     - demonstrates
     - consistent in appearance with
+    # The ACR term survey puts "highly suspicious" in its top band with
+    # "diagnostic of" and "consistent with", above the bare forms below.
+    - highly suspicious
+    - highly suspicious for
+    - highly suggestive
+    - highly suggestive of
+    - in keeping with
+    - indicative of
 
   # ~ 75%: the report leans on it
   medium:
@@ -45,6 +53,17 @@ levels:
     - most likely
     - likely
     - similar in appearance to
+    # The same survey puts "suggestive" in the ~75% band beside "suspicious".
+    # Absent until 2026-11-09, so "Nodular contour suggestive of cirrhosis"
+    # graded `unspecified`.
+    - suggestive of
+    - suggestive
+    - suggesting
+    - suggests
+    - presumed
+    - presumably
+    - felt to represent
+    - thought to represent
 
   # ~ 50%: the report raises it
   low:
@@ -59,6 +78,19 @@ levels:
     - not excluded
     - differential includes
     - questionable
+    # Longer forms the whole-word match does not reach from the entries above:
+    # "cannot be excluded" is not a substring of "cannot be definitively
+    # excluded", and "possible" is a different word from "possibility".
+    - cannot be definitively excluded
+    - cannot be entirely excluded
+    - not entirely excluded
+    - cannot be ruled out
+    - cannot rule out
+    - possibility
+    - raises the possibility
+    - equivocal
+    - may indicate
+    - could be
     - versus
     - vs
     - vs.
@@ -81,4 +113,35 @@ negated:
   - doubtful
   - no evidence of
   - without evidence of
+  - no definite
+  - no definite evidence of
   - rather than
+
+# Open families an exact phrase cannot close. The first match wins and these
+# are read after every exact phrase above, so a listed phrase always decides
+# its own level and these catch the rest of its family.
+#
+# Added 2026-11-09, after a run returned "may relate to" where the file listed
+# `may represent`, `may reflect`, `may be` and `may indicate`.
+patterns:
+  # Negations first, because they contain the families they negate.
+  - pattern: '(?i)\b(?:may|might|could)\s+not\b'
+    level: negated
+  - pattern: '(?i)\bnot\s+(?:necessarily|certainly)\b'
+    level: negated
+
+  # "suggestive of", "suggesting", "suggests", "is suggested by".
+  - pattern: '(?i)\bsuggest(?:s|ed|ing|ive)?\b'
+    level: medium
+  - pattern: '(?i)\b(?:favor|favour)(?:s|ed|ing)?\b'
+    level: medium
+  - pattern: '(?i)\b(?:thought|felt|presumed|believed)\s+to\b'
+    level: medium
+
+  # "may relate to", "may correspond to", "could arise from", "might reflect".
+  - pattern: '(?i)\b(?:may|might|could)\s+\w+'
+    level: low
+  - pattern: '(?i)\bcannot\s+(?:be\s+)?\w*\s*(?:exclude|excluded|rule|ruled)\b'
+    level: low
+  - pattern: '(?i)\bpossib(?:le|ly|ility)\b'
+    level: low
