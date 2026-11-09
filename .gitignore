@@ -99,3 +99,11 @@ dmypy.json
 .pytype/
 
 *_ignored*
+
+# Local Claude Code configuration and notes. These are working files for
+# whoever is at this checkout, not part of the project: `CLAUDE.md` is one
+# reader's notes on the codebase and `.claude/` holds their hooks and skills.
+# They were committed by accident in 46b6fe5 and untracked again straight
+# after, so they stay on disk and out of the history.
+CLAUDE.md
+.claude/
