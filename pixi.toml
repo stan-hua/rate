@@ -1,0 +1,45 @@
+[workspace]
+name = "rate"
+description = "Rad Text Engine -- question answering over radiology text reports"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64"]
+
+[activation.env]
+# `src` is the package and the CLIs are run as `python -m src.cli`, so the
+# repository root has to be importable whatever the working directory.
+PYTHONPATH = "$PIXI_PROJECT_ROOT"
+
+# ---------------------------------------------------------------------------
+# This environment runs the whole pipeline and needs no GPU.
+#
+# `pyproject.toml` declares `sglang[all]`, transformers, accelerate and six
+# more packages. None of them appear in an import anywhere under `src/`: the
+# only two references were `import sglang as sgl` and `from sglang.utils
+# import wait_for_server, print_highlight` in `core/engine.py`, and neither
+# name was ever called. sglang is the *server*, launched separately, and this
+# code talks to it over HTTP through the `openai` client against an
+# OpenAI-compatible endpoint. So the client needs five packages, and a machine
+# without a GPU can run and test everything except the inference itself.
+#
+# Launching the server is a separate concern with its own install. See
+# `README.md`; it wants 8 GPUs and a CUDA build of torch.
+# ---------------------------------------------------------------------------
+[dependencies]
+python = "3.12.*"
+pandas = ">=2.0"
+numpy = ">=1.24"
+pyyaml = ">=6.0"
+tqdm = ">=4.66"
+openai = ">=1.0"
+pytest = ">=7.0"
+ruff = ">=0.1"
+
+[tasks]
+extract = { cmd = "python -m src.cli", description = "Run the extraction stages over a set of reports" }
+qc = { cmd = "python -m src.qc_cli", description = "Draw the sheets a human annotates" }
+evaluate = { cmd = "python -m src.eval_cli", description = "Score the annotated sheets" }
+test = { cmd = "pytest", description = "The test suite" }
+# Scoped to `tests` on purpose. `ruff check src` reports 738 findings that
+# predate this manifest, so linting the whole tree would be red from the first
+# run and would stop meaning anything. Widen this once `src` is clean.
+lint = { cmd = "ruff check tests", description = "ruff check" }

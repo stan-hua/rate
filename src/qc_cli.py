@@ -18,7 +18,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from core.qc import QCGenerator
+from .core.qc import QCGenerator
 
 def parse_args():
     parser = argparse.ArgumentParser(

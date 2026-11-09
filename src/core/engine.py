@@ -6,8 +6,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any
 from datetime import datetime
 from tqdm import tqdm
-import sglang as sgl
-from sglang.utils import wait_for_server, print_highlight
 from openai import OpenAI
 
 from .logging_config import setup_logging
