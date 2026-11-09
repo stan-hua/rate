@@ -170,7 +170,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/06/1e/b8b7c2f4099a37b96af5c9bb158632ea9e5d9d27d7391d7eb8fc45236674/nvidia_cusparse_cu12-12.5.4.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/0a/20/e022dbc6b4753a9bc9fc5fb28a27163430c1731b9913997f6544c1b2518c/lxml-6.1.3-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/0b/b6/f9c0c52f7a2fcd828e336dd143001b0bcbc1276c90187dfa104458528e2e/pandas-3.1.1-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/0c/29/0348de65b8cc732daa3e33e67806420b2ae89bdce2b04af740289c5c6c8c/loguru-0.7.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/11/79/936af42edf90a7bd4e41a6cac89c913d4b47fa48a26b042d5129a9242ee3/decord-0.6.0-py3-none-manylinux2010_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/13/b4/99ea4a122bef60e3fd6402d19665aff1f928e0daf8fac3044d0b73f72003/outlines-0.1.11-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/14/2f/967ba146e6d58cf6a652da73885f52fc68001525b4197effc174321d70b4/jmespath-1.1.0-py3-none-any.whl
@@ -207,6 +206,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/42/32/658973117bf0fd82a24abbfb94fe73a5e86216e49342985e10acce54775a/partial_json_parser-0.2.1.1.post7-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/50/6bd8600b4843f0a9d939e0cc0f4160f4c727bd6c69e4f7e294a1caa93db8/multidict-7.2.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/43/a3/c799c62e19c337e6d3770b08e475887fb30ce8477d3c09efca6b2f0228a6/numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/43/ac/56bb4b6b3150783119479e2f05e32ebfc39ca6ff8e6fcd45eb178743b39e/compressed_tensors-0.10.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/44/0b/98fc6eb83333508ca5f44c52b3e287ea8137a0ad582714e2cbc67a02154b/datasets-5.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/c2/59c5b6cf4b762d80de04cf60f2d0deba1da2f4172a91c41eaee8933080a8/regex-2026.11.9-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -274,7 +274,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a7/5f/ed01f9a3cdffbd5a008556fc7b2a08ddb1cc6ace7effa7340604b1d16699/docstring_parser-0.18.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a8/52/93833dc1610e017ac5b7dcd59b8304d8ef67d1114c2d124e728a2cbbea12/compressed_tensors-0.15.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a8/af/48ac8483240de756d2438c380746e7130d1c6f75802ef22f3c6d49982787/huggingface_hub-0.36.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a9/16/7757fb84c819accc7d7e9af5291b261e4abb8627ee040f99e7d35ef2457a/anyio-4.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a9/2d/610db864d7513158cebb8f36cc88e67e73bd6c7aa1905ef18d89e1281c81/opentelemetry_api-1.45.2-py3-none-any.whl
@@ -1764,39 +1763,6 @@ packages:
   - pandas[aws,clipboard,compression,computation,excel,feather,fss,gcp,hdf5,html,iceberg,mysql,output-formatting,parquet,performance,plot,postgresql,pyarrow,spss,sql-other,test,timezone,xml] ; extra == 'all'
   - fastparquet>=2024.11.0 ; extra == 'all'
   requires_python: '>=3.11'
-- pypi: https://files.pythonhosted.org/packages/0c/29/0348de65b8cc732daa3e33e67806420b2ae89bdce2b04af740289c5c6c8c/loguru-0.7.3-py3-none-any.whl
-  name: loguru
-  version: 0.7.3
-  sha256: 31a33c10c8e1e10422bfd431aeb5d351c7cf7fa671e3c4df004162264b28220c
-  requires_dist:
-  - colorama>=0.3.4 ; sys_platform == 'win32'
-  - aiocontextvars>=0.2.0 ; python_full_version < '3.7'
-  - win32-setctime>=1.0.0 ; sys_platform == 'win32'
-  - pre-commit==4.0.1 ; python_full_version >= '3.9' and extra == 'dev'
-  - tox==3.27.1 ; python_full_version < '3.8' and extra == 'dev'
-  - tox==4.23.2 ; python_full_version >= '3.8' and extra == 'dev'
-  - pytest==6.1.2 ; python_full_version < '3.8' and extra == 'dev'
-  - pytest==8.3.2 ; python_full_version >= '3.8' and extra == 'dev'
-  - pytest-cov==2.12.1 ; python_full_version < '3.8' and extra == 'dev'
-  - pytest-cov==5.0.0 ; python_full_version == '3.8.*' and extra == 'dev'
-  - pytest-cov==6.0.0 ; python_full_version >= '3.9' and extra == 'dev'
-  - pytest-mypy-plugins==1.9.3 ; python_full_version >= '3.6' and python_full_version < '3.8' and extra == 'dev'
-  - pytest-mypy-plugins==3.1.0 ; python_full_version >= '3.8' and extra == 'dev'
-  - colorama==0.4.5 ; python_full_version < '3.8' and extra == 'dev'
-  - colorama==0.4.6 ; python_full_version >= '3.8' and extra == 'dev'
-  - freezegun==1.1.0 ; python_full_version < '3.8' and extra == 'dev'
-  - freezegun==1.5.0 ; python_full_version >= '3.8' and extra == 'dev'
-  - exceptiongroup==1.1.3 ; python_full_version >= '3.7' and python_full_version < '3.11' and extra == 'dev'
-  - mypy==0.910 ; python_full_version < '3.6' and extra == 'dev'
-  - mypy==0.971 ; python_full_version == '3.6.*' and extra == 'dev'
-  - mypy==1.4.1 ; python_full_version == '3.7.*' and extra == 'dev'
-  - mypy==1.13.0 ; python_full_version >= '3.8' and extra == 'dev'
-  - sphinx==8.1.3 ; python_full_version >= '3.11' and extra == 'dev'
-  - sphinx-rtd-theme==3.0.2 ; python_full_version >= '3.11' and extra == 'dev'
-  - myst-parser==4.0.0 ; python_full_version >= '3.11' and extra == 'dev'
-  - build==1.2.2 ; python_full_version >= '3.11' and extra == 'dev'
-  - twine==6.0.1 ; python_full_version >= '3.11' and extra == 'dev'
-  requires_python: '>=3.5,<4.0'
 - pypi: https://files.pythonhosted.org/packages/11/79/936af42edf90a7bd4e41a6cac89c913d4b47fa48a26b042d5129a9242ee3/decord-0.6.0-py3-none-manylinux2010_x86_64.whl
   name: decord
   version: 0.6.0
@@ -2625,6 +2591,21 @@ packages:
   version: 2.5.4
   sha256: fbde6962867ee75b48b0ee29b2b9372ec5d617799dbaf38e82dc0596f2f7738a
   requires_python: '>=3.12'
+- pypi: https://files.pythonhosted.org/packages/43/ac/56bb4b6b3150783119479e2f05e32ebfc39ca6ff8e6fcd45eb178743b39e/compressed_tensors-0.10.2-py3-none-any.whl
+  name: compressed-tensors
+  version: 0.10.2
+  sha256: e1b4d9bc2006e3fd3a938e59085f318fdb280c5af64688a4792bf1bc263e579d
+  requires_dist:
+  - torch>=1.7.0
+  - transformers
+  - pydantic>=2.0
+  - black==22.12.0 ; extra == 'dev'
+  - isort==5.8.0 ; extra == 'dev'
+  - wheel>=0.36.2 ; extra == 'dev'
+  - flake8>=3.8.3 ; extra == 'dev'
+  - pytest>=6.0.0 ; extra == 'dev'
+  - nbconvert>=7.16.3 ; extra == 'dev'
+  - accelerate ; extra == 'accelerate'
 - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
   name: mpmath
   version: 1.3.0
@@ -3499,23 +3480,6 @@ packages:
   - pydoctor>=25.4.0 ; extra == 'docs'
   - pytest ; extra == 'test'
   requires_python: '>=3.8'
-- pypi: https://files.pythonhosted.org/packages/a8/52/93833dc1610e017ac5b7dcd59b8304d8ef67d1114c2d124e728a2cbbea12/compressed_tensors-0.15.0.1-py3-none-any.whl
-  name: compressed-tensors
-  version: 0.15.0.1
-  sha256: e1b1f322e82e475715e242bad46925a304ea8e5c98b5055a15b8eb22fb6bfea9
-  requires_dist:
-  - torch>=1.7.0
-  - transformers>=4.45.0
-  - pydantic>=2.0
-  - loguru
-  - black==22.12.0 ; extra == 'dev'
-  - isort==5.8.0 ; extra == 'dev'
-  - wheel>=0.36.2 ; extra == 'dev'
-  - flake8>=3.8.3 ; extra == 'dev'
-  - pytest>=6.0.0 ; extra == 'dev'
-  - nbconvert>=7.16.3 ; extra == 'dev'
-  - accelerate ; extra == 'dev'
-  - accelerate ; extra == 'accelerate'
 - pypi: https://files.pythonhosted.org/packages/a8/af/48ac8483240de756d2438c380746e7130d1c6f75802ef22f3c6d49982787/huggingface_hub-0.36.2-py3-none-any.whl
   name: huggingface-hub
   version: 0.36.2

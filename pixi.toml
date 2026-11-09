@@ -62,6 +62,27 @@ python = "3.12.*"
 
 [feature.server.pypi-dependencies]
 sglang = { version = "==0.4.7", extras = ["all"] }
+# sglang 0.4.7 pins `transformers==4.52.3` exactly and declares
+# `compressed-tensors` with no bound at all, so a resolver takes the newest.
+# compressed-tensors 0.13.0 added `modeling/attention.py`, which imports
+# `transformers.masking_utils` -- a module that first exists in transformers
+# 4.53.0. The two cannot both be satisfied, and the failure is an
+# ImportError at launch rather than anything a solve reports:
+#
+#   from transformers.masking_utils import ALL_MASK_ATTENTION_FUNCTIONS
+#   ModuleNotFoundError: No module named 'transformers.masking_utils'
+#
+# 0.10.2 is the release contemporaneous with sglang 0.4.7. It has no
+# `modeling/` package and no reference to `masking_utils`, verified against the
+# wheel rather than inferred from the dates.
+#
+# 47 other requirements of `sglang[all]` are unbounded the same way, among them
+# sgl-kernel, accelerate, peft, timm, datasets and pydantic. `pixi.lock` is
+# what holds those still, so it is committed and an install reads it. A
+# `pixi update` or a re-lock can reintroduce this class of failure, and the
+# symptom is always an ImportError at launch rather than a solve error -- so
+# the first thing to check is a dependency sglang left without an upper bound.
+compressed-tensors = "==0.10.2"
 
 [feature.server.tasks.launch-server]
 description = "Serve the model the extraction asks over HTTP"
