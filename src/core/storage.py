@@ -44,6 +44,37 @@ STAGE_CONFIGS = {
     }
 }
 
+PRE_SCHEMA_QUESTION_COLUMNS = ('finding_id', 'variant_index')
+
+
+def _require_question_schema(df: pd.DataFrame, file_path) -> None:
+    """Raise when a stored `questions.csv` predates the finding-id schema.
+
+    A run before 2026-11 wrote one row per (report, category, question) and no
+    `finding_id`, so a row in it cannot be keyed by finding and wording. There
+    is nothing to merge the two shapes on: the right move is to put the old
+    file aside, which is also what keeps it as the baseline the new extraction
+    is compared against.
+
+    Args:
+        df: The frame read from the file on disk.
+        file_path: The file it came from, for the message.
+
+    Raises:
+        StorageError: When a required column is absent.
+    """
+    missing = [c for c in PRE_SCHEMA_QUESTION_COLUMNS if c not in df.columns]
+    if not missing:
+        return
+    raise StorageError(
+        f"{file_path} has no {missing} column(s), so it predates the "
+        f"finding-id schema and its rows cannot be keyed by finding and "
+        f"wording. Move it aside before resuming -- appending to it would "
+        f"replace it. Its answers are still readable on their own, and are "
+        f"the baseline the new extraction is compared against."
+    )
+
+
 class StorageManager:
     def __init__(self, save_dir: str = "results"):
         """Initialize storage manager.
@@ -124,8 +155,14 @@ class StorageManager:
             else:
                 return set()
                 
+        except StorageError:
+            # The file is readable and its shape is wrong, which a resumed run
+            # must not paper over: returning an empty set here would re-ask
+            # every question and the append that followed would replace the
+            # file.
+            raise
         except Exception as e:
-            print(f"Warning: Could not read {file_path}: {e}")
+            print(f"Warning: Could not read {file_path} ({type(e).__name__})")
             return set()
 
     # Backward compatibility methods (thin wrappers)
@@ -348,6 +385,7 @@ class StorageManager:
         if pattern == '{report_id}_{category}':
             return {f"{row['report_id']}_{row['category']}" for _, row in df.iterrows()}
         elif pattern == '{report_id}_{finding_id}_v{variant_index}':
+            _require_question_schema(df, self.save_dir / config['filename'])
             return {f"{row['report_id']}_{row['finding_id']}_v{row['variant_index']}"
                    for _, row in df.iterrows()}
         else:
@@ -380,20 +418,33 @@ class StorageManager:
                 
                 # Acquire lock and combine data
                 if file_path.exists() and file_path.stat().st_size > 0:
-                    # Read existing data
+                    # Only a failure to *read* the file means it is corrupted.
+                    # A failure to deduplicate means the rows on disk are a
+                    # shape this code does not understand, and the write that
+                    # follows replaces the file -- so that failure has to
+                    # propagate instead of being recovered from. An earlier
+                    # version caught both here, and a pre-schema
+                    # `questions.csv` with millions of answers in it was
+                    # replaced by the first batch of a resumed run.
                     try:
                         existing_df = pd.read_csv(file_path)
-                        # Determine proper deduplication strategy based on file structure
+                    except Exception as e:
+                        print(
+                            f"Warning: Could not read existing file {file_path} "
+                            f"({type(e).__name__}), starting fresh"
+                        )
+                        existing_df = None
+
+                    if existing_df is None:
+                        combined_df = new_df
+                    else:
                         new_df = self._deduplicate_new_data(existing_df, new_df, file_path)
                         if new_df.empty:
+                            temp_path = Path(temp_file.name)
+                            temp_file.close()
+                            temp_path.unlink(missing_ok=True)
                             return  # Nothing new to add
-                        
-                        # Combine dataframes
                         combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-                    except Exception as e:
-                        # If we can't read existing file, treat as corrupted and start fresh
-                        print(f"Warning: Could not read existing file {file_path}, starting fresh: {e}")
-                        combined_df = new_df
                 else:
                     combined_df = new_df
                 
@@ -410,6 +461,8 @@ class StorageManager:
                     Path(temp_file.name).unlink()
                 except:
                     pass
+            if isinstance(e, StorageError):
+                raise  # already says what is wrong; wrapping it buries that
             raise StorageError(f"Error saving to {file_path}: {e}")
     
     def _deduplicate_new_data(self, existing_df: pd.DataFrame, new_df: pd.DataFrame, file_path: Path) -> pd.DataFrame:
@@ -427,6 +480,8 @@ class StorageManager:
             # One row per (report, finding, wording). Keying on the finding
             # alone would collapse its variants onto one row and discard two of
             # the three answers after the GPU time was already spent.
+            _require_question_schema(existing_df, file_path)
+
             def key(frame):
                 return (frame['report_id'].astype(str) + '_'
                         + frame['finding_id'].astype(str) + '_v'
