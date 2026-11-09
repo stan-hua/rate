@@ -49,6 +49,15 @@ FAST_ABDOMEN = ROOT / "config" / "modalities" / "fast_abdomen_ct.yaml"
 LOCK_PATH = ROOT / "config" / "modalities" / "fast_abdomen_ct.lock.json"
 LOCK = json.loads(LOCK_PATH.read_text())
 
+# Wordings the question set gained rather than inherited: the two free-fluid
+# findings and one compartment probe per category.
+ADDED_WORDINGS = {
+    variant["question"]
+    for body in LOCK["findings"].values()
+    if body.get("added")
+    for variant in body["variants"]
+}
+
 
 def questions_of(path):
     """Yield (category, question text) for every entry in a modality config."""
@@ -85,7 +94,12 @@ def test_every_config_parses_and_has_the_documented_shape(path):
     `fast_abdomen_ct.yaml` is the one config with authored ids and variants, so
     it allows two more keys. Every other file still has `question` alone.
     """
-    allowed = {"question", "id", "variants"} if path == FAST_ABDOMEN else {"question"}
+    allowed = (
+        {"question", "id", "variants", "definition", "include_terms", "exclude_terms",
+         "severity_scale"}
+        if path == FAST_ABDOMEN
+        else {"question"}
+    )
     config = yaml.safe_load(path.read_text())
     assert "categories" in config, "the loader asserts this key and nothing else"
     for category, body in config["categories"].items():
@@ -125,28 +139,31 @@ def test_one_question_is_asked_under_two_categories():
     assert categories == {"Device", "Great Vessel"}
 
 
-def test_the_fast_config_asks_a_subset_of_the_abdomen_questions():
-    """Every FAST wording is one of the abdomen set's, byte for byte.
+def test_the_fast_config_rewrites_no_inherited_wording():
+    """A wording kept from the abdomen set appears byte for byte.
 
-    The FAST config is generated from `abdomen_ct.yaml` by dropping questions
-    and grouping two duplicate wordings, never by rewriting text. A wording
-    that drifted by a character would answer a different question while
-    appearing to answer this one.
+    The FAST config is generated from `abdomen_ct.yaml` by dropping questions,
+    grouping duplicate wordings and appending findings the source never asked
+    about. It never rewrites an inherited one: a wording that drifted by a
+    character would answer a different question while appearing to answer this
+    one, and the md5 of that text is what joins the answers already extracted.
     """
     abdomen = {question for _, question in questions_of(ABDOMEN)}
-    assert set(wordings_of(FAST_ABDOMEN)) <= abdomen
+    inherited = {w for w in wordings_of(FAST_ABDOMEN) if w not in ADDED_WORDINGS}
+    assert inherited <= abdomen
 
 
 def test_the_fast_config_accounts_for_every_abdomen_question():
-    """A question is either asked here or recorded as retired in the lock.
+    """A source question is either asked here or recorded as retired.
 
     So a later tier move can find the wording it needs instead of digging it
     out of the history.
     """
     abdomen = {question for _, question in questions_of(ABDOMEN)}
     retired = {entry["question"] for entry in LOCK["retired"]}
-    assert set(wordings_of(FAST_ABDOMEN)) | retired == abdomen
-    assert not set(wordings_of(FAST_ABDOMEN)) & retired, "a question is both kept and retired"
+    inherited = {w for w in wordings_of(FAST_ABDOMEN) if w not in ADDED_WORDINGS}
+    assert inherited | retired == abdomen
+    assert not inherited & retired, "a question is both kept and retired"
 
 
 def test_question_id_is_the_md5_prefix(tmp_path):
@@ -264,8 +281,26 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 8
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """91 findings over 93 wordings: 83 visible with a positive, 8 covariates."""
+        """110 findings over 112 wordings.
+
+        83 visible findings with a positive in the cohort, 8 tier C questions
+        kept as covariates, 2 free-fluid findings the source never asked about,
+        and one compartment probe per category.
+        """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
-        assert len(findings) == 91
-        assert wordings == 93
+        added = [i for i, b in findings.items() if b.get("added")]
+        assert len(findings) == 110
+        assert wordings == 112
+        assert len(added) == 19
+
+    def test_an_added_finding_is_marked_as_such(self):
+        """`ifast` reads this to tell a pending extraction from an orphaned one.
+
+        A finding the extraction has never asked has no answers, which looks
+        exactly like a reworded question whose stored rows were orphaned.
+        """
+        added = {i for i, b in LOCK["findings"].items() if b.get("added")}
+        assert "hemoperitoneum" in added
+        assert "free_intraperitoneal_fluid" in added
+        assert sum(1 for i in added if i.startswith("any_")) == 17

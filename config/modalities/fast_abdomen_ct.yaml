@@ -9,6 +9,8 @@ categories:
         question: "Is there acute pancreatitis?"
       
 
+      - id: any_pancreas
+        question: "Does the report describe any abnormality of the pancreas?"
   Spleen:
     description: "Spleen-related findings"
     questions:
@@ -26,9 +28,16 @@ categories:
         question: "Are there any splenic infarcts?"
       - id: spleen_absent
         question: "Is the spleen surgically absent? Are there any post-splenectomy changes?"
+        definition: "The spleen is absent, or the report describes post-splenectomy change."
+        include_terms:
+          - "splenectomy"
+          - "surgically absent spleen"
+          - "asplenia"
       - id: accessory_spleen
         question: "Are there any accessory spleens?"
 
+      - id: any_spleen
+        question: "Does the report describe any abnormality of the spleen?"
   Biliary Tree:
     description: "Biliary tree-related findings"
     questions:
@@ -37,6 +46,8 @@ categories:
       - id: extrahepatic_duct_dilation
         question: "is there any extrahepatic biliary ductal dilation?"
 
+      - id: any_biliary
+        question: "Does the report describe any abnormality of the bile ducts?"
   Liver:
     description: "Liver-related findings"
     questions:
@@ -44,12 +55,28 @@ categories:
         question: "Is there hepatomegaly?"
       - id: hepatic_steatosis
         question: "Is hepatic steatosis, fatty liver, focal fatty infiltration suspected based on the imaging findings?"
+        definition: "Fatty infiltration of the liver, diffuse or focal."
+        include_terms:
+          - "hepatic steatosis"
+          - "fatty liver"
+          - "fatty infiltration"
+          - "hepatic fat"
+        severity_scale: "generic"
       - id: cirrhosis
         question: "Is there cirrhosis?"
       - id: cirrhosis_portal_hypertension
         question: "Is there cirrhosis with portal hypertension?"
+        definition: "Cirrhosis with portal hypertension stated, or with its named consequences: splenomegaly, varices, recanalised paraumbilical vein."
+        include_terms:
+          - "portal hypertension"
+          - "portosystemic collaterals"
+          - "varices"
       - id: cirrhosis_with_decompensation
         question: "Is there cirrhosis with decompensation?"
+        definition: "Cirrhosis the report describes as decompensated. Do not infer decompensation from a shrunken liver or from ascites."
+        include_terms:
+          - "decompensated cirrhosis"
+          - "hepatic decompensation"
       - id: gastroesophageal_varices
         question: "Are there any esophageal or gastric varices?"
       - id: polycystic_liver_disease
@@ -64,6 +91,17 @@ categories:
         question: "Are there any hepatic adenomas?"
       - id: hepatic_mass_indeterminate
         question: "Are there any hepatic masses?"
+        definition: "A solid hepatic lesion the report does not characterise. A cyst does not count, and neither does a lesion the report names -- a hemangioma, a metastasis or a hepatocellular carcinoma each have their own question."
+        include_terms:
+          - "indeterminate hepatic lesion"
+          - "indeterminate liver mass"
+          - "solid hepatic lesion"
+        exclude_terms:
+          - "hepatic cyst"
+          - "simple cyst"
+          - "hemangioma"
+          - "metastasis"
+          - "hepatocellular carcinoma"
       - id: hepatocellular_carcinoma_hcc
         question: "Is there hepatocellular carcinoma?"
       - id: hepatic_metastases
@@ -82,6 +120,8 @@ categories:
         question: "Is there any portal venous gas?"
       
       
+      - id: any_liver
+        question: "Does the report describe any abnormality of the liver?"
   Gallbladder:
     description: "Gallbladder-related findings"
     questions:
@@ -101,38 +141,117 @@ categories:
         question: "Is there porcelain gallbladder?"
       - id: pneumobilia
         question: "Is there pneumobilia?"
+        definition: "Gas in the biliary tree, whether intrahepatic, in the gallbladder or in the ducts."
+        include_terms:
+          - "pneumobilia"
+          - "biliary gas"
+          - "air in the biliary tree"
+          - "aerobilia"
       - id: gallbladder_wall_thickening
         question: "Is there gallbladder wall thickening?"
+        definition: "Diffuse thickening of the gallbladder wall. Focal thickening with the features of adenomyomatosis has its own question."
+        include_terms:
+          - "gallbladder wall thickening"
+          - "thickened gallbladder wall"
+        exclude_terms:
+          - "adenomyomatosis"
+          - "Rokitansky-Aschoff"
+        severity_scale: "generic"
       - id: gallbladder_adenomyomatosis
         question: "Is there gallbladder adenomyomatosis?"
+        definition: "Gallbladder wall thickening with intramural diverticula or Rokitansky-Aschoff sinuses, fundal or mid-body."
+        include_terms:
+          - "adenomyomatosis"
+          - "adenomyomatous"
+          - "Rokitansky-Aschoff"
       - id: gallbladder_cancer
         question: "Is there gallbladder cancer?"
 
+      - id: any_gallbladder
+        question: "Does the report describe any abnormality of the gallbladder?"
   Genitourinary:
     description: "Kidney and urinary tract findings"
     questions:
       - id: hydronephrosis
         question: "Is there hydronephrosis?"
+        definition: "Dilation of the renal collecting system: the pelvis, the calyces, or both. Dilation of a ureter alone is not hydronephrosis."
+        include_terms:
+          - "hydronephrosis"
+          - "hydroureteronephrosis"
+          - "pelvicaliectasis"
+          - "caliectasis"
+        exclude_terms:
+          - "hydroureter"
+          - "ureterectasis"
+          - "ureteral dilation"
+        severity_scale: "hydronephrosis_sfu"
       - id: renal_hypodensities
         question: "Are there any renal hypodensities?"
       - id: simple_renal_cysts
         question: "Are there any simple renal cysts?"
       - id: complex_renal_cyst
         question: "Are there any complex renal cysts?"
+        definition: "A renal cyst with internal complexity: septations, multiple locules, a thickened or enhancing wall, calcification or solid elements. Bosniak IIF and above."
+        include_terms:
+          - "complex cyst"
+          - "septated cyst"
+          - "Bosniak"
+          - "multiloculated cyst"
+        exclude_terms:
+          - "simple cyst"
+          - "simple renal cyst"
+        severity_scale: "bosniak"
       - id: renal_abscess
         question: "Are there any renal abscesses?"
       - id: xgp
         question: "Is there xanthogranulomatous pyelonephritis?"
       - id: renal_stones_nephrolithiasis
         question: "Are there any renal stones / nephrolithiasis?"
+        definition: "A calculus in the kidney, including the renal pelvis. A stone in a ureter or in the bladder has its own question."
+        include_terms:
+          - "nephrolithiasis"
+          - "renal calculus"
+          - "renal stone"
+          - "kidney stone"
+        exclude_terms:
+          - "ureteral stone"
+          - "ureterolithiasis"
+          - "bladder stone"
       - id: ureteral_stones
         question: "Are there any ureteral stones?"
+        definition: "A calculus in a ureter, at any level including the ureterovesical junction."
+        include_terms:
+          - "ureteral stone"
+          - "ureterolithiasis"
+          - "UVJ stone"
+          - "ureteric calculus"
+        exclude_terms:
+          - "renal stone"
+          - "nephrolithiasis"
+          - "bladder stone"
       - id: bladder_stones
         question: "Are there any bladder stones?"
+        definition: "A calculus in the bladder, including one in a bladder diverticulum. A stone at the ureterovesical junction counts as ureteral."
+        include_terms:
+          - "bladder stone"
+          - "bladder calculus"
+          - "vesical calculus"
+        exclude_terms:
+          - "ureteral stone"
+          - "UVJ stone"
+          - "renal stone"
       - id: nephrocalcinosis
         question: "Is there nephrocalcinosis?"
       - id: polycystic_kidney_disease
         question: "Is there polycystic kidney disease?"
+        definition: "Polycystic kidney disease stated, or innumerable bilateral renal cysts replacing the parenchyma. Several bilateral cysts alone do not count."
+        include_terms:
+          - "polycystic kidney"
+          - "ADPKD"
+          - "innumerable bilateral renal cysts"
+        exclude_terms:
+          - "bilateral renal cysts"
+          - "multiple renal cysts"
       - id: horseshoe_kidney
         question: "Is there horseshoe kidney?"
       - id: ureteroceles
@@ -143,6 +262,15 @@ categories:
         question: "Is there renal lymphomas?"
       - id: angiomyolipoma_aml
         question: "Are there any angiomyolipomas?"
+        definition: "A fat-containing renal lesion, almost always in the kidney and rarely in the liver. Not an adrenal myelolipoma, which is a different lesion in a different organ."
+        include_terms:
+          - "angiomyolipoma"
+          - "AML"
+          - "fat-containing renal lesion"
+        exclude_terms:
+          - "myelolipoma"
+          - "myolipoma"
+          - "adrenal myelolipoma"
       - id: bladder_tcc
         question: "Are there any bladder transitional cell carcinomas?"
       - id: post_nephrectomy
@@ -156,12 +284,25 @@ categories:
       - id: bladder_rupture
         question: "Is there bladder rupture?"
 
+      - id: any_kidneys
+        question: "Does the report describe any abnormality of the kidneys?"
+      - id: any_urinary_tract
+        question: "Does the report describe any abnormality of the ureters or bladder?"
   Adrenal gland:
     description: "Adrenal gland findings"
     questions:
       - id: adrenal_myelolipoma
         question: "Are there any adrenal myelolipomas?"
+        definition: "A fat-containing adrenal lesion. Not a renal angiomyolipoma, and not a myolipoma of soft tissue."
+        include_terms:
+          - "myelolipoma"
+          - "adrenal myelolipoma"
+        exclude_terms:
+          - "angiomyolipoma"
+          - "myolipoma"
 
+      - id: any_adrenals
+        question: "Does the report describe any abnormality of the adrenal glands?"
   Gastrointestinal:
     description: "Gastrointestinal findings"
     questions:
@@ -180,6 +321,8 @@ categories:
       - id: inguinal_hernias
         question: "Are there any inguinal hernias?"
 
+      - id: any_bowel
+        question: "Does the report describe any abnormality of the stomach or bowel?"
   Device:
     description: "Medical devices/hardware/implants"
     questions:
@@ -191,13 +334,68 @@ categories:
     questions:
       - id: ascites
         question: "Is there any ascites?"
+        definition: "Non-hemorrhagic free peritoneal fluid: the chronic kind, from cirrhosis, malignancy or heart failure. Free blood is hemoperitoneum and fluid of unstated character belongs to the umbrella question, both new this round."
+        include_terms:
+          - "ascites"
+          - "ascitic fluid"
+        exclude_terms:
+          - "hemoperitoneum"
+          - "hemorrhagic fluid"
+        severity_scale: "volume"
       - id: free_air_pneumoperitoneum
         question: "Is there any free air or pneumoperitoneum?"
+        definition: "Extraluminal gas in the peritoneal cavity, including gas confined to the mesentery."
+        include_terms:
+          - "pneumoperitoneum"
+          - "free air"
+          - "free intraperitoneal air"
+          - "mesenteric free air"
+        severity_scale: "volume"
       - id: pseudomyxoma_peritonei
         question: "Is there pseudomyxoma peritonei?"
       - id: peritoneal_carcinomatosis
         question: "Is there peritoneal carcinomatosis or omental caking?"
+        definition: "Nodular or plaque-like peritoneal tumour deposits. Omental caking has its own question from this round."
+        include_terms:
+          - "peritoneal carcinomatosis"
+          - "peritoneal implants"
+          - "peritoneal nodularity"
+        exclude_terms:
+          - "omental caking"
 
+      - id: free_intraperitoneal_fluid
+        question: "Is there any free intraperitoneal fluid?"
+        definition: "Fluid of any character in the peritoneal cavity: blood, ascites, bile, urine, enteric content or fluid of unstated character. This is the umbrella question, so a report describing any of them answers Yes."
+        include_terms:
+          - "free fluid"
+          - "free intraperitoneal fluid"
+          - "intraperitoneal fluid"
+          - "fluid in the pelvis"
+          - "fluid in Morison's pouch"
+          - "perihepatic fluid"
+          - "perisplenic fluid"
+          - "pelvic free fluid"
+          - "hemoperitoneum"
+          - "ascites"
+        severity_scale: "volume"
+      - id: hemoperitoneum
+        question: "Is there hemoperitoneum or free intraperitoneal blood?"
+        definition: "Free intraperitoneal fluid the report characterises as blood, whether by density, by an attributed injury, or by the word itself. Fluid of unstated character does not count here; it counts under the umbrella question."
+        include_terms:
+          - "hemoperitoneum"
+          - "intraperitoneal blood"
+          - "hemorrhagic free fluid"
+          - "high-density free fluid"
+          - "hyperdense free fluid"
+          - "sentinel clot"
+          - "blood products in the peritoneum"
+        exclude_terms:
+          - "simple fluid"
+          - "low-density fluid"
+          - "ascites"
+        severity_scale: "volume"
+      - id: any_peritoneum
+        question: "Does the report describe any abnormality of the peritoneal cavity?"
   Great Vessel:
     description: "Vascular findings in the abdomen"
     questions:
@@ -206,6 +404,8 @@ categories:
       - id: aortic_atherosclerosis
         question: "Is aortic atherosclerosis suspected based on the imaging findings?"
 
+      - id: any_great_vessels
+        question: "Does the report describe any abnormality of the aorta or its branches?"
   Retroperitoneum:
     description: "Retroperitoneal space findings"
     questions:
@@ -215,13 +415,29 @@ categories:
         question: "Is there retroperitoneal hemorrhage or retroperitoneal hematomas?"
       
 
+      - id: any_retroperitoneum
+        question: "Does the report describe any abnormality of the retroperitoneum?"
   Multi Organs:
     description: "Findings affecting multiple organ systems"
     questions:
       - id: metastatic_disease_general
         question: "Is metastatic disease suspected based on the imaging findings?"
+        definition: "Metastatic disease anywhere in the imaged volume, stated as metastatic or described as a metastasis."
+        include_terms:
+          - "metastatic"
+          - "metastasis"
+          - "metastases"
+          - "mets"
+          - "secondary deposits"
       - id: anasarca
         question: "Is anasarca suspected based on the imaging findings?"
+        definition: "Generalised subcutaneous oedema, by that name or described as diffuse."
+        include_terms:
+          - "anasarca"
+          - "generalized edema"
+          - "diffuse subcutaneous edema"
+          - "third spacing"
+        severity_scale: "generic"
 
   Male Pelvis:
     description: "Male pelvic findings"
@@ -229,15 +445,28 @@ categories:
       - id: prostatomegaly_bph
         question: "Is there prostatomegaly or prostatic hyperplasia?"
 
+      - id: any_male_pelvis
+        question: "Does the report describe any abnormality of the prostate or scrotum?"
   Female pelvis:
     description: "Female pelvic findings"
     questions:
       - id: uterine_leiomyomas_fibroids
         question: "Are there any leiomyomas?"
+        definition: "A benign smooth-muscle tumour of the uterus, by any of its names."
+        include_terms:
+          - "leiomyoma"
+          - "uterine myoma"
+          - "uterine fibroid"
+          - "fibroid"
+          - "leiomyomatous uterus"
+          - "broad ligament myoma"
+        severity_scale: "generic"
       - id: post_hysterectomy
         question: "Are there changes status post hysterectomy?"
   
 
+      - id: any_female_pelvis
+        question: "Does the report describe any abnormality of the uterus, ovaries or adnexa?"
   Musculoskeletal:
     description: "Musculoskeletal findings"
     questions:
@@ -247,6 +476,8 @@ categories:
         question: "Are there any rib fractures?"
       
 
+      - id: any_musculoskeletal
+        question: "Does the report describe any abnormality of the bones or body wall?"
   Visible Thoracic:
     description: "Findings visible in the lower thorax"
     questions:
@@ -256,7 +487,20 @@ categories:
         question: "Is there any pleural effusion?"
       - id: cardiomegaly
         question: "Is there cardiomegaly?"
+        definition: "Enlargement of the heart as a whole. Enlargement of one chamber is not cardiomegaly."
+        include_terms:
+          - "cardiomegaly"
+          - "enlarged heart"
+          - "cardiac enlargement"
+        exclude_terms:
+          - "atrial enlargement"
+          - "left atrial enlargement"
+          - "ventricular hypertrophy"
       - id: consolidation
         question: "Is there any consolidation?"
       - id: lung_mass_or_nodule
         question: "Are there any lung masses or nodules?"
+      - id: any_pericardium
+        question: "Does the report describe any abnormality of the pericardium?"
+      - id: any_pleura
+        question: "Does the report describe any abnormality of the pleural spaces or lung bases?"

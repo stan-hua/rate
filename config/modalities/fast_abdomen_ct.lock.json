@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "23149d889fa34860",
-    "question_set": "29990f8325432693"
+    "file": "37d4930f2235c9d7",
+    "question_set": "6b9c3b6c912f39bf"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -107,6 +107,244 @@
         }
       ],
       "window": "RUQ/LUQ"
+    },
+    "any_adrenals": {
+      "added": true,
+      "category": "Adrenal gland",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "5b28e1e2",
+          "question": "Does the report describe any abnormality of the adrenal glands?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_biliary": {
+      "added": true,
+      "category": "Biliary Tree",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "acaf0742",
+          "question": "Does the report describe any abnormality of the bile ducts?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_bowel": {
+      "added": true,
+      "category": "Gastrointestinal",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "b2bc8a52",
+          "question": "Does the report describe any abnormality of the stomach or bowel?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_female_pelvis": {
+      "added": true,
+      "category": "Female pelvis",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "5edb18bc",
+          "question": "Does the report describe any abnormality of the uterus, ovaries or adnexa?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_gallbladder": {
+      "added": true,
+      "category": "Gallbladder",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "b203be84",
+          "question": "Does the report describe any abnormality of the gallbladder?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_great_vessels": {
+      "added": true,
+      "category": "Great Vessel",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "924d8156",
+          "question": "Does the report describe any abnormality of the aorta or its branches?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_kidneys": {
+      "added": true,
+      "category": "Genitourinary",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "27681d48",
+          "question": "Does the report describe any abnormality of the kidneys?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_liver": {
+      "added": true,
+      "category": "Liver",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "545c67b6",
+          "question": "Does the report describe any abnormality of the liver?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_male_pelvis": {
+      "added": true,
+      "category": "Male Pelvis",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "c875f1d7",
+          "question": "Does the report describe any abnormality of the prostate or scrotum?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_musculoskeletal": {
+      "added": true,
+      "category": "Musculoskeletal",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "edecf266",
+          "question": "Does the report describe any abnormality of the bones or body wall?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_pancreas": {
+      "added": true,
+      "category": "Pancreas",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "353fdd1e",
+          "question": "Does the report describe any abnormality of the pancreas?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_pericardium": {
+      "added": true,
+      "category": "Visible Thoracic",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "a5c7d7f7",
+          "question": "Does the report describe any abnormality of the pericardium?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_peritoneum": {
+      "added": true,
+      "category": "Peritoneum",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "f098f934",
+          "question": "Does the report describe any abnormality of the peritoneal cavity?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_pleura": {
+      "added": true,
+      "category": "Visible Thoracic",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "bf342171",
+          "question": "Does the report describe any abnormality of the pleural spaces or lung bases?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_retroperitoneum": {
+      "added": true,
+      "category": "Retroperitoneum",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "2a1a6084",
+          "question": "Does the report describe any abnormality of the retroperitoneum?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_spleen": {
+      "added": true,
+      "category": "Spleen",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "23bb9046",
+          "question": "Does the report describe any abnormality of the spleen?"
+        }
+      ],
+      "window": "-"
+    },
+    "any_urinary_tract": {
+      "added": true,
+      "category": "Genitourinary",
+      "covariate": false,
+      "tier": "C",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "9efbc101",
+          "question": "Does the report describe any abnormality of the ureters or bladder?"
+        }
+      ],
+      "window": "-"
     },
     "aortic_atherosclerosis": {
       "category": "Great Vessel",
@@ -386,6 +624,20 @@
       ],
       "window": "all windows"
     },
+    "free_intraperitoneal_fluid": {
+      "added": true,
+      "category": "Peritoneum",
+      "covariate": false,
+      "tier": "A",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "1371cd20",
+          "question": "Is there any free intraperitoneal fluid?"
+        }
+      ],
+      "window": "all windows"
+    },
     "gallbladder_adenomyomatosis": {
       "category": "Gallbladder",
       "covariate": false,
@@ -463,6 +715,20 @@
         }
       ],
       "window": "RUQ"
+    },
+    "hemoperitoneum": {
+      "added": true,
+      "category": "Peritoneum",
+      "covariate": false,
+      "tier": "A",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "106f1262",
+          "question": "Is there hemoperitoneum or free intraperitoneal blood?"
+        }
+      ],
+      "window": "all windows"
     },
     "hepatic_abscess": {
       "category": "Liver",
