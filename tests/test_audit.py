@@ -218,3 +218,19 @@ class TestStageCoverage:
 
     def test_an_empty_directory_reports_nothing(self, tmp_path):
         assert stage_coverage(tmp_path) == {}
+
+
+class TestPerWording:
+    def test_the_outlying_wording_is_visible(self):
+        rows = frame([
+            *[row(report=f"R{n:03d}", index="0", verdict="yes") for n in range(4)],
+            *[row(report=f"R{n:03d}", index="1", verdict="yes") for n in range(4)],
+            *[row(report=f"R{n:03d}", index="2", verdict="no") for n in range(4)],
+        ])
+        table = audit(rows)["per_wording"]
+        assert list(table["finding_id"]) == ["ascites"]
+        assert int(table.loc[0, "discordant"]) == 4
+        assert [int(table.loc[0, f"yes_v{index}"]) for index in range(3)] == [4, 4, 0]
+
+    def test_a_run_whose_wordings_agree_reports_nothing(self):
+        assert len(audit(complete())["per_wording"]) == 0

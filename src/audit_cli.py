@@ -104,6 +104,10 @@ def main(argv=None):
     print(f"\nFindings whose wordings disagree: {len(disputed)} of {len(table)}")
     print(disputed.head(args.top).to_string(index=False) if len(disputed) else "  none")
 
+    wording = report["per_wording"]
+    print(f"\nYes count per wording, where the wordings disagree: top {args.top}")
+    print(wording.head(args.top).to_string(index=False) if len(wording) else "  none")
+
     if args.out:
         table.to_csv(args.out, index=False)
         print(f"\nPer-finding table written to {args.out}")

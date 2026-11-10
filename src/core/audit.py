@@ -162,6 +162,34 @@ def _per_finding(frame, votes):
     return table.sort_values(["yes", "finding_id"], ascending=[False, True], ignore_index=True)
 
 
+def _per_wording(frame, table):
+    """Yes count per wording, for the findings whose wordings disagreed.
+
+    A finding's three wordings ask one question, so a finding disputed on half
+    its reports has one wording asking something else. This is where that
+    shows: three similar counts mean the disagreement is spread over reports,
+    and one count far from the others names the wording to rewrite.
+    """
+    disputed = table[table["discordant"] > 0].sort_values(
+        ["discordant", "finding_id"], ascending=[False, True]
+    )
+    rows = frame[frame["finding_id"].isin(set(disputed["finding_id"]))]
+    if not len(rows):
+        return disputed[["finding_id", "discordant"]].reset_index(drop=True)
+    counts = rows.assign(yes=(rows["verdict"] == "yes").astype(int)).pivot_table(
+        index="finding_id",
+        columns="variant_index",
+        values="yes",
+        aggfunc="sum",
+        fill_value=0,
+    )
+    counts.columns = [f"yes_v{index}" for index in counts.columns]
+    merged = disputed[["finding_id", "asked", "discordant"]].merge(
+        counts.reset_index(), on="finding_id", how="left"
+    )
+    return merged.reset_index(drop=True)
+
+
 def audit(frame, wordings=None, rule="max"):
     """Describe a stored `questions.csv` in counts.
 
@@ -218,6 +246,7 @@ def audit(frame, wordings=None, rule="max"):
     by_category = not_assessed.groupby("category")["flag"].agg(["sum", "size"])
     by_category = by_category[by_category["sum"] > 0].sort_values("sum", ascending=False)
 
+    table = _per_finding(frame, votes)
     return {
         "coverage": _coverage(frame, wordings),
         "verdicts": _counts(frame["verdict"]),
@@ -262,5 +291,6 @@ def audit(frame, wordings=None, rule="max"):
             "discordant": int(votes["discordant"].sum()),
             "one_of_three": int((votes["discordant"] & (votes["n_yes"] == 1)).sum()),
         },
-        "per_finding": _per_finding(frame, votes),
+        "per_finding": table,
+        "per_wording": _per_wording(frame, table),
     }
