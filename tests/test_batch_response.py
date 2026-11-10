@@ -114,9 +114,17 @@ class TestTheSamplingBlock:
         )
         return processor._sampling()
 
-    def test_the_committed_config_sends_the_cards_values_for_its_mode(self):
-        """Qwen3 publishes a different pair for each mode: 0.6 / 0.95 with
-        thinking on, 0.7 / 0.8 with it off. The two have to match."""
+    def test_the_committed_config_decodes_greedily_with_thinking_off(self):
+        """Greedy since 2026-11-09: two 20-report runs moved
+        `aortic_atherosclerosis` from 4/3/6 Yes to 1/2/5 under three wordings
+        none of which changed, so the sampler and the wording were moving
+        answers by about the same amount.
+
+        Greedy needs thinking off, because the model card warns that greedy
+        decoding in thinking mode repeats endlessly. Where sampling is put
+        back, Qwen3 publishes a pair per mode -- 0.6 / 0.95 with thinking on,
+        0.7 / 0.8 with it off -- and the two have to match.
+        """
         import yaml
 
         config = yaml.safe_load(
@@ -124,9 +132,12 @@ class TestTheSamplingBlock:
         )
         sampling = self.build(config["model"])
         thinking = config["model"].get("enable_thinking", True)
-        assert (sampling["temperature"], sampling["top_p"]) == (
-            (0.6, 0.95) if thinking else (0.7, 0.8)
-        )
+        if sampling["temperature"] == 0:
+            assert not thinking
+        else:
+            assert (sampling["temperature"], sampling["top_p"]) == (
+                (0.6, 0.95) if thinking else (0.7, 0.8)
+            )
         assert sampling["top_k"] == 20
         assert sampling["min_p"] == 0
 

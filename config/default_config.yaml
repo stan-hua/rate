@@ -32,11 +32,23 @@ model:
   # constrains from the first token.
   enable_thinking: false
 
-  # Qwen3's non-thinking settings. The thinking-mode pair is 0.6 / 0.95, and
-  # the card warns against greedy decoding there because it repeats endlessly;
-  # that warning is about thinking mode, so a lower temperature is defensible
-  # here if the answers vary too much between wordings.
-  temperature: 0.7
+  # Greedy, since 2026-11-09. This ran at Qwen3's non-thinking 0.7 / 0.8 /
+  # 20, and the comment here said a lower temperature was defensible if the
+  # answers varied too much between wordings. Two 20-report runs measured
+  # that: `aortic_atherosclerosis` answered 4/3/6 Yes under its three
+  # wordings and then 1/2/5, with no wording of it changed in between. So the
+  # sampler moves answers by about as much as a reworded question does, and
+  # the discordance the variants exist to measure cannot be read while both
+  # are in it.
+  #
+  # Greedy is safe here. The card's warning about endless repetition is about
+  # thinking mode, which `enable_thinking: false` turns off, and the response
+  # schema bounds every string besides. It also makes a re-run reproduce its
+  # labels, which a cohort of 12,681 reports and 4.3M requests wants.
+  #
+  # `top_p`, `top_k` and `min_p` are inert at temperature 0 and stay here for
+  # whoever puts sampling back.
+  temperature: 0
   top_p: 0.8
   top_k: 20
   min_p: 0
