@@ -100,6 +100,8 @@ def main(argv=None):
     _section("Columns", report["columns"])
     _section("Wording stability", report["vote"])
 
+    _section("Votes each wording reaches / rests on it alone", report["wording_value"])
+
     categories = report["by_category"]
     print(f"\nAnswers by category, {len(categories)} categories")
     print(categories.to_string(index=False))
@@ -116,6 +118,12 @@ def main(argv=None):
     disputed = table[table["discordant"] > 0].sort_values("discordant", ascending=False)
     print(f"\nFindings whose wordings disagree: {len(disputed)} of {len(table)}")
     print(disputed.head(args.top)[core].to_string(index=False) if len(disputed) else "  none")
+
+    sole = [c for c in table.columns if c.startswith("sole_v")]
+    carried = table[table[sole].to_numpy().sum(axis=1) > 0]
+    print(f"\nFindings with a vote resting on one wording, {len(carried)} of {len(table)}")
+    columns = ["finding_id", "yes", "discordant", *sole]
+    print(carried.head(args.top)[columns].to_string(index=False) if len(carried) else "  none")
 
     wording = report["per_wording"]
     print(f"\nYes count per wording, where the wordings disagree: top {args.top}")

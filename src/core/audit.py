@@ -283,6 +283,62 @@ def _per_wording(frame, table):
     return merged.reset_index(drop=True)
 
 
+def _yes_sets(frame):
+    """The wordings answering Yes, per (report, finding) that has any."""
+    yes = frame[frame["verdict"] == "yes"]
+    if not len(yes):
+        return pd.Series(dtype=object)
+    return yes.groupby(["report_id", "finding_id"])["variant_index"].apply(frozenset)
+
+
+def _wording_value(frame):
+    """Per wording: the votes it reaches, and the votes that rest on it alone.
+
+    A wording that under-calls costs a `max` vote nothing as long as another
+    wording finds the same report. `sole` is the number it does cost: the
+    votes where this wording is the only Yes, which is what dropping it would
+    lose. A wording with `sole` at zero adds no positive label to the set,
+    and what it still measures is how far an answer depends on the question.
+
+    Parameters
+    ----------
+    frame : pandas.DataFrame
+        The rows read from `questions.csv`, with `verdict` folded to lower
+        case.
+
+    Returns
+    -------
+    dict
+        `votes`, the (report, finding) pairs with at least one Yes, and
+        `v<index>` for each wording, as (reached, sole).
+    """
+    sets = _yes_sets(frame)
+    report = {"votes": int(len(sets))}
+    for index in sorted(frame["variant_index"].unique()):
+        if not len(sets):
+            report[f"v{index}"] = (0, 0)
+            continue
+        reached = int(sets.apply(lambda s, i=index: i in s).sum())
+        sole = int(sets.apply(lambda s, i=index: s == frozenset({i})).sum())
+        report[f"v{index}"] = (reached, sole)
+    return report
+
+
+def _sole_per_finding(frame, table):
+    """Add, per finding, the votes each wording alone would take with it."""
+    sets = _yes_sets(frame)
+    for index in sorted(frame["variant_index"].unique()):
+        column = f"sole_v{index}"
+        if not len(sets):
+            table[column] = 0
+            continue
+        alone = sets[sets.apply(lambda s, i=index: s == frozenset({i}))]
+        counts = alone.reset_index().groupby("finding_id").size().rename(column)
+        table = table.merge(counts.reset_index(), on="finding_id", how="left")
+        table[column] = table[column].fillna(0).astype(int)
+    return table
+
+
 def audit(frame, wordings=None, rule="max"):
     """Describe a stored `questions.csv` in counts.
 
@@ -335,7 +391,7 @@ def audit(frame, wordings=None, rule="max"):
     other = frame[frame["verdict"] != "yes"]
     votes = aggregate_findings(frame, rule=rule)
 
-    table = _per_finding(frame, votes)
+    table = _sole_per_finding(frame, _per_finding(frame, votes))
     return {
         "coverage": _coverage(frame, wordings),
         "verdicts": _counts(frame["verdict"]),
@@ -383,6 +439,7 @@ def audit(frame, wordings=None, rule="max"):
             "discordant": int(votes["discordant"].sum()),
             "one_of_three": int((votes["discordant"] & (votes["n_yes"] == 1)).sum()),
         },
+        "wording_value": _wording_value(frame),
         "by_category": _by_category(frame),
         "per_finding": table,
         "per_wording": _per_wording(frame, table),

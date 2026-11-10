@@ -306,3 +306,42 @@ class TestUnmappedPhrases:
     def test_an_unknown_axis_is_refused(self):
         with pytest.raises(ValueError, match="axis is 'certainty' or 'severity'"):
             unmapped_phrases(frame([row()]), "attribution")
+
+
+class TestWhatAWordingIsWorth:
+    """Whether a wording's positives are a subset of the others'."""
+
+    def votes(self, *per_report):
+        """One (report, finding) per argument, each a tuple of Yes indices."""
+        return frame([
+            row(
+                report=f"R{number:03d}",
+                index=str(index),
+                verdict="yes" if index in yes else "no",
+            )
+            for number, yes in enumerate(per_report)
+            for index in range(3)
+        ])
+
+    def test_a_subsumed_wording_rests_on_no_vote(self):
+        """v2 answers Yes only where v0 or v1 does, so dropping it would
+        cost nothing under `max`."""
+        report = audit(self.votes((0, 1, 2), (0, 2), (1,)))
+        assert report["wording_value"]["votes"] == 3
+        assert report["wording_value"]["v2"] == (2, 0)
+        assert report["wording_value"]["v1"] == (2, 1)
+
+    def test_a_wording_that_finds_its_own_positives_is_counted(self):
+        report = audit(self.votes((2,), (0, 1)))
+        assert report["wording_value"]["v2"] == (1, 1)
+        assert report["per_finding"].loc[0, "sole_v2"] == 1
+
+    def test_a_report_no_wording_answered_yes_is_no_vote_at_all(self):
+        report = audit(self.votes((), (0,)))
+        assert report["wording_value"]["votes"] == 1
+        assert report["wording_value"]["v0"] == (1, 1)
+
+    def test_a_run_with_no_yes_row_reports_zeroes(self):
+        report = audit(self.votes((), ()))
+        assert report["wording_value"] == {"votes": 0, "v0": (0, 0), "v1": (0, 0), "v2": (0, 0)}
+        assert report["per_finding"]["sole_v0"].sum() == 0
