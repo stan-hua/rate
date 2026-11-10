@@ -110,6 +110,7 @@ qc = { cmd = "python -m src.qc_cli", description = "Draw the sheets a human anno
 evaluate = { cmd = "python -m src.eval_cli", description = "Score the annotated sheets" }
 vote = { cmd = "python -m src.vote_cli", description = "Collapse a finding's wordings into one answer per report" }
 regrade = { cmd = "python -m src.regrade_cli", description = "Rebuild the graded columns from the stored answers, after a lexicon edit" }
+audit = { cmd = "python -m src.audit_cli", description = "Report what a finished extraction holds, in counts alone" }
 test = { cmd = "pytest", description = "The test suite" }
 # Scoped to `tests`: `ruff check src` reports 738 pre-existing findings.
 # Widen once `src` is clean.
