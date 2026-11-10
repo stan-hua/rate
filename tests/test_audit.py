@@ -16,7 +16,14 @@ import pandas as pd
 import pytest
 
 # Custom libraries
-from src.core.audit import EMPTY, audit, expected_wordings, stage_coverage
+from src.core.audit import (
+    EMPTY,
+    audit,
+    expected_wordings,
+    level_columns,
+    stage_coverage,
+    unmapped_phrases,
+)
 
 
 def lock(path, findings=("ascites", "liver_laceration"), variants=3):
@@ -154,13 +161,26 @@ class TestCounts:
             "rows": 2,
         }
 
-    def test_not_assessed_is_reported_per_category(self):
+    def test_each_category_is_counted_by_verdict(self):
         rows = frame([
-            row(verdict="not_assessed", category="Pleura"),
-            row(index="1", category="Pleura"),
+            row(verdict="not_assessed", category="Heart"),
+            row(index="1", verdict="no", category="Heart"),
             row(index="2", category="Peritoneum"),
         ])
-        assert audit(rows)["not_assessed_by_category"] == {"Pleura": (1, 2)}
+        table = audit(rows)["by_category"].set_index("category")
+        assert list(table.loc["Heart"]) == [2, 0, 1, 1]
+        assert list(table.loc["Peritoneum"]) == [1, 1, 0, 0]
+
+    def test_directness_is_counted_against_certainty(self):
+        rows = frame([
+            row(certainty="stated", named_outright="True"),
+            row(index="1", certainty="stated", named_outright="False"),
+            row(index="2", certainty="low", named_outright="True"),
+        ])
+        assert audit(rows)["named_outright_by_certainty"] == {
+            "stated": {"True": 1, "False": 1},
+            "low": {"True": 1},
+        }
 
     def test_truncation_and_an_empty_evidence_are_counted(self):
         rows = frame([
@@ -234,3 +254,55 @@ class TestPerWording:
 
     def test_a_run_whose_wordings_agree_reports_nothing(self):
         assert len(audit(complete())["per_wording"]) == 0
+
+
+class TestLevelsPerFinding:
+    def test_the_yes_rows_are_counted_at_each_level(self):
+        rows = frame([
+            row(certainty="stated", severity="trace"),
+            row(index="1", certainty="low", severity="unspecified"),
+            row(index="2", verdict="no", certainty="high", severity="marked"),
+        ])
+        table = audit(rows)["per_finding"].set_index("finding_id")
+        assert int(table.loc["ascites", "cert_stated"]) == 1
+        assert int(table.loc["ascites", "cert_low"]) == 1
+        assert int(table.loc["ascites", "sev_trace"]) == 1
+        assert int(table.loc["ascites", "sev_unspecified"]) == 1
+        # The No row's levels are counted nowhere: it has none by definition.
+        assert int(table.loc["ascites", "cert_high"]) == 0
+        assert int(table.loc["ascites", "sev_marked"]) == 0
+
+    def test_a_finding_no_wording_answered_yes_counts_zero_at_every_level(self):
+        rows = frame([row(verdict="no"), row(index="1", verdict="no")])
+        table = audit(rows)["per_finding"]
+        assert table[level_columns("cert")].to_numpy().sum() == 0
+        assert table[level_columns("sev")].to_numpy().sum() == 0
+
+    def test_an_unknown_axis_is_refused(self):
+        with pytest.raises(ValueError, match="prefix is one of"):
+            level_columns("certainty")
+
+
+class TestUnmappedPhrases:
+    def test_only_the_phrases_with_no_level_come_back(self):
+        rows = frame([
+            row(certainty_phrase="favored to be", certainty="unspecified"),
+            row(index="1", certainty_phrase="favored to be", certainty="unspecified"),
+            row(index="2", certainty_phrase="likely", certainty="medium"),
+        ])
+        assert unmapped_phrases(rows) == {"favored to be": 2}
+
+    def test_a_non_yes_row_is_left_out(self):
+        rows = frame([
+            row(verdict="no", certainty_phrase="favored to be", certainty="unspecified"),
+        ])
+        assert unmapped_phrases(rows) == {}
+
+    def test_the_severity_axis_reads_its_own_columns(self):
+        rows = frame([row(severity_phrase="voluminous", severity="unspecified")])
+        assert unmapped_phrases(rows, "severity") == {"voluminous": 1}
+        assert unmapped_phrases(rows, "certainty") == {}
+
+    def test_an_unknown_axis_is_refused(self):
+        with pytest.raises(ValueError, match="axis is 'certainty' or 'severity'"):
+            unmapped_phrases(frame([row()]), "attribution")

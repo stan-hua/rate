@@ -30,7 +30,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .core.audit import audit, expected_wordings, stage_coverage
+from .core.audit import audit, expected_wordings, level_columns, stage_coverage, unmapped_phrases
 from .core.vote import load_vote_rule
 
 DEFAULT_LOCK = Path(__file__).resolve().parents[1] / "config" / "modalities" / "fast_abdomen_ct.lock.json"
@@ -49,6 +49,10 @@ def parse_args(argv=None):
                         help="Where to write the per-finding table (counts only)")
     parser.add_argument('--top', type=int, default=15,
                         help="How many findings to print per table")
+    parser.add_argument('--unmapped', action='store_true',
+                        help="Also print the hedges and magnitudes the lexicon has no level "
+                             "for. These are verbatim quotes from the reports, so this is the "
+                             "one output here that must not be pasted anywhere")
     return parser.parse_args(argv)
 
 
@@ -87,22 +91,31 @@ def main(argv=None):
     _section("Coverage", report["coverage"])
     _section("Verdicts", report["verdicts"])
     _section("Parse", report["parse"])
-    _section("not_assessed by category, rows / asked", report["not_assessed_by_category"])
     _section("Certainty on Yes rows", report["certainty_on_yes"])
     _section("Severity on Yes rows", report["severity_on_yes"])
     _section("Phrase absent from its own evidence, Yes rows", report["unquoted_on_yes"])
     _section("Phrase quoted on a non-Yes row", report["phrases_on_non_yes"])
     _section("Attribution on Yes rows", report["attribution_on_yes"])
-    _section("Named outright on Yes rows", report["named_outright_on_yes"])
+    _section("Named outright by certainty, Yes rows", report["named_outright_by_certainty"])
     _section("Columns", report["columns"])
     _section("Wording stability", report["vote"])
 
+    categories = report["by_category"]
+    print(f"\nAnswers by category, {len(categories)} categories")
+    print(categories.to_string(index=False))
+
     table = report["per_finding"]
+    core = ["finding_id", "asked", "yes", "no", "not_assessed", "unquoted", "discordant", "yes_rate"]
     print(f"\nFindings by Yes count, top {args.top} of {len(table)}")
-    print(table.head(args.top).to_string(index=False))
+    print(table.head(args.top)[core].to_string(index=False))
+    answered = table[table["yes"] > 0]
+    for axis, title in (("cert", "Certainty"), ("sev", "Severity")):
+        print(f"\n{title} of the Yes rows per finding, top {args.top} of {len(answered)}")
+        columns = ["finding_id", "yes", *level_columns(axis)]
+        print(answered.head(args.top)[columns].to_string(index=False))
     disputed = table[table["discordant"] > 0].sort_values("discordant", ascending=False)
     print(f"\nFindings whose wordings disagree: {len(disputed)} of {len(table)}")
-    print(disputed.head(args.top).to_string(index=False) if len(disputed) else "  none")
+    print(disputed.head(args.top)[core].to_string(index=False) if len(disputed) else "  none")
 
     wording = report["per_wording"]
     print(f"\nYes count per wording, where the wordings disagree: top {args.top}")
@@ -111,6 +124,17 @@ def main(argv=None):
     if args.out:
         table.to_csv(args.out, index=False)
         print(f"\nPer-finding table written to {args.out}")
+
+    if args.unmapped:
+        print("\n" + "=" * 72)
+        print("Below this line is report text. Read it, act on it, paste it nowhere.")
+        print("=" * 72)
+        for axis in ("certainty", "severity"):
+            missed = unmapped_phrases(frame, axis)
+            print(f"\n{axis}: {sum(missed.values())} Yes row(s) over {len(missed)} phrase(s) "
+                  f"that config/lexicons/{axis}.yaml has no level for")
+            for phrase, count in missed.items():
+                print(f"  {count:>5}  {phrase}")
     return 0
 
 

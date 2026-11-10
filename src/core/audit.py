@@ -33,6 +33,7 @@ from pathlib import Path
 import pandas as pd
 
 # Custom libraries
+from .lexicon import NEGATED, STATED, UNSPECIFIED
 from .storage import STAGE_CONFIGS
 from .vote import aggregate_findings
 
@@ -134,6 +135,93 @@ def _coverage(frame, wordings):
     return report
 
 
+# The two graded axes, firmest level first, and the prefix each takes in the
+# per-finding table. `negated` and `unspecified` are off both scales and are
+# counted because that is where a wrong level hides: a Yes whose hedge
+# dismisses the finding, and a hedge the lexicon has no entry for.
+LEVEL_AXES = (
+    ("cert", "certainty", (STATED, "high", "medium", "low", NEGATED, UNSPECIFIED)),
+    ("sev", "severity", ("marked", "moderate", "mild", "trace", UNSPECIFIED)),
+)
+
+
+def level_columns(prefix):
+    """Return the per-finding column names for one graded axis."""
+    for name, _, levels in LEVEL_AXES:
+        if name == prefix:
+            return [f"{prefix}_{level}" for level in levels]
+    raise ValueError(f"prefix is one of {[name for name, _, _ in LEVEL_AXES]}, not {prefix!r}")
+
+
+def _levels_per_finding(yes):
+    """One row per Yes answer, with a column per level of each graded axis."""
+    columns = {
+        f"{prefix}_{level}": (yes[column] == level).astype(int)
+        for prefix, column, levels in LEVEL_AXES
+        for level in levels
+    }
+    return pd.DataFrame({"finding_id": yes["finding_id"], **columns})
+
+
+def _by_category(frame):
+    """One row per category: how many of its rows were answered each way.
+
+    `not_assessed` is the value to read here. It means the report could not
+    have answered, so it belongs to the compartments an abdomen-and-pelvis
+    study leaves out -- and a category of thoracic or cardiac questions
+    answered `no` throughout has put unanswerable rows in the negative
+    denominator instead.
+    """
+    counts = pd.DataFrame(
+        {
+            "category": frame["category"],
+            "asked": 1,
+            "yes": (frame["verdict"] == "yes").astype(int),
+            "no": (frame["verdict"] == "no").astype(int),
+            "not_assessed": (frame["verdict"] == "not_assessed").astype(int),
+        }
+    )
+    table = counts.groupby("category", as_index=False).sum(numeric_only=True)
+    return table.sort_values("not_assessed", ascending=False, ignore_index=True)
+
+
+def unmapped_phrases(frame, axis="certainty"):
+    """Return the phrases a Yes row quoted that the lexicon has no level for.
+
+    **This returns report text**, where every other function in this module
+    returns counts. A phrase is a verbatim quote from a patient's report, so
+    what comes back here belongs on the screen of someone who may read the
+    reports and in no log, commit or message. The caller decides: the CLI asks
+    for it under `--unmapped` and never otherwise.
+
+    It is the fastest way to close the gap it measures. Every row counted
+    under `unspecified` in the certainty table quoted a hedge
+    `config/lexicons/certainty.yaml` spells no way at all, and adding the
+    phrase there plus `pixi run regrade` grades it without asking anything
+    again.
+
+    Parameters
+    ----------
+    frame : pandas.DataFrame
+        The rows read from `questions.csv`.
+    axis : str, optional
+        `certainty` or `severity`.
+
+    Returns
+    -------
+    dict
+        Each unmapped phrase, with how many Yes rows quoted it, commonest
+        first.
+    """
+    if axis not in ("certainty", "severity"):
+        raise ValueError(f"axis is 'certainty' or 'severity', not {axis!r}")
+    verdict = _text(frame, "verdict").str.lower()
+    phrase = _text(frame, f"{axis}_phrase")
+    level = _text(frame, axis)
+    missed = phrase[(verdict == "yes") & (level == UNSPECIFIED) & (phrase != "")]
+    return {str(text): int(count) for text, count in missed.value_counts().items()}
+
+
 def _per_finding(frame, votes):
     """One row per finding: how often it was asked, answered Yes and disputed."""
     counts = pd.DataFrame(
@@ -155,6 +243,11 @@ def _per_finding(frame, votes):
     )
     table = table.merge(disputed, on="finding_id", how="left")
     table["discordant"] = table["discordant"].fillna(0).astype(int)
+    levels = _levels_per_finding(frame[frame["verdict"] == "yes"])
+    levels = levels.groupby("finding_id", as_index=False).sum(numeric_only=True)
+    table = table.merge(levels, on="finding_id", how="left")
+    for column in [*level_columns("cert"), *level_columns("sev")]:
+        table[column] = table[column].fillna(0).astype(int)
     # A finding no wording answered has no rate rather than a zero: every
     # row of it was `not_assessed`, so the denominator is empty.
     answered = (table["yes"] + table["no"]).astype(float)
@@ -242,10 +335,6 @@ def audit(frame, wordings=None, rule="max"):
     other = frame[frame["verdict"] != "yes"]
     votes = aggregate_findings(frame, rule=rule)
 
-    not_assessed = frame.assign(flag=(frame["verdict"] == "not_assessed").astype(int))
-    by_category = not_assessed.groupby("category")["flag"].agg(["sum", "size"])
-    by_category = by_category[by_category["sum"] > 0].sort_values("sum", ascending=False)
-
     table = _per_finding(frame, votes)
     return {
         "coverage": _coverage(frame, wordings),
@@ -254,10 +343,6 @@ def audit(frame, wordings=None, rule="max"):
             "answer_empty": int((frame["answer"] == "").sum()),
             "truncated": int(frame["truncated"].str.lower().isin(("true", "1")).sum()),
             "evidence_empty_on_yes": int((yes["evidence"] == "").sum()),
-        },
-        "not_assessed_by_category": {
-            str(category): (int(row["sum"]), int(row["size"]))
-            for category, row in by_category.iterrows()
         },
         "certainty_on_yes": _counts(yes["certainty"]),
         "severity_on_yes": _counts(yes["severity"]),
@@ -275,7 +360,14 @@ def audit(frame, wordings=None, rule="max"):
             "rows": len(other),
         },
         "attribution_on_yes": _counts(yes["attribution"]),
-        "named_outright_on_yes": _counts(yes["named_outright"]),
+        # Directness against certainty. The two are different axes and the
+        # cross-tab is what shows whether this one is measuring: a hedged
+        # finding is usually still named, so the cell to read is a `stated`
+        # Yes the model says it did not name.
+        "named_outright_by_certainty": {
+            str(level): _counts(rows["named_outright"])
+            for level, rows in yes.groupby(yes["certainty"], sort=False)
+        },
         "columns": {
             "declared_absent": [c for c in QUESTION_COLUMNS if c not in frame.columns],
             "undeclared": {
@@ -291,6 +383,7 @@ def audit(frame, wordings=None, rule="max"):
             "discordant": int(votes["discordant"].sum()),
             "one_of_three": int((votes["discordant"] & (votes["n_yes"] == 1)).sum()),
         },
+        "by_category": _by_category(frame),
         "per_finding": table,
         "per_wording": _per_wording(frame, table),
     }
