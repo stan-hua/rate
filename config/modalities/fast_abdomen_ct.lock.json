@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "cfa8fe12058c258f",
-    "question_set": "bc346098da101a44"
+    "file": "13587265b6b3109c",
+    "question_set": "dc0b3e60b0123b59"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -209,8 +209,8 @@
         },
         {
           "index": 2,
-          "md5": "2133c0aa",
-          "question": "Does the report record an adrenal nodule, mass, thickening, hemorrhage or any other adrenal abnormality?"
+          "md5": "d3607e23",
+          "question": "Is there an adrenal nodule, adrenal thickening or any other adrenal abnormality?"
         }
       ],
       "window": "-"
@@ -234,8 +234,8 @@
         },
         {
           "index": 2,
-          "md5": "a946fa52",
-          "question": "Does the report record biliary ductal dilation, a duct stone, pneumobilia, a stricture or any other biliary abnormality?"
+          "md5": "8f488b31",
+          "question": "Is there biliary ductal dilation, pneumobilia or any other biliary abnormality?"
         }
       ],
       "window": "RUQ"
@@ -259,8 +259,8 @@
         },
         {
           "index": 2,
-          "md5": "5231ef8e",
-          "question": "Does the report record bowel wall thickening, obstruction, dilated loops, inflammation, a mass or any other gastrointestinal abnormality?"
+          "md5": "31bef2e1",
+          "question": "Is there bowel wall thickening, bowel obstruction or any other gastrointestinal abnormality?"
         }
       ],
       "window": "-"
@@ -284,8 +284,8 @@
         },
         {
           "index": 2,
-          "md5": "dd3d2f19",
-          "question": "Does the report record a uterine, ovarian or adnexal mass, cyst, enlargement or any other abnormality there?"
+          "md5": "148ce813",
+          "question": "Is there a uterine fibroid, an ovarian cyst or any other abnormality of the uterus, ovaries or adnexa?"
         }
       ],
       "window": "-"
@@ -309,8 +309,8 @@
         },
         {
           "index": 2,
-          "md5": "9bcbf785",
-          "question": "Does the report record gallstones, wall thickening, inflammation, a polyp, a mass or any other gallbladder abnormality?"
+          "md5": "34afc106",
+          "question": "Are there gallstones, gallbladder wall thickening or any other gallbladder abnormality?"
         }
       ],
       "window": "RUQ"
@@ -334,8 +334,8 @@
         },
         {
           "index": 2,
-          "md5": "4ecc6795",
-          "question": "Does the report record aortic dilation, atherosclerosis, dissection, thrombus, stenosis or any other abnormality there?"
+          "md5": "c0d64048",
+          "question": "Is there aortic dilation, aortic atherosclerosis or any other abnormality of the aorta or its branches?"
         }
       ],
       "window": "-"
@@ -359,8 +359,8 @@
         },
         {
           "index": 2,
-          "md5": "546e52c7",
-          "question": "Does the report record cardiomegaly, a pericardial effusion, pericardial thickening or calcification, a valvular or coronary abnormality or any other cardiac abnormality?"
+          "md5": "b7768d3d",
+          "question": "Is there cardiomegaly, a pericardial effusion or any other cardiac abnormality?"
         }
       ],
       "window": "cardiac"
@@ -384,8 +384,8 @@
         },
         {
           "index": 2,
-          "md5": "68eddf6f",
-          "question": "Does the report record a renal cyst, mass, stone, hydronephrosis, scarring, injury or any other renal abnormality?"
+          "md5": "7ea24be4",
+          "question": "Is there a renal cyst, hydronephrosis or any other renal abnormality?"
         }
       ],
       "window": "RUQ/LUQ"
@@ -409,8 +409,8 @@
         },
         {
           "index": 2,
-          "md5": "017875fe",
-          "question": "Does the report record hepatic steatosis, a liver lesion, cirrhosis, hepatomegaly, injury or any other hepatic abnormality?"
+          "md5": "a7fbbf17",
+          "question": "Is there hepatic steatosis, a liver lesion or any other hepatic abnormality?"
         }
       ],
       "window": "RUQ"
@@ -434,8 +434,8 @@
         },
         {
           "index": 2,
-          "md5": "f152da0f",
-          "question": "Does the report record prostatic enlargement, a prostatic mass, a testicular or scrotal abnormality or any other abnormality there?"
+          "md5": "d2ed53c6",
+          "question": "Is there prostatic enlargement, a scrotal abnormality or any other abnormality of the prostate or scrotum?"
         }
       ],
       "window": "-"
@@ -459,8 +459,8 @@
         },
         {
           "index": 2,
-          "md5": "799c3fcb",
-          "question": "Does the report record a fracture, a bone lesion, degenerative change, a body wall hernia or any other musculoskeletal abnormality?"
+          "md5": "276093bf",
+          "question": "Is there a fracture, degenerative change or any other musculoskeletal abnormality?"
         }
       ],
       "window": "-"
@@ -484,8 +484,8 @@
         },
         {
           "index": 2,
-          "md5": "2e4430da",
-          "question": "Does the report record pancreatic inflammation, a pancreatic mass or cyst, ductal dilation, atrophy or any other pancreatic abnormality?"
+          "md5": "be09ecc5",
+          "question": "Is there pancreatic inflammation, a pancreatic cyst or any other pancreatic abnormality?"
         }
       ],
       "window": "-"
@@ -533,8 +533,8 @@
         },
         {
           "index": 2,
-          "md5": "4d27af0f",
-          "question": "Does the report record free fluid, free air, peritoneal thickening, a peritoneal deposit or any other abnormality there?"
+          "md5": "628802de",
+          "question": "Is there free fluid, free air or any other abnormality of the peritoneal cavity?"
         }
       ],
       "window": "all windows"
@@ -558,8 +558,8 @@
         },
         {
           "index": 2,
-          "md5": "b893e634",
-          "question": "Does the report record a pleural effusion, pleural thickening, atelectasis, consolidation, a nodule or any other abnormality there?"
+          "md5": "8cd633e0",
+          "question": "Is there a pleural effusion, atelectasis or any other abnormality of the pleural spaces or lung bases?"
         }
       ],
       "window": "thoracic"
@@ -583,8 +583,8 @@
         },
         {
           "index": 2,
-          "md5": "072995f5",
-          "question": "Does the report record retroperitoneal fluid, hemorrhage, lymphadenopathy, fibrosis, a mass or any other retroperitoneal abnormality?"
+          "md5": "fa79f879",
+          "question": "Is there retroperitoneal fluid, lymphadenopathy or any other retroperitoneal abnormality?"
         }
       ],
       "window": "-"
@@ -608,8 +608,8 @@
         },
         {
           "index": 2,
-          "md5": "fa310397",
-          "question": "Does the report record splenomegaly, a splenic lesion, an infarct, injury or any other splenic abnormality?"
+          "md5": "57bced65",
+          "question": "Is there splenomegaly, a splenic lesion or any other splenic abnormality?"
         }
       ],
       "window": "LUQ"
@@ -633,8 +633,8 @@
         },
         {
           "index": 2,
-          "md5": "2ac4459b",
-          "question": "Does the report record ureteral dilation, a ureteral or bladder stone, bladder wall thickening, a bladder mass or any other abnormality there?"
+          "md5": "0250d404",
+          "question": "Is there ureteral dilation, a bladder stone or any other abnormality of the ureters or bladder?"
         }
       ],
       "window": "suprapubic"
@@ -723,8 +723,8 @@
         },
         {
           "index": 1,
-          "md5": "37d20dda",
-          "question": "Is there collapsed lung at the imaged lung bases?"
+          "md5": "5a6b0588",
+          "question": "Is there atelectasis or volume loss in the visible lung?"
         },
         {
           "index": 2,
@@ -1393,8 +1393,8 @@
         },
         {
           "index": 1,
-          "md5": "22a6c3e4",
-          "question": "Does the report describe a fluid-density cyst in the liver?"
+          "md5": "dc47e7a6",
+          "question": "Does the report describe a cystic lesion in the liver?"
         },
         {
           "index": 2,
@@ -1440,8 +1440,8 @@
         },
         {
           "index": 1,
-          "md5": "76386e2a",
-          "question": "Does the report describe a solid liver lesion it does not characterise?"
+          "md5": "ca404a15",
+          "question": "Does the report describe an indeterminate solid lesion in the liver?"
         },
         {
           "index": 2,

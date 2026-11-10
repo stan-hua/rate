@@ -16,7 +16,12 @@ categories:
         question: "Does the report describe any abnormality of the pancreas?"
         variants:
           - "Is anything abnormal described in the pancreas?"
-          - "Does the report record pancreatic inflammation, a pancreatic mass or cyst, ductal dilation, atrophy or any other pancreatic abnormality?"
+          - "Is there pancreatic inflammation, a pancreatic cyst or any other pancreatic abnormality?"
+        include_terms:
+          - "pancreatitis or peripancreatic inflammation"
+          - "a pancreatic mass, cyst or pseudocyst"
+          - "pancreatic ductal dilation"
+          - "pancreatic atrophy or calcification"
   Spleen:
     description: "Spleen-related findings"
     questions:
@@ -89,7 +94,13 @@ categories:
         question: "Does the report describe any abnormality of the spleen?"
         variants:
           - "Is anything abnormal described in the spleen?"
-          - "Does the report record splenomegaly, a splenic lesion, an infarct, injury or any other splenic abnormality?"
+          - "Is there splenomegaly, a splenic lesion or any other splenic abnormality?"
+        include_terms:
+          - "splenomegaly"
+          - "a splenic lesion, cyst or mass"
+          - "a splenic infarct"
+          - "splenic injury, laceration or hematoma"
+          - "a surgically absent spleen, or a prior splenectomy"
   Biliary Tree:
     description: "Biliary tree-related findings"
     questions:
@@ -108,7 +119,14 @@ categories:
         question: "Does the report describe any abnormality of the bile ducts?"
         variants:
           - "Is anything abnormal described in the bile ducts?"
-          - "Does the report record biliary ductal dilation, a duct stone, pneumobilia, a stricture or any other biliary abnormality?"
+          - "Is there biliary ductal dilation, pneumobilia or any other biliary abnormality?"
+        include_terms:
+          - "intrahepatic or extrahepatic ductal dilation"
+          - "a duct stone or choledocholithiasis"
+          - "pneumobilia"
+          - "a biliary stricture"
+        exclude_terms:
+          - "a catheter, stent, drain, graft or other device, where the organ is otherwise normal"
   Liver:
     description: "Liver-related findings"
     questions:
@@ -171,7 +189,7 @@ categories:
       - id: hepatic_cysts_simple
         question: "Are there any hepatic cysts?"
         variants:
-          - "Does the report describe a fluid-density cyst in the liver?"
+          - "Does the report describe a cystic lesion in the liver?"
           - "Is there a hepatic cyst or a simple cyst in the liver?"
       - id: hepatic_hemangioma
         question: "Are there any hepatic hemangiomas?"
@@ -186,7 +204,7 @@ categories:
       - id: hepatic_mass_indeterminate
         question: "Are there any hepatic masses?"
         variants:
-          - "Does the report describe a solid liver lesion it does not characterise?"
+          - "Does the report describe an indeterminate solid lesion in the liver?"
           - "Is there an indeterminate hepatic lesion or a solid hepatic lesion of unclear nature?"
         definition: "The report describes a solid hepatic lesion and does not characterise it. A cyst does not count. A lesion the report names has its own question: hemangioma, metastasis, hepatocellular carcinoma."
         include_terms:
@@ -245,7 +263,13 @@ categories:
         question: "Does the report describe any abnormality of the liver?"
         variants:
           - "Is anything abnormal described in the liver?"
-          - "Does the report record hepatic steatosis, a liver lesion, cirrhosis, hepatomegaly, injury or any other hepatic abnormality?"
+          - "Is there hepatic steatosis, a liver lesion or any other hepatic abnormality?"
+        include_terms:
+          - "hepatic steatosis or a fatty liver"
+          - "a hepatic lesion, cyst or mass"
+          - "cirrhosis or a nodular hepatic contour"
+          - "hepatomegaly"
+          - "hepatic injury, laceration or hematoma"
   Gallbladder:
     description: "Gallbladder-related findings"
     questions:
@@ -328,7 +352,13 @@ categories:
         question: "Does the report describe any abnormality of the gallbladder?"
         variants:
           - "Is anything abnormal described in the gallbladder?"
-          - "Does the report record gallstones, wall thickening, inflammation, a polyp, a mass or any other gallbladder abnormality?"
+          - "Are there gallstones, gallbladder wall thickening or any other gallbladder abnormality?"
+        include_terms:
+          - "gallstones or cholelithiasis"
+          - "gallbladder wall thickening"
+          - "cholecystitis of any kind"
+          - "a gallbladder polyp or mass"
+          - "a surgically absent gallbladder, or a prior cholecystectomy"
   Kidney:
     description: "Kidney and urinary tract findings"
     questions:
@@ -470,7 +500,14 @@ categories:
         question: "Does the report describe any abnormality of the kidneys?"
         variants:
           - "Is anything abnormal described in either kidney?"
-          - "Does the report record a renal cyst, mass, stone, hydronephrosis, scarring, injury or any other renal abnormality?"
+          - "Is there a renal cyst, hydronephrosis or any other renal abnormality?"
+        include_terms:
+          - "a renal cyst, hypodensity, mass or angiomyolipoma"
+          - "a renal or collecting-system stone"
+          - "hydronephrosis"
+          - "renal scarring or atrophy"
+          - "renal injury, laceration or perinephric hematoma"
+          - "a surgically absent kidney, or a transplant kidney"
   Adrenal gland:
     description: "Adrenal gland findings"
     questions:
@@ -491,7 +528,12 @@ categories:
         question: "Does the report describe any abnormality of the adrenal glands?"
         variants:
           - "Is anything abnormal described in either adrenal gland?"
-          - "Does the report record an adrenal nodule, mass, thickening, hemorrhage or any other adrenal abnormality?"
+          - "Is there an adrenal nodule, adrenal thickening or any other adrenal abnormality?"
+        include_terms:
+          - "an adrenal nodule, adenoma or myelolipoma"
+          - "an adrenal mass"
+          - "adrenal thickening or hyperplasia"
+          - "adrenal hemorrhage"
   Gastrointestinal:
     description: "Gastrointestinal findings"
     questions:
@@ -539,7 +581,13 @@ categories:
         question: "Does the report describe any abnormality of the stomach or bowel?"
         variants:
           - "Is anything abnormal described in the stomach, the small bowel or the colon?"
-          - "Does the report record bowel wall thickening, obstruction, dilated loops, inflammation, a mass or any other gastrointestinal abnormality?"
+          - "Is there bowel wall thickening, bowel obstruction or any other gastrointestinal abnormality?"
+        include_terms:
+          - "bowel wall thickening"
+          - "bowel obstruction or dilated loops"
+          - "colitis, enteritis, diverticulitis or appendicitis"
+          - "a gastric or bowel mass"
+          - "a hiatal hernia, or a hernia containing bowel"
   Device:
     description: "Medical devices/hardware/implants"
     cross_cutting: true
@@ -655,7 +703,13 @@ categories:
         question: "Does the report describe any abnormality of the peritoneal cavity?"
         variants:
           - "Is anything abnormal described in the peritoneal cavity?"
-          - "Does the report record free fluid, free air, peritoneal thickening, a peritoneal deposit or any other abnormality there?"
+          - "Is there free fluid, free air or any other abnormality of the peritoneal cavity?"
+        include_terms:
+          - "free intraperitoneal fluid, ascites or hemoperitoneum"
+          - "free intraperitoneal air"
+          - "peritoneal thickening or enhancement"
+          - "a peritoneal deposit or omental caking"
+          - "an internal or ventral hernia containing peritoneal contents"
   Great Vessel:
     description: "Vascular findings in the abdomen"
     questions:
@@ -701,7 +755,15 @@ categories:
         question: "Does the report describe any abnormality of the aorta or its branches?"
         variants:
           - "Is anything abnormal described in the aorta or its branches?"
-          - "Does the report record aortic dilation, atherosclerosis, dissection, thrombus, stenosis or any other abnormality there?"
+          - "Is there aortic dilation, aortic atherosclerosis or any other abnormality of the aorta or its branches?"
+        include_terms:
+          - "aortic aneurysm or dilation"
+          - "aortic atherosclerosis or calcification"
+          - "aortic dissection"
+          - "arterial or venous thrombus"
+          - "arterial stenosis or occlusion"
+        exclude_terms:
+          - "a catheter, stent, drain, graft or other device, where the organ is otherwise normal"
   Retroperitoneum:
     description: "Retroperitoneal space findings"
     questions:
@@ -721,7 +783,12 @@ categories:
         question: "Does the report describe any abnormality of the retroperitoneum?"
         variants:
           - "Is anything abnormal described in the retroperitoneum?"
-          - "Does the report record retroperitoneal fluid, hemorrhage, lymphadenopathy, fibrosis, a mass or any other retroperitoneal abnormality?"
+          - "Is there retroperitoneal fluid, lymphadenopathy or any other retroperitoneal abnormality?"
+        include_terms:
+          - "retroperitoneal fluid or hemorrhage"
+          - "retroperitoneal lymphadenopathy"
+          - "retroperitoneal fibrosis"
+          - "a retroperitoneal mass or collection"
   Multi Organs:
     description: "Findings affecting multiple organ systems"
     cross_cutting: true
@@ -764,7 +831,12 @@ categories:
         question: "Does the report describe any abnormality of the prostate or scrotum?"
         variants:
           - "Is anything abnormal described in the prostate or the scrotum?"
-          - "Does the report record prostatic enlargement, a prostatic mass, a testicular or scrotal abnormality or any other abnormality there?"
+          - "Is there prostatic enlargement, a scrotal abnormality or any other abnormality of the prostate or scrotum?"
+        include_terms:
+          - "prostatic enlargement or prostatomegaly"
+          - "a prostatic mass or calcification"
+          - "a testicular or scrotal abnormality"
+          - "a hydrocele or inguinoscrotal hernia"
   Female pelvis:
     description: "Female pelvic findings"
     questions:
@@ -793,7 +865,13 @@ categories:
         question: "Does the report describe any abnormality of the uterus, ovaries or adnexa?"
         variants:
           - "Is anything abnormal described in the uterus, the ovaries or the adnexa?"
-          - "Does the report record a uterine, ovarian or adnexal mass, cyst, enlargement or any other abnormality there?"
+          - "Is there a uterine fibroid, an ovarian cyst or any other abnormality of the uterus, ovaries or adnexa?"
+        include_terms:
+          - "a uterine fibroid, leiomyoma or enlarged uterus"
+          - "an ovarian or adnexal cyst"
+          - "an ovarian, adnexal or uterine mass"
+          - "free pelvic fluid of gynaecologic origin"
+          - "a surgically absent uterus or ovary"
   Musculoskeletal:
     description: "Musculoskeletal findings"
     questions:
@@ -813,14 +891,20 @@ categories:
         question: "Does the report describe any abnormality of the bones or body wall?"
         variants:
           - "Is anything abnormal described in the bones or the body wall?"
-          - "Does the report record a fracture, a bone lesion, degenerative change, a body wall hernia or any other musculoskeletal abnormality?"
+          - "Is there a fracture, degenerative change or any other musculoskeletal abnormality?"
+        include_terms:
+          - "a fracture of any bone in the imaged volume"
+          - "a bone lesion, metastasis or sclerosis"
+          - "degenerative or spondylotic change"
+          - "a body wall or ventral hernia"
+          - "muscle atrophy, a hematoma or a soft tissue collection"
   Pleura and lung bases:
     description: "Findings visible in the lower thorax"
     questions:
       - id: atelectasis
         question: "Is there any atelectasis in the visible lung?"
         variants:
-          - "Is there collapsed lung at the imaged lung bases?"
+          - "Is there atelectasis or volume loss in the visible lung?"
           - "Does the report describe atelectasis, subsegmental atelectasis or basilar collapse?"
       - id: pleural_effusion
         question: "Is there any pleural effusion?"
@@ -841,7 +925,14 @@ categories:
         question: "Does the report describe any abnormality of the pleural spaces or lung bases?"
         variants:
           - "Is anything abnormal described in the pleural spaces or the lung bases?"
-          - "Does the report record a pleural effusion, pleural thickening, atelectasis, consolidation, a nodule or any other abnormality there?"
+          - "Is there a pleural effusion, atelectasis or any other abnormality of the pleural spaces or lung bases?"
+        include_terms:
+          - "a pleural effusion or pleural fluid"
+          - "pleural thickening or a pleural plaque"
+          - "atelectasis, basilar collapse or volume loss"
+          - "consolidation or an airspace opacity"
+          - "a pulmonary nodule or mass at a visible lung base"
+          - "a pneumothorax"
   Urinary tract:
     description: "Ureter and bladder findings"
     questions:
@@ -893,7 +984,14 @@ categories:
         question: "Does the report describe any abnormality of the ureters or bladder?"
         variants:
           - "Is anything abnormal described in the ureters or the bladder?"
-          - "Does the report record ureteral dilation, a ureteral or bladder stone, bladder wall thickening, a bladder mass or any other abnormality there?"
+          - "Is there ureteral dilation, a bladder stone or any other abnormality of the ureters or bladder?"
+        include_terms:
+          - "ureteral dilation or hydroureter"
+          - "a ureteral or bladder stone"
+          - "bladder wall thickening or trabeculation"
+          - "a bladder mass"
+        exclude_terms:
+          - "a catheter, stent, drain, graft or other device, where the organ is otherwise normal"
   Heart:
     description: "Cardiac and pericardial findings"
     questions:
@@ -936,5 +1034,12 @@ categories:
         question: "Does the report describe any abnormality of the heart or the pericardium?"
         variants:
           - "Is anything abnormal described in the heart or the pericardium?"
-          - "Does the report record cardiomegaly, a pericardial effusion, pericardial thickening or calcification, a valvular or coronary abnormality or any other cardiac abnormality?"
+          - "Is there cardiomegaly, a pericardial effusion or any other cardiac abnormality?"
         definition: "Anything abnormal in the heart or the pericardial space: chamber or global enlargement, a pericardial effusion, pericardial thickening or calcification, a valvular or coronary abnormality, or any other cardiac finding the report records. The pericardium is inside this compartment rather than beside it."
+        include_terms:
+          - "cardiomegaly, or chamber or atrial enlargement"
+          - "a pericardial effusion"
+          - "pericardial thickening or calcification"
+          - "a valvular or coronary abnormality"
+        exclude_terms:
+          - "a catheter, stent, drain, graft or other device, where the organ is otherwise normal"
