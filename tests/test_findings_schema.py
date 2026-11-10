@@ -34,6 +34,7 @@ from src.core.lexicon import (
     at_least,
     certainty_of,
     load_lexicon,
+    load_not_hedges,
     severity_of,
 )
 
@@ -78,7 +79,9 @@ PROMPT_RULES = {
     "a flat statement takes no hedge": "when the report states the finding flatly",
     "a hedge has to govern this finding": "belongs to a second diagnosis",
     "and an example of that": "likely a cyst",
+    "a comparison is not a hedge": "A comparison with a prior study hedges nothing",
     "a measurement is a magnitude": "13 mm",
+    "so is a statement about size": "too small to characterize",
     "so is a formal grade": "Bosniak III",
     "the magnitude is not the finding's name": '"enlarged" names the finding',
     "a size word is a magnitude": "A word about size or amount is a magnitude",
@@ -264,8 +267,8 @@ class TestTheLexiconFiles:
         "name,levels", [("certainty", CERTAINTY_LEVELS), ("severity", SEVERITY_ORDER)]
     )
     def test_every_level_a_phrase_can_map_to_has_phrases(self, name, levels):
-        """`stated` is absent here on purpose: it is a point on the certainty
-        scale that no phrase produces."""
+        """`stated` is absent from `levels` on purpose. No hedge reaches it:
+        it comes from the absence of a phrase, or from `not_hedges`."""
         _, mapping = load_lexicon(name)
         assert set(levels) <= set(mapping.values())
 
@@ -683,6 +686,76 @@ class TestTheBareFavoredVerb:
         """"less favored" is longer, so the longest-phrase match takes it."""
         assert certainty_of("less favored") == "negated"
         assert certainty_of("not favored") == "negated"
+
+
+class TestAComparisonIsNotAHedge:
+    """A third of one run's ungraded phrases compared with a prior study."""
+
+    @pytest.mark.parametrize(
+        "phrase",
+        [
+            "redemonstrated",
+            "unchanged",
+            "similar to prior",
+            "interval increase",
+            "previously described",
+            "stable",
+            "new",
+        ],
+    )
+    def test_comparing_the_finding_states_it(self, phrase):
+        assert certainty_of(phrase) == "stated"
+
+    def test_a_hedge_beside_a_comparison_keeps_the_hedge(self):
+        """`not_hedges` is read last, so the hedge decides."""
+        assert certainty_of("likely unchanged") == "medium"
+        assert certainty_of("unchanged, possibly a cyst") == "low"
+
+    def test_the_block_is_optional(self, tmp_path):
+        (tmp_path / "severity.yaml").write_text("version: 1\nlevels:\n  mild:\n    - small\n")
+        assert load_not_hedges("severity", tmp_path) == ()
+
+    def test_the_prompt_says_so_too(self):
+        assert "A comparison with a prior study hedges nothing" in findings_prompt()
+
+
+class TestTheNegatedHedges:
+    """"not suspicious for malignancy" graded `medium` through the hedge."""
+
+    @pytest.mark.parametrize(
+        "phrase",
+        [
+            "not suspicious for malignancy",
+            "not concerning for infection",
+            "not consistent with",
+            "not suggestive of",
+            "not characteristic of",
+        ],
+    )
+    def test_negating_the_hedge_sets_the_finding_aside(self, phrase):
+        assert certainty_of(phrase) == "negated"
+
+    def test_the_bare_hedge_still_leans(self):
+        assert certainty_of("suspicious for malignancy") == "medium"
+        assert certainty_of("concerning for infection") == "medium"
+
+
+class TestTheHedgesTheFirstRunMissed:
+    """Each of these graded `unspecified` on 20 reports."""
+
+    def test_an_intensified_concern_reads_with_the_top_band(self):
+        assert certainty_of("highly concerning for malignancy") == "high"
+        assert certainty_of("concerning") == "medium"
+
+    def test_the_noun_form_of_suggest_is_a_lean(self):
+        """The pattern listed every suffix but `ion`, which is the longest."""
+        assert certainty_of("there is suggestion of") == "medium"
+
+    def test_an_association_raises_the_finding_without_committing(self):
+        assert certainty_of("can be seen in the setting of") == "low"
+
+    def test_difficult_to_exclude_is_the_cannot_exclude_family(self):
+        assert certainty_of("makes cholangitis difficult to exclude") == "low"
 
 
 class TestStatedSitsAboveHigh:

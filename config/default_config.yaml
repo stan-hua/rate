@@ -116,10 +116,12 @@ prompt_templates:
       Quote the hedge the report puts on this finding: "concerning for", "may
       represent". Leave it empty when the report states the finding flatly, and
       when the hedge belongs to a second diagnosis: "hypodensity, likely a cyst"
-      hedges the cyst.
+      hedges the cyst. A comparison with a prior study hedges nothing, so
+      "unchanged" and "redemonstrated" leave it empty too.
 
     `severity_phrase`
-      Quote the magnitude: "trace", "13 mm", "Bosniak III". Quote it by itself,
+      Quote the magnitude: "trace", "13 mm", "too small to characterize",
+      "Bosniak III". Quote it by itself,
       so "mildly enlarged" gives "mildly", because "enlarged" names the finding.
 
     A word about size or amount is a magnitude, so "mildly" and "subcentimeter"

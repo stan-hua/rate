@@ -36,6 +36,10 @@ levels:
     - highly suggestive of
     - in keeping with
     - indicative of
+    # Parallel to `highly suspicious`: the bare `concerning for` below is at
+    # ~75% and the intensified form reads with the top band.
+    - highly concerning
+    - highly concerning for
 
   # ~ 75%: the report leans on it
   medium:
@@ -90,6 +94,10 @@ levels:
     - raises the possibility
     - equivocal
     - may indicate
+    # An association rather than a diagnosis: the report names a setting the
+    # finding occurs in and commits to neither.
+    - can be seen in the setting of
+    - can be seen with
     - could be
     - versus
     - vs
@@ -116,6 +124,26 @@ negated:
   - no definite
   - no definite evidence of
   - rather than
+  # A negated hedge, listed rather than patterned because an exact phrase
+  # decides before any pattern is read and the hedge inside it is exact too:
+  # "not suspicious for malignancy" matched `suspicious for` and graded
+  # `medium`, which is its opposite. Each of these is longer than the hedge it
+  # negates, so the longest-first match reaches it first.
+  - not consistent with
+  - not compatible with
+  - not characteristic of
+  - not typical of
+  - not diagnostic of
+  - not indicative of
+  - not suspicious
+  - not suspicious for
+  - not concerning
+  - not concerning for
+  - not worrisome for
+  - not suggestive
+  - not suggestive of
+  - not probable
+  - not favored to be
 
 # Open families an exact phrase cannot close. The first match wins and these
 # are read after every exact phrase above, so a listed phrase always decides
@@ -131,7 +159,12 @@ patterns:
     level: negated
 
   # "suggestive of", "suggesting", "suggests", "is suggested by".
-  - pattern: '(?i)\bsuggest(?:s|ed|ing|ive)?\b'
+  # `suggestion` needs its own suffix: the word is longer than `suggest`
+  # plus any of the others, so a run returned "there is suggestion of" and it
+  # graded `unspecified`.
+  - pattern: '(?i)\bsuggest(?:s|ed|ing|ive|ion)?\b'
+    level: medium
+  - pattern: '(?i)\bconcerning\b'
     level: medium
   - pattern: '(?i)\b(?:favor|favour)(?:s|ed|ing)?\b'
     level: medium
@@ -145,3 +178,42 @@ patterns:
     level: low
   - pattern: '(?i)\bpossib(?:le|ly|ility)\b'
     level: low
+  # The `cannot exclude` family under another verb: "makes cholangitis
+  # difficult to exclude".
+  - pattern: '(?i)\bdifficult\s+to\s+(?:exclude|rule)\b'
+    level: low
+
+# Phrases that are not hedges at all, which grade `stated`.
+#
+# A third of the phrases a smoke run left ungraded compare the study with a
+# prior one -- "redemonstrated", "unchanged", "similar to prior", "interval
+# increase". None of them hedges anything: a finding called unchanged is a
+# finding the report states, and leaving it `unspecified` puts it off the
+# scale beside a hedge the file simply misses. The prompt asks the model to
+# leave the field empty for these, and this is the net under that.
+#
+# These are read last, after every exact phrase and every pattern above, so a
+# phrase carrying both a hedge and a comparison keeps the hedge: "likely
+# unchanged" is `medium`.
+not_hedges:
+  - redemonstrated
+  - redemonstrates
+  - redemonstration of
+  - again seen
+  - again noted
+  - previously described
+  - previously seen
+  - previously noted
+  - unchanged
+  - no significant change
+  - not significantly changed
+  - stable
+  - similar
+  - similar to prior
+  - interval increase
+  - interval decrease
+  - increased in size
+  - decreased in size
+  - more conspicuous
+  - persistent
+  - new

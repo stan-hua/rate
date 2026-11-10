@@ -20,10 +20,13 @@ exact list is where a judgment goes; the patterns are there because an
 authored list of `may represent`, `may reflect`, `may be` and `may indicate`
 still missed "may relate to".
 
-`stated` is the one certainty level no phrase produces. A report that names
-the finding and hedges it not at all is firmer than "consistent with", so the
-scale `CERTAINTY_ORDER` ranks on runs low, medium, high, stated, and
-`findings_schema` sets the top step from the absence of a phrase.
+`stated` is the step a hedge never reaches. A report that names the finding
+and hedges it not at all is firmer than "consistent with", so the scale
+`CERTAINTY_ORDER` ranks on runs low, medium, high, stated, and
+`findings_schema` sets the top step from the absence of a phrase. The
+`not_hedges` block grades it too, for a phrase that hedges nothing: a report
+calling a finding "unchanged" or "redemonstrated" is comparing it with a prior
+study and stating it.
 
 Where a report gives a formal grade instead of a magnitude word -- a Bosniak
 category, an SFU hydronephrosis grade, an aortic diameter -- the
@@ -211,6 +214,28 @@ def load_patterns(name, directory=None):
     )
 
 
+@lru_cache(maxsize=None)
+def load_not_hedges(name, directory=None):
+    """Read the phrases the lexicon grades `stated` rather than hedged.
+
+    Parameters
+    ----------
+    name : str
+        `certainty` or `severity`.
+    directory : str or pathlib.Path, optional
+        Where the lexicons are, for the tests.
+
+    Returns
+    -------
+    tuple of str
+        One phrase per entry, lowercased. Empty where the file has no block,
+        which is every lexicon but `certainty`.
+    """
+    path = Path(directory or LEXICON_DIR) / f"{name}.yaml"
+    body = yaml.safe_load(path.read_text())
+    return tuple(str(phrase).lower() for phrase in (body.get("not_hedges") or ()))
+
+
 def level_of(phrase, name, directory=None):
     """Return the level a phrase maps to.
 
@@ -244,6 +269,12 @@ def level_of(phrase, name, directory=None):
     graded = graded_level(phrase, name, directory)
     if graded:
         return graded
+    # Last, so a phrase carrying a hedge and a comparison keeps the hedge.
+    # A phrase that compares this study with a prior one hedges nothing, and
+    # the finding it compares is one the report states.
+    for candidate in load_not_hedges(name, directory):
+        if re.search(rf"(?<!\w){re.escape(candidate)}(?!\w)", text):
+            return STATED
     return UNSPECIFIED
 
 
