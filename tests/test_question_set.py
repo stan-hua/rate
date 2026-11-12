@@ -159,9 +159,12 @@ def test_an_inherited_canonical_is_byte_for_byte_the_abdomen_set_s():
 
     18 canonicals were replaced on 2026-11-11, each for a measured defect: a
     hedge inside the question, a scope the definition contradicted, or a term
-    the reports do not dictate. The lock marks those `replaced` and records the
-    source wording, and `retired` has it too, so the wording is findable and
-    the answers it produced are known to be answers to a different question.
+    the reports do not dictate. `prior_liver_resection` followed on
+    2026-11-12, because "Are there any hepatic changes post-resection?"
+    presupposed the resection and the pilot answered `not_assessed` 1,473
+    times. The lock marks all 19 `replaced` and records the source wording,
+    and `retired` has it too, so the wording is findable and the answers it
+    produced are known to be answers to a different question.
     """
     abdomen = {question for _, question in questions_of(ABDOMEN)}
     replaced = {
@@ -169,7 +172,7 @@ def test_an_inherited_canonical_is_byte_for_byte_the_abdomen_set_s():
         for b in LOCK["findings"].values()
         if b.get("replaced")
     }
-    assert len(replaced) == 18
+    assert len(replaced) == 19
     assert CANONICAL_WORDINGS - replaced <= abdomen
     for identifier, body in LOCK["findings"].items():
         if body.get("replaced"):
@@ -181,9 +184,17 @@ def test_the_fast_config_accounts_for_every_abdomen_question():
 
     So a later tier move can find the wording it needs instead of digging it
     out of the history.
+
+    The register has a second kind of entry, marked `dropped_role`: a variant
+    this project authored and then withdrew, which never was a source
+    question. Those are excluded here and checked separately.
     """
     abdomen = {question for _, question in questions_of(ABDOMEN)}
-    retired = {entry["question"] for entry in LOCK["retired"]}
+    retired = {
+        entry["question"]
+        for entry in LOCK["retired"]
+        if not entry.get("dropped_role")
+    }
     asked = {w for w in wordings_of(FAST_ABDOMEN) if w in abdomen}
     assert asked | retired == abdomen
     assert not asked & retired, "a question is both kept and retired"
@@ -332,7 +343,7 @@ class TestTheFastConfigAndItsLock:
             for b in LOCK["findings"].values()
             if any(v["role"] == "synonym" for v in b["variants"])
         )
-        assert with_synonym == 35
+        assert with_synonym == 33
 
     def test_no_wording_is_asked_under_two_findings(self):
         """The md5 is the resume key, so one of the two would never be asked."""
@@ -356,6 +367,51 @@ class TestTheFastConfigAndItsLock:
             asked = {v["question"] for v in LOCK["findings"][identifier]["variants"]}
             assert inherited not in asked
             assert inherited in retired
+
+    def test_a_withdrawn_variant_stays_in_the_register(self):
+        """A variant this project authored and then withdrew.
+
+        The 2026-11-12 pilot measured two synonyms as defects:
+        `spleen_absent`'s answered Yes on 64 reports no other wording flagged,
+        52 of them quoting evidence that calls the spleen normal, and
+        `gastroesophageal_varices`' answered Yes on a strict subset of its
+        canonical. Both slots went to null. A variant never was a source line,
+        so nothing else in the generator records its departure, and the md5 in
+        the register is what joins the pilot answers it produced.
+        """
+        withdrawn = {
+            entry["question"]: entry
+            for entry in LOCK["retired"]
+            if entry.get("dropped_role")
+        }
+        for identifier, question in (
+            ("spleen_absent", "Is there asplenia?"),
+            ("gastroesophageal_varices", "Are there any gastroesophageal varices?"),
+        ):
+            entry = withdrawn[question]
+            assert entry["id"] == identifier
+            assert entry["dropped_role"] == "synonym"
+            asked = {v["question"] for v in LOCK["findings"][identifier]["variants"]}
+            assert question not in asked
+            assert [v["role"] for v in LOCK["findings"][identifier]["variants"]] == [
+                "canonical",
+                "reframe",
+            ]
+
+    def test_a_renamed_finding_records_the_id_it_had(self):
+        """An id names a column in the label table and joins every annotation.
+
+        `prior_liver_resection` was `hepatic_changes_post_resection` until
+        2026-11-12. The wording stopped presupposing the resection, and the old
+        id named the evidence rather than the question the finding asks. No
+        annotation keys on it, so the move cost no re-review, and the lock
+        records the old id because the stopped run's answers are keyed by it.
+        """
+        body = LOCK["findings"]["prior_liver_resection"]
+        assert body["renamed_from"] == "hepatic_changes_post_resection"
+        assert "hepatic_changes_post_resection" not in LOCK["findings"]
+        renamed = [i for i, b in LOCK["findings"].items() if b.get("renamed_from")]
+        assert renamed == ["prior_liver_resection"]
 
     def test_a_category_body_has_only_the_documented_keys(self):
         """`cross_cutting` is the third, and the loader ignores what it adds."""
@@ -408,24 +464,26 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 8
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """106 findings over 247 wordings, so 247 requests per report.
+        """106 findings over 245 wordings, so 245 requests per report.
 
         83 visible findings with a positive in the cohort, 8 tier C questions
         kept as covariates, 4 findings the source never asked about, and one
         compartment probe per compartment. Of the four, two are for free fluid
-        and two are halves of a compound question the source asked as one. 35
-        findings are asked three times and 71 twice, because a finding with no
+        and two are halves of a compound question the source asked as one. 33
+        findings are asked three times and 73 twice, because a finding with no
         exact synonym has no synonym slot.
 
         It was 113 findings over 339 wordings until 2026-11-11. Seven findings
-        left and the synonym slot became conditional, which takes a run over
-        the 12,681-report cohort from 4,298,859 requests to 3,132,207.
+        left and the synonym slot became conditional. The 2026-11-12 pilot then
+        measured two synonyms as defects and both slots went to null, which
+        takes a run over the 12,681-report cohort from 4,298,859 requests to
+        3,106,845.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
         assert len(findings) == 106
-        assert wordings == 247
+        assert wordings == 245
         assert len(added) == 20
 
     def test_a_rescoped_finding_records_the_change(self):

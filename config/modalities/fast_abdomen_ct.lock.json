@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "5f2d20db39ed691d",
-    "question_set": "0e057a0496001b24"
+    "file": "8501aac5ef3cb169",
+    "question_set": "63954709c3dfda34"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -1075,12 +1075,6 @@
         },
         {
           "index": 1,
-          "md5": "bd77290e",
-          "question": "Are there any gastroesophageal varices?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
           "md5": "90f4a6bc",
           "question": "Does the report describe esophageal or gastric varices?",
           "role": "reframe"
@@ -1156,33 +1150,6 @@
           "index": 2,
           "md5": "9746999d",
           "question": "Does the report describe hepatic adenomas?",
-          "role": "reframe"
-        }
-      ],
-      "window": "RUQ"
-    },
-    "hepatic_changes_post_resection": {
-      "category": "Liver",
-      "change": "scope_change",
-      "covariate": false,
-      "tier": "B",
-      "variants": [
-        {
-          "index": 0,
-          "md5": "e267add5",
-          "question": "Are there any hepatic changes post-resection?",
-          "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "52161763",
-          "question": "Are there any changes after a partial hepatectomy?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "6cfb0a6c",
-          "question": "Does the report describe hepatic changes post-resection?",
           "role": "reframe"
         }
       ],
@@ -1948,6 +1915,36 @@
       ],
       "window": "LUQ"
     },
+    "prior_liver_resection": {
+      "category": "Liver",
+      "change": "scope_change",
+      "covariate": false,
+      "renamed_from": "hepatic_changes_post_resection",
+      "replaced": true,
+      "source_question": "Are there any hepatic changes post-resection?",
+      "tier": "B",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "e8b96714",
+          "question": "Is there a prior liver resection?",
+          "role": "canonical"
+        },
+        {
+          "index": 1,
+          "md5": "709df764",
+          "question": "Is there a prior hepatectomy?",
+          "role": "synonym"
+        },
+        {
+          "index": 2,
+          "md5": "a843d790",
+          "question": "Does the report describe a prior liver resection?",
+          "role": "reframe"
+        }
+      ],
+      "window": "RUQ"
+    },
     "prostatomegaly_bph": {
       "category": "Male Pelvis",
       "covariate": false,
@@ -2231,12 +2228,6 @@
         },
         {
           "index": 1,
-          "md5": "c954b4fe",
-          "question": "Is there asplenia?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
           "md5": "56fc62d2",
           "question": "Does the report describe an absent spleen?",
           "role": "reframe"
@@ -2447,7 +2438,7 @@
       "window": "RUQ/LUQ"
     }
   },
-  "generated": "2026-11-11",
+  "generated": "2026-11-12",
   "modality": "fast_abdominal_ct",
   "retired": [
     {
@@ -2676,6 +2667,13 @@
       "category": "Liver",
       "md5": "3acd115c",
       "question": "Are there any hepatic infarcts?"
+    },
+    {
+      "category": "Liver",
+      "id": "prior_liver_resection",
+      "md5": "e267add5",
+      "question": "Are there any hepatic changes post-resection?",
+      "replaced_by": "e8b96714"
     },
     {
       "category": "Gallbladder",
@@ -3279,6 +3277,34 @@
       "category": "Pleura and lung bases",
       "md5": "4c34a8d7",
       "question": "Is there any coronary atherosclerosis?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "gastroesophageal_varices",
+      "md5": "bd77290e",
+      "question": "Are there any gastroesophageal varices?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatic_changes_post_resection",
+      "md5": "52161763",
+      "question": "Are there any changes after a partial hepatectomy?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "reframe",
+      "id": "hepatic_changes_post_resection",
+      "md5": "6cfb0a6c",
+      "question": "Does the report describe hepatic changes post-resection?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "synonym",
+      "id": "spleen_absent",
+      "md5": "c954b4fe",
+      "question": "Is there asplenia?"
     }
   ],
   "source": "abdomen_ct.yaml@5b3a99141b3f698a",

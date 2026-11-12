@@ -60,7 +60,6 @@ categories:
       - id: spleen_absent
         question: "Is the spleen absent?"
         variants:
-          - "Is there asplenia?"
           - "Does the report describe an absent spleen?"
         definition: "The spleen is not in the splenic fossa, for any reason: a splenectomy, congenital asplenia, or an autosplenectomy. The operative change a splenectomy leaves behind has its own question from this round."
         include_terms:
@@ -167,7 +166,6 @@ categories:
       - id: gastroesophageal_varices
         question: "Are there any esophageal or gastric varices?"
         variants:
-          - "Are there any gastroesophageal varices?"
           - "Does the report describe esophageal or gastric varices?"
         definition: "Dilated collateral veins at the oesophagus or the gastric fundus. Portosystemic collaterals elsewhere answer the portal hypertension question."
       - id: polycystic_liver_disease
@@ -239,12 +237,12 @@ categories:
           - "Is there active hemorrhage or a contrast blush in the liver?"
           - "Does the report describe sites of active extravasation in the liver?"
         definition: "Contrast leaves a vessel into the hepatic parenchyma or around it: active extravasation, a contrast blush, or a pseudoaneurysm the report calls active. A hematoma with no contrast leak does not count."
-      - id: hepatic_changes_post_resection
-        question: "Are there any hepatic changes post-resection?"
+      - id: prior_liver_resection
+        question: "Is there a prior liver resection?"
         variants:
-          - "Are there any changes after a partial hepatectomy?"
-          - "Does the report describe hepatic changes post-resection?"
-        definition: "Operative change in the liver from a resection: a resection margin or surgical plane, clips or sutures at the cut surface, a post-surgical cavity or seroma, or hypertrophy of the remnant. A segmentectomy, a partial hepatectomy and a lobectomy all count. A small or atrophic liver with no sign of surgery does not count, and a transplanted liver has its own question."
+          - "Is there a prior hepatectomy?"
+          - "Does the report describe a prior liver resection?"
+        definition: "Part of the liver was removed at an operation, which the report records as the surgery itself or as the change it left: a resection margin or surgical plane, clips or sutures at the cut surface, a post-surgical cavity or seroma, or hypertrophy of the remnant. A segmentectomy, a partial hepatectomy and a lobectomy all count. A small or atrophic liver with no sign of surgery does not count, and a transplanted liver has its own question."
       - id: post_liver_transplant
         question: "Are there any hepatic changes post-transplantation?"
         variants:
