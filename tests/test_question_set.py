@@ -147,18 +147,33 @@ def test_one_question_is_asked_under_two_categories():
     assert categories == {"Device", "Great Vessel"}
 
 
-def test_the_fast_config_rewrites_no_inherited_wording():
-    """A canonical wording appears byte for byte as the abdomen set wrote it.
+def test_an_inherited_canonical_is_byte_for_byte_the_abdomen_set_s():
+    """A canonical the metadata did not replace is unchanged from the source.
 
     The FAST config is generated from `abdomen_ct.yaml` by dropping questions,
-    appending findings the source never asked about, and giving each finding
-    two authored variants. It never rewrites the canonical one: a wording that
-    drifted by a character would answer a different question while appearing to
-    answer this one, and the md5 of that text is what joins the answers already
-    extracted.
+    appending findings the source never asked about, and authoring variants.
+    A canonical it leaves alone appears byte for byte as the source wrote it,
+    because a wording that drifted by a character would answer a different
+    question while appearing to answer this one, and the md5 of that text joins
+    the answers already extracted.
+
+    18 canonicals were replaced on 2026-11-11, each for a measured defect: a
+    hedge inside the question, a scope the definition contradicted, or a term
+    the reports do not dictate. The lock marks those `replaced` and records the
+    source wording, and `retired` has it too, so the wording is findable and
+    the answers it produced are known to be answers to a different question.
     """
     abdomen = {question for _, question in questions_of(ABDOMEN)}
-    assert CANONICAL_WORDINGS <= abdomen
+    replaced = {
+        b["variants"][0]["question"]
+        for b in LOCK["findings"].values()
+        if b.get("replaced")
+    }
+    assert len(replaced) == 18
+    assert CANONICAL_WORDINGS - replaced <= abdomen
+    for identifier, body in LOCK["findings"].items():
+        if body.get("replaced"):
+            assert body["source_question"] in abdomen, identifier
 
 
 def test_the_fast_config_accounts_for_every_abdomen_question():
@@ -231,12 +246,14 @@ def test_the_questions_stage_writes_the_columns_the_sheets_read():
         "answer",
     ]
     config = STAGE_CONFIGS["questions"]
-    # The invariant rather than a copy of the list: what is written is the
-    # keys that identify a row, the raw answer, and whatever the reader
-    # produces from it. A literal copy drifts, and this one did when a column
-    # was added to the reader.
+    # The invariant rather than a copy of the list: what is written is the keys
+    # that identify a row, the raw answer, the covariates of the report it came
+    # from, and whatever the reader produces from that answer. A literal copy
+    # drifts, and this one did when a column was added to the reader.
+    covariates = ["template"]
     assert config["columns"][: len(keys)] == keys
-    assert config["columns"][len(keys) :] == list(ANSWER_COLUMNS)
+    assert config["columns"][len(keys) : len(keys) + len(covariates)] == covariates
+    assert config["columns"][len(keys) + len(covariates) :] == list(ANSWER_COLUMNS)
 
 
 def test_the_resume_key_is_one_wording_of_one_finding():
@@ -294,27 +311,51 @@ class TestTheFastConfigAndItsLock:
         expected = hashlib.sha256(str(pairs).encode()).hexdigest()[:16]
         assert LOCK["digest"]["question_set"] == expected
 
-    def test_every_finding_is_asked_under_three_wordings(self):
-        """One canonical and two authored, as three independent requests.
+    def test_every_finding_is_asked_under_two_or_three_wordings(self):
+        """The canonical, an exact synonym where one exists, and the reframe.
 
         A finding asked under one wording measures nothing about how far its
         answer depends on the question, which is what the variants are for.
+        Where the reports dictate no exact synonym the finding is asked under
+        the canonical and its reframe alone, so its figure is frame invariance
+        and not frame plus synonym invariance. Each variant names its role, and
+        the two measurements are reported apart.
         """
         for identifier, body in LOCK["findings"].items():
-            assert len(body["variants"]) == 3, identifier
+            roles = [variant["role"] for variant in body["variants"]]
+            assert roles in (
+                ["canonical", "reframe"],
+                ["canonical", "synonym", "reframe"],
+            ), identifier
+        with_synonym = sum(
+            1
+            for b in LOCK["findings"].values()
+            if any(v["role"] == "synonym" for v in b["variants"])
+        )
+        assert with_synonym == 35
 
     def test_no_wording_is_asked_under_two_findings(self):
         """The md5 is the resume key, so one of the two would never be asked."""
         texts = [v["question"] for b in LOCK["findings"].values() for v in b["variants"]]
         assert len(texts) == len(set(texts))
 
-    def test_the_two_re_asked_wordings_kept_their_place(self):
-        """The source asked these twice, and those md5s join stored answers."""
+    def test_the_two_re_asked_wordings_are_retired_rather_than_asked(self):
+        """The source asked these twice, and the second is no longer a variant.
+
+        Each had been kept as the finding's first variant, so the md5 the
+        source wrote still joined the answers it had produced. The 2026-11-11
+        wordings fill both variant slots by role, and the run restarts against
+        a fresh save directory, so the inherited wording is recorded as retired
+        rather than asked.
+        """
+        retired = {entry["question"] for entry in LOCK["retired"]}
         for identifier, inherited in (
             ("bowel_obstruction", "Is there bowel obstruction?"),
             ("hiatal_hernia", "Is there hiatal hernia?"),
         ):
-            assert LOCK["findings"][identifier]["variants"][1]["question"] == inherited
+            asked = {v["question"] for v in LOCK["findings"][identifier]["variants"]}
+            assert inherited not in asked
+            assert inherited in retired
 
     def test_a_category_body_has_only_the_documented_keys(self):
         """`cross_cutting` is the third, and the loader ignores what it adds."""
@@ -329,13 +370,15 @@ class TestTheFastConfigAndItsLock:
         which the RUQ/LUQ views and the suprapubic view show respectively, and
         the heart with the pleura in `Visible Thoracic`. `ifast` splits both
         when it generates this config, so the source still has 17 categories
-        and this file has 19.
+        and this file has 18. It had 19 until the `Heart` half of the thoracic
+        split left with the three cardiac findings, which the reports mention
+        in 2.8% of cases.
         """
         config = yaml.safe_load(FAST_ABDOMEN.read_text())
         names = set(config["categories"])
-        assert len(names) == 19
-        assert not names & {"Genitourinary", "Visible Thoracic"}
-        assert {"Kidney", "Urinary tract", "Heart", "Pleura and lung bases"} <= names
+        assert len(names) == 18
+        assert not names & {"Genitourinary", "Visible Thoracic", "Heart"}
+        assert {"Kidney", "Urinary tract", "Pleura and lung bases"} <= names
 
     def test_every_compartment_has_one_probe_and_the_cross_cutting_two_have_none(self):
         """Which is what separates a compartment from a cross-cutting category.
@@ -344,15 +387,15 @@ class TestTheFastConfigAndItsLock:
         the compartment's own coarse label. `Multi Organs` and `Device`
         describe findings across organs, so neither has one.
 
-        The lock marks a probe, and an id does not. `any_pericardium` is worded
-        like a probe and is a finding: it asks about the pericardial space,
-        which the subxiphoid view certainly shows, where the `Heart`
-        compartment's probe also covers valves, coronaries and chamber size.
+        There were 17 until the `Heart` compartment left on 2026-11-11, with
+        its probe, `cardiomegaly`, and `any_pericardium` -- a finding worded
+        like a probe, over the pericardial space the subxiphoid view certainly
+        shows.
         """
         probes = {i: b["category"] for i, b in LOCK["findings"].items() if b.get("probe")}
-        assert len(probes) == 17
-        assert len(set(probes.values())) == 17, "two probes in one compartment"
-        assert not LOCK["findings"]["any_pericardium"].get("probe")
+        assert len(probes) == 16
+        assert len(set(probes.values())) == 16, "two probes in one compartment"
+        assert "any_pericardium" not in LOCK["findings"]
 
         config = yaml.safe_load(FAST_ABDOMEN.read_text())
         flagged = {n for n, b in config["categories"].items() if b.get("cross_cutting")}
@@ -365,20 +408,25 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 8
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """113 findings over 339 wordings, so 339 requests per report.
+        """106 findings over 247 wordings, so 247 requests per report.
 
         83 visible findings with a positive in the cohort, 8 tier C questions
-        kept as covariates, 5 findings the source never asked about, and one
-        compartment probe per compartment, each asked three times. Of the five,
-        two are for free fluid, one is for the pericardium, and two are halves
-        of a compound question the source asked as one.
+        kept as covariates, 4 findings the source never asked about, and one
+        compartment probe per compartment. Of the four, two are for free fluid
+        and two are halves of a compound question the source asked as one. 35
+        findings are asked three times and 71 twice, because a finding with no
+        exact synonym has no synonym slot.
+
+        It was 113 findings over 339 wordings until 2026-11-11. Seven findings
+        left and the synonym slot became conditional, which takes a run over
+        the 12,681-report cohort from 4,298,859 requests to 3,132,207.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
-        assert len(findings) == 113
-        assert wordings == 339
-        assert len(added) == 22
+        assert len(findings) == 106
+        assert wordings == 247
+        assert len(added) == 20
 
     def test_a_rescoped_finding_records_the_change(self):
         """`ifast`'s QC sheet reads this to flag the rows needing a re-read.
@@ -400,5 +448,5 @@ class TestTheFastConfigAndItsLock:
         exactly like a reworded question whose stored rows were orphaned.
         """
         added = {i for i, b in LOCK["findings"].items() if b.get("added")}
-        assert {"hemoperitoneum", "free_intraperitoneal_fluid", "any_pericardium"} <= added
-        assert sum(1 for i in added if LOCK["findings"][i].get("probe")) == 17
+        assert {"hemoperitoneum", "free_intraperitoneal_fluid"} <= added
+        assert sum(1 for i in added if LOCK["findings"][i].get("probe")) == 16
