@@ -112,6 +112,7 @@ vote = { cmd = "python -m src.vote_cli", description = "Collapse a finding's wor
 regrade = { cmd = "python -m src.regrade_cli", description = "Rebuild the graded columns from the stored answers, after a lexicon edit" }
 audit = { cmd = "python -m src.audit_cli", description = "Report what a finished extraction holds, in counts alone" }
 defer = { cmd = "python -m src.defer_cli", description = "Rewrite a No to not_assessed where the report deferred the compartment" }
+pilot = { cmd = "python -m src.pilot_cli", description = "Write the reports and the config for a positive-enriched pilot run" }
 test = { cmd = "pytest", description = "The test suite" }
 # Scoped to `tests`: `ruff check src` reports 738 pre-existing findings.
 # Widen once `src` is clean.
