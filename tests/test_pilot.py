@@ -19,8 +19,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # Custom libraries
 from src.core.pilot import (
+    ACCESSION_COLUMN,
+    REPORT_COLUMN,
     changed_findings,
     enriched_reports,
+    reports_from_results,
     subset_config,
     yes_reports,
 )
@@ -190,3 +193,31 @@ def test_a_config_matching_nothing_raises():
     """A config that runs and asks nothing would spend a pilot on no answers."""
     with pytest.raises(ValueError, match="names a question"):
         subset_config(CONFIG, ["hepatic_abscess"])
+
+
+STORED = {
+    "SYN0001": {"raw_text": "FINDINGS:\nLiver: Normal.\n", "qa_results": {}},
+    "SYN0002": {"raw_text": "FINDINGS:\nSpleen: Normal.\n"},
+}
+
+
+def test_the_reports_come_off_the_stopped_run():
+    """A pilot derives from the archive, so it needs no cohort input file."""
+    frame = reports_from_results(STORED)
+    assert list(frame.columns) == [ACCESSION_COLUMN, REPORT_COLUMN]
+    assert list(frame[ACCESSION_COLUMN]) == ["SYN0001", "SYN0002"]
+    assert frame[REPORT_COLUMN].str.startswith("FINDINGS:").all()
+
+
+def test_a_report_with_no_text_is_left_out():
+    """A prompt built from an empty report asks the model about nothing."""
+    frame = reports_from_results({**STORED, "SYN0003": {"raw_text": "  "},
+                                  "SYN0004": {}})
+    assert list(frame[ACCESSION_COLUMN]) == ["SYN0001", "SYN0002"]
+
+
+@pytest.mark.parametrize("stored", [{}, None])
+def test_no_stored_reports_is_an_empty_frame(stored):
+    frame = reports_from_results(stored)
+    assert frame.empty
+    assert list(frame.columns) == [ACCESSION_COLUMN, REPORT_COLUMN]

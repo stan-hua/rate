@@ -4,9 +4,9 @@ pilot_cli.py
 Description: Writes the reports and the config for a positive-enriched pilot run.
 
 `src/core/pilot.py` has the argument. This reads the stopped run's
-`questions.csv` for the old Yes sets, the lock for the findings whose wordings
-changed, and the cohort's own reports file, and writes two artifacts into
-`--out-dir`:
+`questions.csv` for the old Yes sets, `final_results.json` for the reports
+themselves, and the lock for the findings whose wordings changed, and writes
+two artifacts into `--out-dir`:
 
 - `pilot_reports.csv`, the enriched subset, with the input file's own columns.
 - `pilot_config.yaml`, the modality config narrowed to the pilot's findings.
@@ -18,16 +18,21 @@ the run itself.
 `--out-dir` belongs beside the data and never in the repository. This prints
 counts and finding ids alone.
 
+Both come from the archived run, so a pilot needs no file the archive does not
+have and the cohort's own input is never read again.
+
 Examples
 --------
     python3 -m src.pilot_cli \\
         --questions archive/2026-11-11/questions.csv \\
-        --input-files data/ct_reports.csv \\
-        --out-dir pilots/2026-11-12
+        --out-dir pilots/2026-11-12 --dry-run
 
     python3 -m src.pilot_cli --questions archive/2026-11-11/questions.csv \\
-        --input-files data/ct_reports.csv --out-dir pilots/2026-11-12 \\
+        --out-dir pilots/2026-11-12 \\
         --findings ascites hepatic_mass_indeterminate --per-finding 100 --sample 0
+
+    python3 -m src.pilot_cli --questions archive/2026-11-11/questions.csv \\
+        --input-files data/ct_reports.csv --out-dir pilots/2026-11-12
 """
 
 # Standard libraries
@@ -41,7 +46,14 @@ import pandas as pd
 import yaml
 
 # Custom libraries
-from .core.pilot import changed_findings, enriched_reports, subset_config, yes_reports
+from .core.pilot import (
+    ACCESSION_COLUMN,
+    changed_findings,
+    enriched_reports,
+    reports_from_results,
+    subset_config,
+    yes_reports,
+)
 
 CHUNK_ROWS = 500_000
 
@@ -52,8 +64,12 @@ def parse_args(argv=None):
     )
     parser.add_argument('--questions', type=str, required=True,
                         help='questions.csv from the stopped run, for the old Yes sets')
-    parser.add_argument('--input-files', nargs='+', required=True,
-                        help='the cohort reports, as passed to `extract`')
+    parser.add_argument('--results', type=str, default=None,
+                        help='final_results.json from the stopped run, which has '
+                             'each report. Defaults to the one beside --questions')
+    parser.add_argument('--input-files', nargs='+', default=None,
+                        help='the cohort reports, as passed to `extract`. Only '
+                             'needed where the run is not the source of the reports')
     parser.add_argument('--out-dir', type=str, required=True,
                         help='where to write pilot_reports.csv and pilot_config.yaml')
     parser.add_argument('--modality-config', type=str,
@@ -67,7 +83,7 @@ def parse_args(argv=None):
     parser.add_argument('--sample', type=int, default=300,
                         help='further reports drawn at random, for the positives '
                              'enrichment cannot reach (default: 300)')
-    parser.add_argument('--accession-col', default='Accession',
+    parser.add_argument('--accession-col', default=ACCESSION_COLUMN,
                         help='the report id column in --input-files')
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--dry-run', action='store_true',
@@ -119,20 +135,35 @@ def main(argv=None):
     for key, value in config_counts.items():
         print(f"  {key:<11}  {value:,}")
 
-    frames = [pd.read_csv(path, dtype=str) for path in args.input_files]
-    reports = pd.concat(frames, ignore_index=True)
-    if args.accession_col not in reports.columns:
-        print(
-            f"--input-files has no {args.accession_col!r} column; pass "
-            f"--accession-col",
-            file=sys.stderr,
-        )
-        return 1
+    if args.input_files:
+        frames = [pd.read_csv(path, dtype=str) for path in args.input_files]
+        reports = pd.concat(frames, ignore_index=True)
+        accession_col = args.accession_col
+        if accession_col not in reports.columns:
+            print(
+                f"--input-files has no {accession_col!r} column; pass "
+                f"--accession-col",
+                file=sys.stderr,
+            )
+            return 1
+    else:
+        results = Path(args.results) if args.results else questions.parent / "final_results.json"
+        if not results.exists():
+            print(
+                f"{results} does not exist, and the reports come from the stopped "
+                f"run. Pass --results, or --input-files to read the cohort's own.",
+                file=sys.stderr,
+            )
+            return 1
+        with open(results) as handle:
+            reports = reports_from_results(json.load(handle))
+        accession_col = ACCESSION_COLUMN
+        print(f"  {'reports in the run':<27}  {len(reports):,}")
 
     positives = _read_positives(questions, finding_ids)
     chosen, counts = enriched_reports(
         positives,
-        reports[args.accession_col].astype(str),
+        reports[accession_col].astype(str),
         per_finding=args.per_finding,
         sample=args.sample,
         seed=args.seed,
@@ -154,7 +185,7 @@ def main(argv=None):
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    subset = reports[reports[args.accession_col].astype(str).isin(set(chosen))]
+    subset = reports[reports[accession_col].astype(str).isin(set(chosen))]
     reports_path = out_dir / "pilot_reports.csv"
     subset.to_csv(reports_path, index=False)
     config_out = out_dir / "pilot_config.yaml"

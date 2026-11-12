@@ -26,12 +26,24 @@ cleaner than the cohort.
 A pilot's Jaccard is therefore an estimate and the full run is what A11 says
 must produce the quoted figure.
 
+A pilot derives from the stopped run alone. `final_results.json` has every
+report's raw text, which is what the `process-questions` stage reads, so the
+archive supplies the reports and the cohort's own input file is never needed.
+
 Counts and finding ids alone. A report id is a real accession number, so none
 leaves this module.
 """
 
 # Standard libraries
 import random
+
+# Non-standard libraries
+import pandas as pd
+
+# The column names `src/cli.py` reads by default, so a reports file written
+# here needs no flag on the run.
+ACCESSION_COLUMN = "Accession"
+REPORT_COLUMN = "Report Text"
 
 
 def changed_findings(lock):
@@ -174,3 +186,30 @@ def subset_config(config, finding_ids):
         )
     counts = {"categories": len(categories), "findings": findings, "wordings": wordings}
     return {**config, "categories": categories}, counts
+
+
+def reports_from_results(stored):
+    """Return the stored reports as the frame a run reads.
+
+    `final_results.json` has each report's raw text under `raw_text`, and the
+    `process-questions` stage reads that same text, so a pilot's reports file
+    reproduces what the stopped run was asked rather than re-deriving it.
+
+    Parameters
+    ----------
+    stored : dict
+        `final_results.json`, keyed by report id.
+
+    Returns
+    -------
+    pandas.DataFrame
+        One row per report with text, under the column names `src/cli.py`
+        reads by default. A report whose text is empty is left out, because a
+        prompt built from it would ask the model about nothing.
+    """
+    rows = [
+        {ACCESSION_COLUMN: str(report_id), REPORT_COLUMN: record.get("raw_text") or ""}
+        for report_id, record in (stored or {}).items()
+    ]
+    frame = pd.DataFrame(rows, columns=[ACCESSION_COLUMN, REPORT_COLUMN])
+    return frame[frame[REPORT_COLUMN].str.strip().ne("")].reset_index(drop=True)
