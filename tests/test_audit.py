@@ -52,6 +52,7 @@ def row(report="R001", finding="ascites", index="0", verdict="yes", **overrides)
         "question_id": "abcd1234",
         "question": "Is there ascites?",
         "answer": "{}",
+        "template": "A",
         "verdict": verdict,
         "evidence": "Trace free fluid in the pelvis.",
         "certainty_phrase": "",
@@ -224,7 +225,10 @@ class TestPerFinding:
         ])
         report = audit(rows)
         assert report["vote"]["discordant"] == 1
-        assert report["vote"]["one_of_three"] == 1
+        # `one_of_n` rather than `one_of_three`: a finding with no exact
+        # synonym is asked under two wordings, so three is no longer the
+        # count.
+        assert report["vote"]["one_of_n"] == 1
         table = report["per_finding"].set_index("finding_id")
         assert int(table.loc["ascites", "discordant"]) == 1
         assert int(table.loc["liver_laceration", "discordant"]) == 0

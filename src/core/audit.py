@@ -33,6 +33,7 @@ from pathlib import Path
 import pandas as pd
 
 # Custom libraries
+from . import stability
 from .lexicon import NEGATED, STATED, UNSPECIFIED
 from .storage import STAGE_CONFIGS
 from .vote import aggregate_findings
@@ -339,7 +340,7 @@ def _sole_per_finding(frame, table):
     return table
 
 
-def audit(frame, wordings=None, rule="max"):
+def audit(frame, wordings=None, rule="max", lock_path=None, config_path=None):
     """Describe a stored `questions.csv` in counts.
 
     Parameters
@@ -351,6 +352,12 @@ def audit(frame, wordings=None, rule="max"):
         the file has when this is absent.
     rule : str, optional
         The aggregation the wording-stability section votes under.
+    lock_path : str or pathlib.Path, optional
+        The lock file, which names each wording's role. Without it the pairs
+        are named by index.
+    config_path : str or pathlib.Path, optional
+        The modality config, where a finding's wordings and its definition sit
+        together. Without it the shared-defect screen reports nothing.
 
     Returns
     -------
@@ -364,6 +371,12 @@ def audit(frame, wordings=None, rule="max"):
         When a key column is absent, which means the rows predate the
         finding-id schema.
     """
+    roles = stability.wording_roles(lock_path) if lock_path else {}
+    shared = (
+        stability.shared_defect(config_path)
+        if config_path
+        else pd.DataFrame(columns=["finding_id", "qualifier", "n_wordings"])
+    )
     missing = [column for column in KEY_COLUMNS if column not in frame.columns]
     if missing:
         raise ValueError(
@@ -437,8 +450,17 @@ def audit(frame, wordings=None, rule="max"):
             "rows": len(votes),
             **{f"verdict_{level}": count for level, count in _counts(votes["verdict"]).items()},
             "discordant": int(votes["discordant"].sum()),
-            "one_of_three": int((votes["discordant"] & (votes["n_yes"] == 1)).sum()),
+            "one_of_n": int((votes["discordant"] & (votes["n_yes"] == 1)).sum()),
         },
+        # Per wording, per pair and per template. `one_of_n` rather than
+        # `one_of_three`: a finding with no exact synonym is asked under two
+        # wordings, so three is no longer the count.
+        "stability": {
+            name: stability.summary(part)
+            for name, part in stability.by_template(frame, roles).items()
+        },
+        "stability_per_finding": stability.by_template(frame, roles),
+        "shared_defect": shared,
         "wording_value": _wording_value(frame),
         "by_category": _by_category(frame),
         "per_finding": table,

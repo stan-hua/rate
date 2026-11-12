@@ -30,6 +30,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from .core import stability
 from .core.audit import audit, expected_wordings, level_columns, stage_coverage, unmapped_phrases
 from .core.vote import load_vote_rule
 
@@ -49,6 +50,8 @@ def parse_args(argv=None):
                         help="Where to write the per-finding table (counts only)")
     parser.add_argument('--top', type=int, default=15,
                         help="How many findings to print per table")
+    parser.add_argument('--findings', type=str, default=None,
+                        help='comma-separated finding ids to report on, and nothing else')
     parser.add_argument('--unmapped', action='store_true',
                         help="Also print the hedges and magnitudes the lexicon has no level "
                              "for. These are verbatim quotes from the reports, so this is the "
@@ -84,7 +87,25 @@ def main(argv=None):
         print(f"{lock} does not exist; reporting what the file has", file=sys.stderr)
 
     frame = pd.read_csv(path, dtype=str).fillna("")
-    report = audit(frame, wordings=wordings, rule=load_vote_rule(lock))
+    if args.findings:
+        wanted = {name.strip() for name in args.findings.split(",") if name.strip()}
+        unknown = wanted - set(frame["finding_id"])
+        if unknown:
+            print(f"not in the file: {sorted(unknown)}", file=sys.stderr)
+        frame = frame[frame["finding_id"].isin(wanted)]
+        if not len(frame):
+            print("no rows for those findings", file=sys.stderr)
+            return 1
+    # The definitions are in the config beside the lock, which is where a
+    # finding's wordings and its definition sit together.
+    config = lock.with_name(f"{lock.name.removesuffix('.lock.json')}.yaml")
+    report = audit(
+        frame,
+        wordings=wordings,
+        rule=load_vote_rule(lock),
+        lock_path=lock,
+        config_path=config if config.exists() else None,
+    )
 
     print(f"{path}")
     _section("Stages in the save directory, rows / reports", stage_coverage(path.parent))
@@ -129,9 +150,60 @@ def main(argv=None):
     print(f"\nYes count per wording, where the wordings disagree: top {args.top}")
     print(wording.head(args.top).to_string(index=False) if len(wording) else "  none")
 
+    # --- how far an answer depends on the wording ---------------------------
+    for name, counts in report["stability"].items():
+        _section(f"Wording agreement, template {name}", counts)
+
+    stable = report["stability_per_finding"]["all"]
+    if len(stable):
+        pairs = [c for c in stable.columns if c.startswith("j_")]
+        columns = [
+            "finding_id", "n_wordings", "has_synonym",
+            *[c for c in stable.columns if c.startswith("yes_v")],
+            *pairs, "three_way", "ratio", "worst_pair", "measured",
+        ]
+        # A flagged finding prints whatever --top says. Ranking by absolute
+        # `discordant` and cutting at 15 is what hid every low-prevalence
+        # defect in the first place: a wording asking for vocabulary the
+        # reports do not use suppresses its own Yes count, which lowers both
+        # sort keys.
+        flagged = stable[stable["flagged"]]
+        print(f"\nFindings a screen flagged: {len(flagged)} of {len(stable)}, all shown")
+        print(flagged[columns].to_string(index=False) if len(flagged) else "  none")
+
+        below = stable[stable["fails_target"] & ~stable["flagged"]]
+        print(
+            f"\nMeasured and below the {stability.PAIRWISE_TARGET} pairwise bar, "
+            f"no screen flagged: {len(below)}, top {args.top}"
+        )
+        print(below.head(args.top)[columns].to_string(index=False) if len(below) else "  none")
+
+        unmeasured = stable[~stable["measured"]]
+        print(
+            f"\nUnmeasured, under {stability.MIN_POSITIVES} positives in every wording: "
+            f"{len(unmeasured)}, top {args.top}"
+        )
+        print(
+            unmeasured.head(args.top)[columns].to_string(index=False)
+            if len(unmeasured)
+            else "  none"
+        )
+
+    defect = report["shared_defect"]
+    print(
+        f"\nDefinition narrows what no wording states: {len(defect)} finding-qualifier "
+        f"pair(s), all shown"
+    )
+    print(defect.to_string(index=False) if len(defect) else "  none")
+
     if args.out:
         table.to_csv(args.out, index=False)
         print(f"\nPer-finding table written to {args.out}")
+        for name, part in report["stability_per_finding"].items():
+            out = Path(args.out)
+            beside = out.with_name(f"{out.stem}-stability-{name}{out.suffix}")
+            part.to_csv(beside, index=False)
+            print(f"Wording agreement, template {name}, written to {beside}")
 
     if args.unmapped:
         print("\n" + "=" * 72)
