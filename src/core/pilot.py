@@ -35,10 +35,14 @@ leaves this module.
 """
 
 # Standard libraries
+import hashlib
 import random
 
 # Non-standard libraries
 import pandas as pd
+
+# Custom libraries
+from .run_guard import wording_md5
 
 # The column names `src/cli.py` reads by default, so a reports file written
 # here needs no flag on the run.
@@ -62,6 +66,85 @@ def changed_findings(lock):
     """
     findings = (lock or {}).get("findings") or {}
     return sorted(fid for fid, entry in findings.items() if entry.get("change"))
+
+
+def reworded_findings(lock, stored_wordings):
+    """Return the findings the stopped run would answer differently now.
+
+    `changed_findings` reads the lock's `change` marks, which the generator
+    writes against the *source* config. A wording can therefore differ from
+    what the stopped run asked and carry no mark: all 16 compartment probes had
+    their existential and report-framed wordings swapped by A24, and they are
+    the highest-volume, worst-agreeing findings in the question set. Comparing
+    the lock against the stored text catches that case, and the union of the
+    two criteria is what a pilot measures.
+
+    Parameters
+    ----------
+    lock : dict
+        The parsed lock file.
+    stored_wordings : dict
+        `(finding_id, variant_index)` to the `question` text the stopped run
+        asked, with the index as text. `stored_questions` builds it.
+
+    Returns
+    -------
+    tuple of (list, dict)
+        The finding ids to pilot, sorted, and why each one is there: `mark`
+        where the lock marks a change, `wording` where a slot's text differs
+        from the stored one, `both`, and `new` for a finding the stopped run
+        never asked.
+    """
+    findings = (lock or {}).get("findings") or {}
+    reasons = {}
+    for finding_id, entry in findings.items():
+        marked = bool(entry.get("change"))
+        slots = {
+            str(variant["index"]): variant.get("question", "")
+            for variant in entry.get("variants") or []
+        }
+        asked = {
+            index: stored_wordings.get((finding_id, index))
+            for index in slots
+        }
+        if all(text is None for text in asked.values()):
+            reasons[finding_id] = "new"
+            continue
+        moved = any(
+            asked[index] is not None and asked[index] != text
+            for index, text in slots.items()
+        ) or any(asked[index] is None for index in slots)
+        if marked and moved:
+            reasons[finding_id] = "both"
+        elif marked:
+            reasons[finding_id] = "mark"
+        elif moved:
+            reasons[finding_id] = "wording"
+    return sorted(reasons), reasons
+
+
+def stored_questions(frame, into=None):
+    """Return the question text a stored run asked, per finding and slot.
+
+    Parameters
+    ----------
+    frame : pandas.DataFrame
+        Rows from a stored `questions.csv`, with `finding_id`,
+        `variant_index` and `question`.
+    into : dict, optional
+        A mapping to add to, so a chunked read accumulates into one.
+
+    Returns
+    -------
+    dict
+        `(finding_id, variant_index)` to the question text, the index as text.
+        One row per key is enough, because every row of a wording repeats it.
+    """
+    wordings = {} if into is None else into
+    columns = frame[["finding_id", "variant_index", "question"]].drop_duplicates()
+    for finding_id, index, question in columns.itertuples(index=False):
+        wordings[(str(finding_id), str(index))] = str(question)
+    return wordings
 
 
 def yes_reports(frame, finding_ids):
@@ -186,6 +269,220 @@ def subset_config(config, finding_ids):
         )
     counts = {"categories": len(categories), "findings": findings, "wordings": wordings}
     return {**config, "categories": categories}, counts
+
+
+SOURCED_PREFIX = "According to the report, "
+
+
+def sourced_wording(canonical):
+    """Return the canonical with the report named as the question's source.
+
+    A24 gives the reframe slot one wording, "Does the report describe X?",
+    which changes two things about the canonical at once: the verb and the
+    subject. The 2026-11-12 pilot measured that frame moving 9% of a typical
+    finding's Yes set, and the rows it moves are hedged twice as often as the
+    rows both wordings agree on, so *describe* may be reading as a demand that
+    the report state the finding in the question's own terms.
+
+    This wording changes the subject alone. "According to the report, is there
+    X?" names the report and keeps the existential predicate, so a pilot that
+    asks both frames of the same reports separates the verb from the
+    attribution. The transform is mechanical, the way A24 requires of a frame
+    change, and every canonical in the FAST set is existential.
+
+    Parameters
+    ----------
+    canonical : str
+        The finding's canonical wording.
+
+    Returns
+    -------
+    str
+
+    Raises
+    ------
+    ValueError
+        Where the canonical does not open on `Is` or `Are`. The prefix would
+        then read as a second clause rather than an attribution, and a wording
+        no reader checked would reach a GPU week.
+    """
+    text = (canonical or "").strip()
+    if not text or text.split()[0].lower() not in ("is", "are"):
+        raise ValueError(
+            f"the canonical has to be existential for this frame and this one "
+            f"is {text[:60]!r}"
+        )
+    return f"{SOURCED_PREFIX}{text[0].lower()}{text[1:]}"
+
+
+def add_sourced_frame(config, lock):
+    """Give every finding in a pilot's config and lock a sourced wording.
+
+    The slot is a pilot arm rather than a question-set change, so it is added
+    here and not in `ifast`'s generator: a fourth wording over the whole
+    cohort would cost 12,681 requests per finding, and what the arm measures
+    is whether the reframe's verb is worth replacing.
+
+    Parameters
+    ----------
+    config : dict
+        The narrowed modality config, as `subset_config` returns.
+    lock : dict
+        The narrowed lock, as `subset_lock` returns.
+
+    Returns
+    -------
+    tuple of (dict, dict, dict)
+        The config and lock with the slot added, and counts: `findings` and
+        `wordings`, the wordings being the arm's own.
+
+    Raises
+    ------
+    ValueError
+        Where a finding's canonical is not existential, or where the config
+        and the lock disagree about a finding's canonical. The second would
+        put one wording in the config and another in the manifest, and the
+        resume guard would refuse the run after the first batch.
+    """
+    locked = lock.get("findings") or {}
+    categories = {}
+    added = 0
+    for name, category in (config.get("categories") or {}).items():
+        questions = []
+        for entry in category.get("questions") or []:
+            identifier = entry.get("id")
+            canonical = entry.get("question")
+            body = locked.get(identifier)
+            if body and body["variants"][0]["question"] != canonical:
+                raise ValueError(
+                    f"{identifier} has one canonical in the config and another "
+                    f"in the lock"
+                )
+            wording = sourced_wording(canonical)
+            questions.append(
+                {**entry, "variants": [*(entry.get("variants") or []), wording]}
+            )
+            added += 1
+        categories[name] = {**category, "questions": questions}
+
+    findings = {}
+    for identifier, body in locked.items():
+        variants = list(body["variants"])
+        wording = sourced_wording(variants[0]["question"])
+        variants.append(
+            {
+                "index": len(variants),
+                "question": wording,
+                "md5": wording_md5(wording),
+                "role": "sourced",
+            }
+        )
+        findings[identifier] = {**body, "variants": variants}
+
+    source = (lock.get("digest") or {}).get("source_question_set")
+    narrowed = {
+        **lock,
+        "findings": findings,
+        "digest": {
+            **(lock.get("digest") or {}),
+            "question_set": question_set_digest(findings),
+            "source_question_set": source,
+        },
+        "subset": {
+            **(lock.get("subset") or {}),
+            "findings": len(findings),
+            "wordings": sum(len(body["variants"]) for body in findings.values()),
+            "sourced_frame": True,
+        },
+    }
+    counts = {"findings": added, "wordings": added}
+    return {**config, "categories": categories}, narrowed, counts
+
+
+def question_set_digest(findings):
+    """Digest the wordings a findings map holds, by the lock's own rule.
+
+    `ifast`'s `build_rate_config` writes the lock and computes this over the
+    sorted `(finding_id, variant index, question)` triples, so this
+    reimplements that one line rather than inventing a second rule. A pilot
+    over every finding therefore reproduces the parent lock's digest, which a
+    test pins.
+
+    Parameters
+    ----------
+    findings : dict
+        A lock's `findings` map, or a subset of one.
+
+    Returns
+    -------
+    str
+        The first 16 hex characters of the sha256.
+    """
+    triples = sorted(
+        (identifier, variant["index"], variant["question"])
+        for identifier, body in findings.items()
+        for variant in body["variants"]
+    )
+    return hashlib.sha256(str(triples).encode()).hexdigest()[:16]
+
+
+def subset_lock(lock, finding_ids):
+    """Return the lock narrowed to these findings, with a digest of its own.
+
+    A pilot ran under no lock at all until this, so its `run_manifest.json`
+    recorded `question_set_digest: null` and the pilot named the question set
+    it came from nowhere. The subset lock closes that, and it is a lock in
+    every other respect: `audit` reads its wordings, `stability` reads each
+    wording's role, and `load_vote_rule` reads the rule.
+
+    Parameters
+    ----------
+    lock : dict
+        The parsed source lock.
+    finding_ids : iterable of str
+        The findings to keep.
+
+    Returns
+    -------
+    tuple of (dict, dict)
+        The narrowed lock, and counts: `findings` and `wordings`.
+
+    Raises
+    ------
+    ValueError
+        Where the lock has none of these findings, which would otherwise
+        write a lock that expects nothing.
+    """
+    wanted = set(finding_ids)
+    findings = {
+        identifier: body
+        for identifier, body in (lock.get("findings") or {}).items()
+        if identifier in wanted
+    }
+    if not findings:
+        raise ValueError(f"the lock has none of the {len(wanted)} finding(s) named")
+    source = (lock.get("digest") or {}).get("question_set")
+    narrowed = {
+        **lock,
+        "findings": findings,
+        "digest": {
+            **(lock.get("digest") or {}),
+            "question_set": question_set_digest(findings),
+            # The question set these wordings were taken from, so a pilot's
+            # answers join back to the run that will replace them.
+            "source_question_set": source,
+        },
+        "subset": {
+            "of": source,
+            "findings": len(findings),
+            "wordings": sum(len(body["variants"]) for body in findings.values()),
+        },
+    }
+    counts = {
+        "findings": len(findings),
+        "wordings": narrowed["subset"]["wordings"],
+    }
+    return narrowed, counts
 
 
 def reports_from_results(stored):

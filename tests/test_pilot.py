@@ -8,7 +8,9 @@ appears, and `SYN####` is the shape of an id in these tests.
 """
 
 # Standard libraries
+import json
 import sys
+import tempfile
 from pathlib import Path
 
 # Non-standard libraries
@@ -21,10 +23,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.core.pilot import (
     ACCESSION_COLUMN,
     REPORT_COLUMN,
+    add_sourced_frame,
     changed_findings,
     enriched_reports,
+    question_set_digest,
     reports_from_results,
+    reworded_findings,
+    sourced_wording,
+    stored_questions,
     subset_config,
+    subset_lock,
     yes_reports,
 )
 
@@ -221,3 +229,273 @@ def test_no_stored_reports_is_an_empty_frame(stored):
     frame = reports_from_results(stored)
     assert frame.empty
     assert list(frame.columns) == [ACCESSION_COLUMN, REPORT_COLUMN]
+
+
+# --- the pilot's own lock ---------------------------------------------------
+#
+# A pilot ran under no lock, so `run_manifest.json` recorded
+# `question_set_digest: null` and the pilot named the question set it came from
+# nowhere.
+
+FULL_LOCK = {
+    "digest": {"file": "ffffffffffffffff", "question_set": "0e057a0496001b24"},
+    "modality": "fast_abdomen_ct",
+    "vote_rule": "max",
+    "retired": [{"id": "cardiomegaly"}],
+    "findings": {
+        "ascites": {
+            "category": "Peritoneum",
+            "change": "scope_change",
+            "variants": [
+                {"index": 0, "question": "Is there any ascites?", "role": "canonical"},
+                {"index": 1, "question": "Does the report describe ascites?",
+                 "role": "reframe"},
+            ],
+        },
+        "splenomegaly": {
+            "category": "Spleen",
+            "variants": [
+                {"index": 0, "question": "Is the spleen enlarged?", "role": "canonical"},
+            ],
+        },
+    },
+}
+
+
+def test_the_subset_lock_keeps_only_the_findings_named():
+    narrowed, counts = subset_lock(FULL_LOCK, ["ascites"])
+    assert set(narrowed["findings"]) == {"ascites"}
+    assert counts == {"findings": 1, "wordings": 2}
+
+
+def test_the_subset_lock_records_the_question_set_it_came_from():
+    narrowed, _ = subset_lock(FULL_LOCK, ["ascites"])
+    assert narrowed["digest"]["source_question_set"] == "0e057a0496001b24"
+    assert narrowed["subset"] == {
+        "of": "0e057a0496001b24", "findings": 1, "wordings": 2,
+    }
+
+
+def test_the_subset_digest_moves_with_the_subset():
+    """Two different subsets of one lock name two different question sets."""
+    one, _ = subset_lock(FULL_LOCK, ["ascites"])
+    other, _ = subset_lock(FULL_LOCK, ["splenomegaly"])
+    assert one["digest"]["question_set"] != other["digest"]["question_set"]
+    assert one["digest"]["question_set"] != FULL_LOCK["digest"]["question_set"]
+
+
+def test_a_subset_over_everything_reproduces_the_parent_digest():
+    """The rule is `build_rate_config`'s, so the whole set digests to one value.
+
+    This is what makes a pilot's digest comparable with a full run's rather
+    than a second convention.
+    """
+    narrowed, _ = subset_lock(FULL_LOCK, ["ascites", "splenomegaly"])
+    assert narrowed["digest"]["question_set"] == question_set_digest(
+        FULL_LOCK["findings"]
+    )
+
+
+def test_everything_else_in_the_lock_survives():
+    narrowed, _ = subset_lock(FULL_LOCK, ["ascites"])
+    assert narrowed["vote_rule"] == "max"
+    assert narrowed["modality"] == "fast_abdomen_ct"
+    assert narrowed["retired"] == [{"id": "cardiomegaly"}]
+    assert narrowed["digest"]["file"] == "ffffffffffffffff"
+
+
+def test_a_lock_matching_nothing_raises():
+    with pytest.raises(ValueError, match="none of the 1 finding"):
+        subset_lock(FULL_LOCK, ["hepatic_abscess"])
+
+
+def test_the_subset_lock_is_what_the_audit_reads():
+    """`expected_wordings` over the pilot lock gives the pilot's own wordings."""
+    from src.core.audit import expected_wordings
+
+    narrowed, _ = subset_lock(FULL_LOCK, ["ascites"])
+    path = Path(tempfile.mkdtemp()) / "pilot_config.lock.json"
+    path.write_text(json.dumps(narrowed))
+    assert expected_wordings(path) == {("ascites", "0"), ("ascites", "1")}
+
+
+# --- which findings a pilot measures ---------------------------------------
+#
+# The lock's `change` marks are written against the source config, so a wording
+# can differ from what the stopped run asked and carry no mark. A24 swapped the
+# existential and report-framed wordings of all 16 compartment probes, which are
+# the worst-agreeing findings in the question set, and the first pilot left them
+# out for that reason.
+
+REWORD_LOCK = {
+    "findings": {
+        "ascites": {
+            "change": "scope_change",
+            "variants": [{"index": 0, "question": "Is there any ascites?"}],
+        },
+        "any_liver": {
+            "variants": [
+                {"index": 0, "question": "Is the liver abnormal?"},
+                {"index": 1, "question": "Does the report describe a liver abnormality?"},
+            ],
+        },
+        "splenomegaly": {
+            "variants": [{"index": 0, "question": "Is the spleen enlarged?"}],
+        },
+    }
+}
+
+# What the stopped run asked: `any_liver`'s two slots the other way round.
+AS_ASKED = {
+    ("ascites", "0"): "Is there any ascites?",
+    ("any_liver", "0"): "Does the report describe a liver abnormality?",
+    ("any_liver", "1"): "Is the liver abnormal?",
+    ("splenomegaly", "0"): "Is the spleen enlarged?",
+}
+
+
+def test_a_swapped_slot_is_a_rewording_the_marks_miss():
+    chosen, reasons = reworded_findings(REWORD_LOCK, AS_ASKED)
+    assert chosen == ["any_liver", "ascites"]
+    assert reasons["any_liver"] == "wording"
+    assert changed_findings(REWORD_LOCK) == ["ascites"]
+
+
+def test_an_unchanged_finding_is_left_out():
+    _, reasons = reworded_findings(REWORD_LOCK, AS_ASKED)
+    assert "splenomegaly" not in reasons
+
+
+def test_a_marked_finding_whose_wording_also_moved_reports_both():
+    stored = {**AS_ASKED, ("ascites", "0"): "Is there chronic ascites?"}
+    _, reasons = reworded_findings(REWORD_LOCK, stored)
+    assert reasons["ascites"] == "both"
+
+
+def test_a_finding_the_stopped_run_never_asked_is_new():
+    stored = {key: text for key, text in AS_ASKED.items() if key[0] != "splenomegaly"}
+    lock = {"findings": {"splenomegaly": REWORD_LOCK["findings"]["splenomegaly"]}}
+    chosen, reasons = reworded_findings(lock, stored)
+    assert chosen == ["splenomegaly"]
+    assert reasons["splenomegaly"] == "new"
+
+
+def test_an_added_slot_counts_as_a_rewording():
+    """A finding that gained a synonym is measured under a pair it never had."""
+    lock = {
+        "findings": {
+            "splenomegaly": {
+                "variants": [
+                    {"index": 0, "question": "Is the spleen enlarged?"},
+                    {"index": 1, "question": "Is there splenomegaly?"},
+                ],
+            }
+        }
+    }
+    chosen, reasons = reworded_findings(lock, AS_ASKED)
+    assert chosen == ["splenomegaly"]
+    assert reasons["splenomegaly"] == "wording"
+
+
+def test_the_stored_wordings_come_off_the_run():
+    frame = pd.DataFrame(
+        [
+            {"report_id": "SYN0001", "finding_id": "ascites", "variant_index": "0",
+             "question": "Is there any ascites?"},
+            {"report_id": "SYN0002", "finding_id": "ascites", "variant_index": "0",
+             "question": "Is there any ascites?"},
+            {"report_id": "SYN0001", "finding_id": "ascites", "variant_index": "1",
+             "question": "Does the report describe ascites?"},
+        ]
+    )
+    assert stored_questions(frame) == {
+        ("ascites", "0"): "Is there any ascites?",
+        ("ascites", "1"): "Does the report describe ascites?",
+    }
+
+
+def test_a_chunked_read_accumulates():
+    first = pd.DataFrame([
+        {"finding_id": "ascites", "variant_index": "0", "question": "A?"},
+    ])
+    second = pd.DataFrame([
+        {"finding_id": "cirrhosis", "variant_index": "0", "question": "B?"},
+    ])
+    into = stored_questions(first)
+    stored_questions(second, into=into)
+    assert into == {("ascites", "0"): "A?", ("cirrhosis", "0"): "B?"}
+
+
+# --- the sourced frame, the arm that separates the reframe's verb -----------
+
+
+@pytest.mark.parametrize(
+    "canonical,expected",
+    [
+        ("Is there any ascites?", "According to the report, is there any ascites?"),
+        ("Are there any liver cysts?", "According to the report, are there any liver cysts?"),
+        # one source canonical opens in lower case and is kept byte for byte,
+        # because its md5 joins the answers already extracted
+        ("is there any extrahepatic biliary ductal dilation?",
+         "According to the report, is there any extrahepatic biliary ductal dilation?"),
+    ],
+)
+def test_the_sourced_wording_names_the_report_and_keeps_the_predicate(canonical, expected):
+    assert sourced_wording(canonical) == expected
+
+
+@pytest.mark.parametrize(
+    "canonical",
+    ["Does the report describe ascites?", "", None, "Ascites is present."],
+)
+def test_a_canonical_that_is_not_existential_raises(canonical):
+    """The prefix would read as a second clause, and a wording no reader
+    checked would reach a GPU week."""
+    with pytest.raises(ValueError, match="existential"):
+        sourced_wording(canonical)
+
+
+def test_the_arm_adds_one_wording_to_every_finding():
+    config, lock, counts = add_sourced_frame(
+        subset_config(CONFIG, ["ascites"])[0],
+        subset_lock(FULL_LOCK, ["ascites"])[0],
+    )
+    asked = config["categories"]["Liver"]["questions"][0]["variants"]
+    assert asked == [
+        "Does the report describe ascites?",
+        "According to the report, is there any ascites?",
+    ]
+    roles = [v["role"] for v in lock["findings"]["ascites"]["variants"]]
+    assert roles == ["canonical", "reframe", "sourced"]
+    assert [v["index"] for v in lock["findings"]["ascites"]["variants"]] == [0, 1, 2]
+    assert counts == {"findings": 1, "wordings": 1}
+
+
+def test_the_arm_records_its_own_question_set_digest():
+    """The manifest names the question set the run asked, and the arm's is not
+    the pilot's: the guard compares the stored wordings against it."""
+    narrowed, _ = subset_lock(FULL_LOCK, ["ascites"])
+    config, lock, _ = add_sourced_frame(subset_config(CONFIG, ["ascites"])[0], narrowed)
+    assert lock["digest"]["question_set"] != narrowed["digest"]["question_set"]
+    assert lock["digest"]["question_set"] == question_set_digest(lock["findings"])
+    assert lock["subset"]["sourced_frame"] is True
+    assert lock["subset"]["wordings"] == 3
+
+
+def test_the_arm_refuses_a_config_and_lock_that_disagree():
+    """One wording would reach the config and another the manifest, and the
+    resume guard would refuse the run after the first batch."""
+    drifted = {
+        **CONFIG,
+        "categories": {
+            "Liver": {
+                "description": "the liver",
+                "questions": [{"id": "ascites", "question": "Is there ascites?"}],
+            }
+        },
+    }
+    with pytest.raises(ValueError, match="one canonical in the config"):
+        add_sourced_frame(
+            subset_config(drifted, ["ascites"])[0],
+            subset_lock(FULL_LOCK, ["ascites"])[0],
+        )
