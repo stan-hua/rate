@@ -35,6 +35,8 @@ STAGE_CONFIGS = {
         'columns': [
             'report_id', 'category', 'finding_id', 'variant_index',
             'question_id', 'question', 'answer',
+            # The dictation template of the report, not of the row.
+            'template',
             'verdict', 'evidence',
             'certainty_phrase', 'certainty', 'severity_phrase', 'severity',
             'attribution', 'named_outright', 'truncated', 'unquoted',
@@ -308,6 +310,12 @@ class StorageManager:
                     parsed = parse_answer(answer) or {}
                     records.append({
                         "report_id": report_id,
+                        # The dictation template, read off the report's own
+                        # headings where it was last loaded. Two templates
+                        # divide this cohort and differ in which compartments
+                        # appear at all, so every stability figure is reported
+                        # per template.
+                        "template": record.get("template", ""),
                         "category": category,
                         "finding_id": record["finding_id"],
                         "variant_index": record["variant_index"],

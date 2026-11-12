@@ -18,6 +18,8 @@ from .batch_processor import (
     BatchProcessor,
 )
 from .findings_schema import question_guidance, response_format
+from .run_guard import assert_resume_compatible
+from .template import detect_template
 
 class Engine:
     def __init__(self, config: Union[str, Dict]):
@@ -35,6 +37,9 @@ class Engine:
         # Setup logging and storage with proper directories
         self.logger = setup_logging('Engine', save_dir=save_dir, filename=input_filename)
         self.storage = StorageManager(save_dir=save_dir)
+        # Report id to dictation template, filled where a report's raw text is
+        # read and written onto every answer row.
+        self._templates: Dict[str, str] = {}
         
         # Initialize OpenAI client for sglang
         self.client = OpenAI(
@@ -267,6 +272,28 @@ class Engine:
             
         return modality_config['categories']
 
+    def _lock_path(self) -> Path:
+        """Return the lock file beside the modality config."""
+        path = Path(self.modality_config_path)
+        return path.with_name(f"{path.stem}.lock.json")
+
+    def _question_set_digest(self) -> Optional[str]:
+        """Return the lock's `question_set` digest, or None when there is no lock.
+
+        Recorded in the run manifest for provenance. A missing or unreadable
+        lock is not an error here: the wording check reads the stored answers
+        themselves and does not need it.
+        """
+        path = self._lock_path()
+        if not path.exists():
+            return None
+        try:
+            with open(path) as handle:
+                return (json.load(handle).get("digest") or {}).get("question_set")
+        except (OSError, json.JSONDecodeError):
+            self.logger.warning("Could not read %s for its question_set digest", path)
+            return None
+
     def _load_existing_results(self, stage_name: str) -> Dict:
         """Load existing results for a stage."""
         file_mapping = {
@@ -323,6 +350,10 @@ class Engine:
         id_mapping = {} 
         
         for report_id, raw_text in reports_data.items():
+            # Read where the raw text is in hand. A15 puts this at the stage
+            # that first reads a report; `process-questions` reads the raw text
+            # too, and keying it here needs no second pass over the reports.
+            self._templates[report_id] = detect_template(raw_text)
             for category_name, category in self.findings_categories.items():
                 for question in category['questions']:
                     finding_id = question.get('id') or self.storage._generate_question_id(
@@ -371,6 +402,7 @@ class Engine:
                 "variant_index": variant_index,
                 "question": question_text,
                 "answer": answer,
+                "template": self._templates.get(report_id, ""),
             })
         return chunk_nested_results
 
@@ -389,7 +421,19 @@ class Engine:
             requests, id_mapping = builder_result
         else:
             requests, id_mapping = builder_result, None
-        
+
+        # Refuse a resume the current configuration would answer differently.
+        # This runs before the filter below, because that filter is what turns a
+        # reworded question into a run reporting itself finished.
+        assert_resume_compatible(
+            save_dir=self.storage.save_dir,
+            config=self.config,
+            findings_categories=self.findings_categories,
+            stage_name=stage_name,
+            logger=self.logger,
+            question_set_digest=self._question_set_digest(),
+        )
+
         # Filter out already processed requests
         if stage_name in ['no_comparisons', 'findings']:
             # Simple stages: filter by report IDs
