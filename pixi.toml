@@ -111,6 +111,7 @@ evaluate = { cmd = "python -m src.eval_cli", description = "Score the annotated 
 vote = { cmd = "python -m src.vote_cli", description = "Collapse a finding's wordings into one answer per report" }
 regrade = { cmd = "python -m src.regrade_cli", description = "Rebuild the graded columns from the stored answers, after a lexicon edit" }
 audit = { cmd = "python -m src.audit_cli", description = "Report what a finished extraction holds, in counts alone" }
+defer = { cmd = "python -m src.defer_cli", description = "Rewrite a No to not_assessed where the report deferred the compartment" }
 test = { cmd = "pytest", description = "The test suite" }
 # Scoped to `tests`: `ruff check src` reports 738 pre-existing findings.
 # Widen once `src` is clean.
