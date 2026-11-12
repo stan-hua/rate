@@ -31,7 +31,14 @@ from pathlib import Path
 import pandas as pd
 
 from .core import stability
-from .core.audit import audit, expected_wordings, level_columns, stage_coverage, unmapped_phrases
+from .core.audit import (
+    audit,
+    expected_wordings,
+    level_columns,
+    manifest_wordings,
+    stage_coverage,
+    unmapped_phrases,
+)
 from .core.vote import load_vote_rule
 
 DEFAULT_LOCK = Path(__file__).resolve().parents[1] / "config" / "modalities" / "fast_abdomen_ct.lock.json"
@@ -82,7 +89,10 @@ def main(argv=None):
         return 1
 
     lock = Path(args.lock)
-    wordings = expected_wordings(lock) if lock.exists() else None
+    in_lock = expected_wordings(lock) if lock.exists() else None
+    # What this directory was filled under governs, because a pilot asks a
+    # subset of the lock and is complete at that subset.
+    wordings = manifest_wordings(path.parent) or in_lock
     if wordings is None:
         print(f"{lock} does not exist; reporting what the file has", file=sys.stderr)
 
@@ -108,6 +118,15 @@ def main(argv=None):
     )
 
     print(f"{path}")
+    if wordings is not None and wordings is not in_lock:
+        line = f"{len(wordings)} wording(s), from the run manifest"
+        if in_lock is not None and wordings != in_lock:
+            line += (
+                f", against {len(in_lock)} in {lock.name}. This is a subset of "
+                f"the question set, so completeness is judged against the "
+                f"manifest"
+            )
+        print(f"Expecting {line}.")
     _section("Stages in the save directory, rows / reports", stage_coverage(path.parent))
     _section("Coverage", report["coverage"])
     _section("Verdicts", report["verdicts"])
@@ -201,7 +220,7 @@ def main(argv=None):
         print(f"\nPer-finding table written to {args.out}")
         for name, part in report["stability_per_finding"].items():
             out = Path(args.out)
-            beside = out.with_name(f"{out.stem}-stability-{name}{out.suffix}")
+            beside = out.with_name(f"{stability.table_stem(out.stem)}-{name}{out.suffix}")
             part.to_csv(beside, index=False)
             print(f"Wording agreement, template {name}, written to {beside}")
 

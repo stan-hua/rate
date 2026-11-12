@@ -21,6 +21,7 @@ from src.core.audit import (
     audit,
     expected_wordings,
     level_columns,
+    manifest_wordings,
     stage_coverage,
     unmapped_phrases,
 )
@@ -349,3 +350,83 @@ class TestWhatAWordingIsWorth:
         report = audit(self.votes((), ()))
         assert report["wording_value"] == {"votes": 0, "v0": (0, 0), "v1": (0, 0), "v2": (0, 0)}
         assert report["per_finding"]["sole_v0"].sum() == 0
+
+
+# --- the yardstick a pilot is judged against -------------------------------
+#
+# The lock says what the question set asks and the manifest says what this save
+# directory was filled under. A pilot is where they differ, and judging the
+# 2026-11-12 pilot against the lock reported the 247 wordings the set held then
+# against the 92 it asked, so the run read as 63% incomplete.
+
+def manifest(path, pairs):
+    """Write a synthetic `run_manifest.json` naming these wordings."""
+    body = {
+        "decode": {"name": "synthetic", "temperature": 0},
+        "wordings": {f"{finding}_v{index}": f"{index:08x}" for finding, index in pairs},
+        "n_wordings": len(pairs),
+        "question_set_digest": "0123456789abcdef",
+    }
+    (path / "run_manifest.json").write_text(json.dumps(body))
+    return body
+
+
+def test_the_manifest_names_the_wordings_the_run_asked(tmp_path):
+    manifest(tmp_path, [("ascites", 0), ("ascites", 1), ("cirrhosis", 0)])
+    assert manifest_wordings(tmp_path) == {
+        ("ascites", "0"), ("ascites", "1"), ("cirrhosis", "0"),
+    }
+
+
+def test_a_finding_id_containing_the_slot_marker_still_parses(tmp_path):
+    """`gastroesophageal_varices_v0` splits at the last `_v` and not the first."""
+    manifest(tmp_path, [("gastroesophageal_varices", 0)])
+    assert manifest_wordings(tmp_path) == {("gastroesophageal_varices", "0")}
+
+
+def test_a_two_digit_slot_parses(tmp_path):
+    manifest(tmp_path, [("ascites", 11)])
+    assert manifest_wordings(tmp_path) == {("ascites", "11")}
+
+
+def test_no_manifest_is_none(tmp_path):
+    """A save directory from before the manifest existed, where the lock is all there is."""
+    assert manifest_wordings(tmp_path) is None
+
+
+def test_an_unreadable_manifest_is_none(tmp_path):
+    (tmp_path / "run_manifest.json").write_text("{not json")
+    assert manifest_wordings(tmp_path) is None
+
+
+def test_a_manifest_with_no_wordings_is_none(tmp_path):
+    (tmp_path / "run_manifest.json").write_text(json.dumps({"decode": {}}))
+    assert manifest_wordings(tmp_path) is None
+
+
+def test_a_malformed_key_is_left_out(tmp_path):
+    (tmp_path / "run_manifest.json").write_text(
+        json.dumps({"wordings": {"ascites_v0": "a", "no_slot_here": "b"}})
+    )
+    assert manifest_wordings(tmp_path) == {("ascites", "0")}
+
+
+def test_a_pilot_is_complete_against_its_own_wordings():
+    """The coverage figures a pilot should report: complete, nothing never asked."""
+    frame = pd.DataFrame(
+        [
+            {"report_id": report, "finding_id": "ascites", "variant_index": index,
+             "verdict": "no", "evidence": "", "certainty_phrase": "",
+             "certainty": "", "severity_phrase": "", "severity": "",
+             "attribution": "unknown", "named_outright": "False",
+             "truncated": "", "unquoted": "", "category": "Peritoneum"}
+            for report in ("SYN0001", "SYN0002")
+            for index in ("0", "1")
+        ]
+    )
+    coverage = audit(frame, wordings={("ascites", "0"), ("ascites", "1")})["coverage"]
+    assert coverage["wordings_expected"] == 2
+    assert coverage["rows_expected"] == 4
+    assert coverage["reports_complete"] == 2
+    assert coverage["reports_short"] == 0
+    assert coverage["never_asked"] == []

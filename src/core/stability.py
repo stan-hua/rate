@@ -123,6 +123,28 @@ def _yes_by_wording(frame):
     return grouped
 
 
+def table_stem(stem):
+    """Return the stem the per-template tables take, without doubling a word.
+
+    `--out audit.csv` names them `audit-stability-A.csv`. `--out stability.csv`
+    named them `stability-stability-A.csv` until this dropped the repeat.
+
+    Parameters
+    ----------
+    stem : str
+        The `--out` path's stem.
+
+    Returns
+    -------
+    str
+        The stem with `-stability` appended, or unchanged where it ends there
+        already.
+    """
+    if stem == "stability" or stem.endswith("-stability"):
+        return stem
+    return f"{stem}-stability"
+
+
 def wording_roles(lock_path):
     """Return each finding's variant roles, keyed by index.
 

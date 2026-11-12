@@ -14,6 +14,7 @@ from pathlib import Path
 
 # Non-standard libraries
 import pandas as pd
+import pytest
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -286,3 +287,19 @@ def test_the_roles_come_back_keyed_by_index(tmp_path):
 
 def test_no_lock_gives_no_roles(tmp_path):
     assert stability.wording_roles(tmp_path / "absent.json") == {}
+
+
+# --- naming the per-template tables ----------------------------------------
+
+@pytest.mark.parametrize(
+    "stem, expected",
+    [
+        ("audit", "audit-stability"),
+        ("audit_by_finding", "audit_by_finding-stability"),
+        # `--out stability.csv` wrote `stability-stability-A.csv`.
+        ("stability", "stability"),
+        ("pilot-stability", "pilot-stability"),
+    ],
+)
+def test_the_table_stem_does_not_repeat_itself(stem, expected):
+    assert stability.table_stem(stem) == expected

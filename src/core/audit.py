@@ -27,6 +27,7 @@ rate, which is the one figure a prompt or lexicon edit moves.
 
 # Standard libraries
 import json
+import re
 from pathlib import Path
 
 # Non-standard libraries
@@ -35,6 +36,7 @@ import pandas as pd
 # Custom libraries
 from . import stability
 from .lexicon import NEGATED, STATED, UNSPECIFIED
+from .run_guard import MANIFEST_FILENAME
 from .storage import STAGE_CONFIGS
 from .vote import aggregate_findings
 
@@ -66,6 +68,47 @@ def expected_wordings(lock_path):
         for finding_id, entry in lock["findings"].items()
         for variant in entry["variants"]
     }
+
+
+WORDING_KEY = re.compile(r"^(.+)_v(\d+)$")
+
+
+def manifest_wordings(directory):
+    """Return the wordings `run_manifest.json` records this run as asking.
+
+    The lock says what the question set asks and the manifest says what this
+    save directory was filled under, and a pilot is the case where they
+    differ: 92 wordings against the lock's 247, which reads as a run 63%
+    incomplete when the lock is the yardstick.
+
+    Parameters
+    ----------
+    directory : str or pathlib.Path
+        The run's save directory, which is where the first batch writes the
+        manifest.
+
+    Returns
+    -------
+    set of tuple or None
+        One `(finding_id, variant_index)` pair per wording, the index as text.
+        None where the directory has no manifest, where the manifest cannot be
+        read, or where it records no wordings -- a run from before the manifest
+        existed, in which case the lock is the only yardstick there is.
+    """
+    path = Path(directory) / MANIFEST_FILENAME
+    if not path.exists():
+        return None
+    try:
+        manifest = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    keys = manifest.get("wordings") or {}
+    pairs = set()
+    for key in keys:
+        match = WORDING_KEY.match(key)
+        if match:
+            pairs.add((match.group(1), match.group(2)))
+    return pairs or None
 
 
 def stage_coverage(directory):
