@@ -23,13 +23,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.core.pilot import (
     ACCESSION_COLUMN,
     REPORT_COLUMN,
-    add_sourced_frame,
     changed_findings,
     enriched_reports,
     question_set_digest,
     reports_from_results,
     reworded_findings,
-    sourced_wording,
     stored_questions,
     subset_config,
     subset_lock,
@@ -424,78 +422,3 @@ def test_a_chunked_read_accumulates():
     into = stored_questions(first)
     stored_questions(second, into=into)
     assert into == {("ascites", "0"): "A?", ("cirrhosis", "0"): "B?"}
-
-
-# --- the sourced frame, the arm that separates the reframe's verb -----------
-
-
-@pytest.mark.parametrize(
-    "canonical,expected",
-    [
-        ("Is there any ascites?", "According to the report, is there any ascites?"),
-        ("Are there any liver cysts?", "According to the report, are there any liver cysts?"),
-        # one source canonical opens in lower case and is kept byte for byte,
-        # because its md5 joins the answers already extracted
-        ("is there any extrahepatic biliary ductal dilation?",
-         "According to the report, is there any extrahepatic biliary ductal dilation?"),
-    ],
-)
-def test_the_sourced_wording_names_the_report_and_keeps_the_predicate(canonical, expected):
-    assert sourced_wording(canonical) == expected
-
-
-@pytest.mark.parametrize(
-    "canonical",
-    ["Does the report describe ascites?", "", None, "Ascites is present."],
-)
-def test_a_canonical_that_is_not_existential_raises(canonical):
-    """The prefix would read as a second clause, and a wording no reader
-    checked would reach a GPU week."""
-    with pytest.raises(ValueError, match="existential"):
-        sourced_wording(canonical)
-
-
-def test_the_arm_adds_one_wording_to_every_finding():
-    config, lock, counts = add_sourced_frame(
-        subset_config(CONFIG, ["ascites"])[0],
-        subset_lock(FULL_LOCK, ["ascites"])[0],
-    )
-    asked = config["categories"]["Liver"]["questions"][0]["variants"]
-    assert asked == [
-        "Does the report describe ascites?",
-        "According to the report, is there any ascites?",
-    ]
-    roles = [v["role"] for v in lock["findings"]["ascites"]["variants"]]
-    assert roles == ["canonical", "reframe", "sourced"]
-    assert [v["index"] for v in lock["findings"]["ascites"]["variants"]] == [0, 1, 2]
-    assert counts == {"findings": 1, "wordings": 1}
-
-
-def test_the_arm_records_its_own_question_set_digest():
-    """The manifest names the question set the run asked, and the arm's is not
-    the pilot's: the guard compares the stored wordings against it."""
-    narrowed, _ = subset_lock(FULL_LOCK, ["ascites"])
-    config, lock, _ = add_sourced_frame(subset_config(CONFIG, ["ascites"])[0], narrowed)
-    assert lock["digest"]["question_set"] != narrowed["digest"]["question_set"]
-    assert lock["digest"]["question_set"] == question_set_digest(lock["findings"])
-    assert lock["subset"]["sourced_frame"] is True
-    assert lock["subset"]["wordings"] == 3
-
-
-def test_the_arm_refuses_a_config_and_lock_that_disagree():
-    """One wording would reach the config and another the manifest, and the
-    resume guard would refuse the run after the first batch."""
-    drifted = {
-        **CONFIG,
-        "categories": {
-            "Liver": {
-                "description": "the liver",
-                "questions": [{"id": "ascites", "question": "Is there ascites?"}],
-            }
-        },
-    }
-    with pytest.raises(ValueError, match="one canonical in the config"):
-        add_sourced_frame(
-            subset_config(drifted, ["ascites"])[0],
-            subset_lock(FULL_LOCK, ["ascites"])[0],
-        )

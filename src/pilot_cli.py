@@ -58,7 +58,6 @@ from .core.pilot import (
     reports_from_results,
     reworded_findings,
     stored_questions,
-    add_sourced_frame,
     subset_config,
     subset_lock,
     yes_reports,
@@ -95,11 +94,6 @@ def parse_args(argv=None):
                              'enrichment cannot reach (default: 300)')
     parser.add_argument('--accession-col', default=ACCESSION_COLUMN,
                         help='the report id column in --input-files')
-    parser.add_argument('--sourced-frame', action='store_true',
-                        help='ask each finding a fourth wording, "According to '
-                             'the report, is there X?", which names the report '
-                             'and keeps the existential predicate. The arm that '
-                             "separates the reframe's verb from its attribution")
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--dry-run', action='store_true',
                         help='report the counts and write nothing')
@@ -180,21 +174,8 @@ def main(argv=None):
     narrowed_lock, lock_counts = (
         subset_lock(lock, finding_ids) if lock is not None else (None, {})
     )
-    if args.sourced_frame:
-        if narrowed_lock is None:
-            print(
-                "--sourced-frame reads each finding's canonical from the lock, "
-                "and there is none. Generate it first.",
-                file=sys.stderr,
-            )
-            return 1
-        narrowed, narrowed_lock, arm = add_sourced_frame(narrowed, narrowed_lock)
-        config_counts["wordings"] += arm["wordings"]
-        lock_counts["wordings"] += arm["wordings"]
     for key, value in config_counts.items():
         print(f"  {key:<11}  {value:,}")
-    if args.sourced_frame:
-        print(f"  {'sourced':<11}  {arm['wordings']:,} (the arm's own)")
 
     if args.input_files:
         frames = [pd.read_csv(path, dtype=str) for path in args.input_files]
