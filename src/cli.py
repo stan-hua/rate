@@ -65,10 +65,51 @@ def parse_args():
                       help='Column name for report text in CSV (default: Report Text)')
     parser.add_argument('--config', type=str, default="config/default_config.yaml",
                       help='Path to default configuration file (default: "config/default_config.yaml")')
+    parser.add_argument('--thinking', action='store_true',
+                      help='Turn Qwen3 thinking on for this run, over the config. Launch the '
+                           'server with --reasoning-parser qwen3, which launch-server-thinking '
+                           'does, and give the run a fresh --save-dir: the guard refuses to '
+                           'resume a directory filled with thinking off')
     parser.add_argument('--debug', action='store_true',
                       help='Enable debug logging')
     
     return parser.parse_args()
+
+THINKING_MIN_TOKENS = 2048
+
+
+def enable_thinking(config: dict) -> list:
+    """Turn Qwen3's thinking on for this run, and give the block room.
+
+    Two settings move together and a third follows. sglang wraps the grammar
+    backend in `ReasonerGrammarBackend` whenever `--reasoning-parser` is set,
+    and that wrapper applies the schema only after a `</think>` token, so the
+    server needs the flag whenever this is on -- `batch_processor` raises
+    where the two disagree. `max_tokens` is 512 for an 80-token answer, which
+    a reasoning block overruns, so this raises it.
+
+    Parameters
+    ----------
+    config : dict
+        The loaded configuration, changed in place.
+
+    Returns
+    -------
+    list of str
+        What it changed, for the log.
+    """
+    model = config.setdefault('model', {})
+    changed = ["thinking on: launch the server with --reasoning-parser qwen3"]
+    model['enable_thinking'] = True
+    budget = int(model.get('max_tokens') or 0)
+    if budget < THINKING_MIN_TOKENS:
+        changed.append(
+            f"max_tokens {budget} -> {THINKING_MIN_TOKENS}, so the reasoning block "
+            f"has room ahead of the answer"
+        )
+        model['max_tokens'] = THINKING_MIN_TOKENS
+    return changed
+
 
 def validate_stage_inputs(stages: list, args) -> dict:
     """Validate that required inputs are available for selected stages."""
@@ -206,6 +247,10 @@ def main():
     # Load default config
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
+
+    if args.thinking:
+        for line in enable_thinking(config):
+            print(line)
     
     # Add intermediate input files to input_files dict
     if args.input_no_comparisons:

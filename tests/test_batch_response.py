@@ -231,3 +231,46 @@ class TestTheThinkingSwitch:
             "enable_thinking and --reasoning-parser have to move together: "
             f"config says {thinking}, launch task says {parser}"
         )
+
+
+class TestTheThinkingOverride:
+    """`extract --thinking` turns the config key on for one run."""
+
+    def config(self):
+        return {"model": {"name": "Qwen/Qwen3-30B-A3B", "enable_thinking": False, "max_tokens": 512}}
+
+    def test_it_turns_thinking_on(self):
+        from src.cli import enable_thinking
+
+        config = self.config()
+        enable_thinking(config)
+        assert config["model"]["enable_thinking"] is True
+
+    def test_it_raises_a_budget_the_reasoning_block_would_overrun(self):
+        from src.cli import THINKING_MIN_TOKENS, enable_thinking
+
+        config = self.config()
+        enable_thinking(config)
+        assert config["model"]["max_tokens"] == THINKING_MIN_TOKENS
+
+    def test_it_leaves_a_larger_budget_alone(self):
+        from src.cli import enable_thinking
+
+        config = self.config()
+        config["model"]["max_tokens"] = 8192
+        enable_thinking(config)
+        assert config["model"]["max_tokens"] == 8192
+
+    def test_it_says_what_it_changed(self):
+        from src.cli import enable_thinking
+
+        changed = enable_thinking(self.config())
+        assert any("--reasoning-parser qwen3" in line for line in changed)
+        assert any("max_tokens" in line for line in changed)
+
+    def test_it_changes_nothing_else(self):
+        from src.cli import enable_thinking
+
+        config = self.config()
+        enable_thinking(config)
+        assert config["model"]["name"] == "Qwen/Qwen3-30B-A3B"
