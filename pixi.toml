@@ -113,6 +113,7 @@ regrade = { cmd = "python -m src.regrade_cli", description = "Rebuild the graded
 audit = { cmd = "python -m src.audit_cli", description = "Report what a finished extraction holds, in counts alone" }
 defer = { cmd = "python -m src.defer_cli", description = "Rewrite a No to not_assessed where the report deferred the compartment" }
 pilot = { cmd = "python -m src.pilot_cli", description = "Write the reports and the config for a positive-enriched pilot run" }
+directional = { cmd = "python -m src.directional_cli", description = "Say which way a pair of wordings disagrees, and what the cells have in common" }
 test = { cmd = "pytest", description = "The test suite" }
 # Scoped to `tests`: `ruff check src` reports 738 pre-existing findings.
 # Widen once `src` is clean.
