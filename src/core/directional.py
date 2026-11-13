@@ -239,7 +239,29 @@ def probe_groups(lock_path):
     }
 
 
-def review_pairs(frame, roles, finding, left="canonical", right="sourced", side="left", limit=20):
+def _one_side(joined, left, right, side, limit):
+    """The cells one of the two wordings answered Yes alone."""
+    yes, no = ("left", "right") if side == "left" else ("right", "left")
+    rows = joined[(joined[f"{yes}_verdict"] == "yes") & (joined[f"{no}_verdict"] != "yes")]
+    out = []
+    for _, row in rows.head(limit).iterrows():
+        out.append(
+            {
+                "finding_id": row["finding_id"],
+                "role_yes": left if side == "left" else right,
+                "role_no": right if side == "left" else left,
+                "named_outright": row[f"{yes}_named_outright"],
+                "certainty": row[f"{yes}_certainty"],
+                "severity": row[f"{yes}_severity"],
+                "evidence_yes": row[f"{yes}_evidence"],
+                "verdict_no": row[f"{no}_verdict"],
+                "evidence_no": row[f"{no}_evidence"],
+            }
+        )
+    return out
+
+
+def review_pairs(frame, roles, finding, left="canonical", right="sourced", side="both", limit=20):
     """The two evidence sentences on the cells one wording holds alone.
 
     **This returns report text.** It is the one function here that does, and a
@@ -255,33 +277,22 @@ def review_pairs(frame, roles, finding, left="canonical", right="sourced", side=
         The finding id to review.
     left, right : str, optional
         The two roles to pair.
-    side : {'left', 'right'}, optional
-        Which wording's lone Yes answers to show.
+    side : {'both', 'left', 'right'}, optional
+        Which wording's lone Yes answers to show. `both` reports the
+        over-calls and the under-calls together, `limit` each.
     limit : int, optional
-        How many cells to return.
+        How many cells to return per side.
 
     Returns
     -------
     list of dict
-        One entry per cell, with each side's verdict, directness, certainty
-        and evidence. No `report_id`.
+        One entry per cell, with the finding id, each side's verdict,
+        directness, certainty and evidence. No `report_id`.
     """
     joined = paired(frame, roles, left=left, right=right, with_evidence=True)
     joined = joined[joined["finding_id"] == finding]
-    yes, no = ("left", "right") if side == "left" else ("right", "left")
-    rows = joined[(joined[f"{yes}_verdict"] == "yes") & (joined[f"{no}_verdict"] != "yes")]
+    sides = ("left", "right") if side == "both" else (side,)
     out = []
-    for _, row in rows.head(limit).iterrows():
-        out.append(
-            {
-                "role_yes": left if side == "left" else right,
-                "role_no": right if side == "left" else left,
-                "named_outright": row[f"{yes}_named_outright"],
-                "certainty": row[f"{yes}_certainty"],
-                "severity": row[f"{yes}_severity"],
-                "evidence_yes": row[f"{yes}_evidence"],
-                "verdict_no": row[f"{no}_verdict"],
-                "evidence_no": row[f"{no}_evidence"],
-            }
-        )
+    for one in sides:
+        out.extend(_one_side(joined, left, right, one, limit))
     return out

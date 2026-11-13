@@ -20,6 +20,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # Custom libraries
+from src import directional_cli
 from src.core import directional
 
 ROLES = {
@@ -234,6 +235,20 @@ class TestReviewingTheCells:
         assert not directional.review_pairs(frame, ROLES, "ascites", side="left")
         assert len(directional.review_pairs(frame, ROLES, "ascites", side="right")) == 1
 
+    def test_both_sides_report_the_over_calls_and_the_under_calls(self):
+        frame = rows(
+            {
+                ("ascites", 0): {"SYN0001": yes(), "SYN0002": yes()},
+                ("ascites", 1): {"SYN0003": yes()},
+            }
+        )
+        cells = directional.review_pairs(frame, ROLES, "ascites", side="both")
+        assert [cell["role_yes"] for cell in cells] == ["canonical", "canonical", "sourced"]
+
+    def test_every_cell_names_its_finding(self):
+        frame = rows({("ascites", 0): {"SYN0001": yes()}, ("ascites", 1): {}})
+        assert directional.review_pairs(frame, ROLES, "ascites")[0]["finding_id"] == "ascites"
+
     def test_the_limit_bounds_what_comes_back(self):
         frame = rows(
             {("ascites", 0): {report: yes() for report in REPORTS}, ("ascites", 1): {}}
@@ -252,3 +267,58 @@ class TestTheEmptyCases:
         frame = rows({("ascites", 0): {"SYN0001": yes(named=value)}, ("ascites", 1): {}})
         row = directional.per_finding(directional.paired(frame, ROLES)).iloc[0]
         assert row["named_alone"] == expected
+
+
+class TestWritingTheReview:
+    """The review goes to a file, because a reader wants it beside the data."""
+
+    def cells(self):
+        return [
+            {
+                "finding_id": "ascites",
+                "role_yes": "canonical",
+                "role_no": "sourced",
+                "named_outright": "False",
+                "certainty": "medium",
+                "severity": "trace",
+                "evidence_yes": "a synthetic sentence",
+                "verdict_no": "no",
+                "evidence_no": "a synthetic denial",
+            },
+            {
+                "finding_id": "ascites",
+                "role_yes": "sourced",
+                "role_no": "canonical",
+                "named_outright": "True",
+                "certainty": "stated",
+                "severity": "",
+                "evidence_yes": "another synthetic sentence",
+                "verdict_no": "no",
+                "evidence_no": "another synthetic denial",
+            },
+        ]
+
+    def test_a_csv_suffix_writes_one_row_per_cell(self, tmp_path):
+        out = directional_cli.write_review(self.cells(), tmp_path / "review.csv")
+        table = pd.read_csv(out)
+        assert len(table) == 2
+        assert list(table["role_yes"]) == ["canonical", "sourced"]
+
+    def test_anything_else_writes_the_blocks(self, tmp_path):
+        out = directional_cli.write_review(self.cells(), tmp_path / "review.txt")
+        text = out.read_text()
+        assert "a synthetic sentence" in text
+        assert "--- ascites 1" in text
+
+    def test_the_text_file_opens_on_the_banner(self, tmp_path):
+        out = directional_cli.write_review(self.cells(), tmp_path / "review.txt")
+        assert out.read_text().startswith(directional_cli.BANNER)
+
+    def test_each_side_of_each_finding_gets_a_heading(self):
+        text = directional_cli.render_review(self.cells())
+        assert "### ascites: canonical answered Yes alone" in text
+        assert "### ascites: sourced answered Yes alone" in text
+
+    def test_it_makes_the_directory(self, tmp_path):
+        out = directional_cli.write_review(self.cells(), tmp_path / "new" / "review.txt")
+        assert out.exists()

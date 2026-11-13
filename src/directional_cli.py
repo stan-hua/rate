@@ -24,9 +24,11 @@ Usage examples:
     python3 -m src.directional_cli --questions results/questions.csv \
         --pair canonical,synonym
 
-    # Read the cells one finding's canonical holds alone. Report text.
+    # Read the cells one wording holds alone, in both directions, as a file
+    # beside the data. Report text.
     python3 -m src.directional_cli --questions results/questions.csv \
-        --review simple_renal_cysts --limit 10
+        --review simple_renal_cysts,any_male_pelvis --limit 25 \
+        --review-out <beside the data>/review-frame.txt
 """
 
 import argparse
@@ -38,6 +40,70 @@ import pandas as pd
 from .core import directional, stability
 
 DEFAULT_LOCK = Path(__file__).resolve().parents[1] / "config" / "modalities" / "fast_abdomen_ct.lock.json"
+
+
+BANNER = (
+    "=" * 72
+    + "\nBelow this line is report text. Read it, act on it, paste it nowhere.\n"
+    + "=" * 72
+)
+
+
+def render_review(cells):
+    """The review cells as blocks a reader can scan.
+
+    Parameters
+    ----------
+    cells : list of dict
+        What `directional.review_pairs` returns.
+
+    Returns
+    -------
+    str
+    """
+    lines = []
+    group = None
+    number = 0
+    for cell in cells:
+        here = (cell["finding_id"], cell["role_yes"])
+        if here != group:
+            group = here
+            number = 0
+            lines.append(f"\n### {here[0]}: {here[1]} answered Yes alone\n")
+        number += 1
+        lines.append(f"--- {here[0]} {number}")
+        lines.append(
+            f"  {cell['role_yes']:<10} yes   named_outright={cell['named_outright']}  "
+            f"certainty={cell['certainty']}  severity={cell['severity']}"
+        )
+        lines.append(f"      {cell['evidence_yes']}")
+        lines.append(f"  {cell['role_no']:<10} {cell['verdict_no']}")
+        lines.append(f"      {cell['evidence_no']}")
+    return "\n".join(lines)
+
+
+def write_review(cells, path):
+    """Write the review cells, as a CSV where the suffix says so.
+
+    Parameters
+    ----------
+    cells : list of dict
+        What `directional.review_pairs` returns.
+    path : str or pathlib.Path
+        Where to write. **The file holds report text.**
+
+    Returns
+    -------
+    pathlib.Path
+        The path written.
+    """
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    if out.suffix.lower() == ".csv":
+        pd.DataFrame(cells).to_csv(out, index=False)
+    else:
+        out.write_text(BANNER + "\n" + render_review(cells) + "\n")
+    return out
 
 
 def parse_args(argv=None):
@@ -60,13 +126,19 @@ def parse_args(argv=None):
     parser.add_argument('--out', type=str, default=None,
                         help="Where to write the per-finding table (counts only)")
     parser.add_argument('--review', type=str, default=None,
-                        help="Print the evidence on one finding's lone Yes answers. These are "
-                             "verbatim quotes from the reports, so this output must not be "
-                             "pasted anywhere")
-    parser.add_argument('--side', choices=('left', 'right'), default='left',
-                        help="Which wording of the pair held the Yes (default: left)")
+                        help="comma-separated finding ids whose lone Yes answers to report, "
+                             "with the evidence on both sides. These are verbatim quotes "
+                             "from the reports, so this output must not be pasted anywhere")
+    parser.add_argument('--review-out', type=str, default=None,
+                        help="Write the review to this path instead of the terminal. A .csv "
+                             "suffix writes one row per cell and anything else writes the "
+                             "same blocks as the terminal. **The file holds report text**, so "
+                             "it belongs beside the data and never in a repository")
+    parser.add_argument('--side', choices=('both', 'left', 'right'), default='both',
+                        help="Which wording of the pair held the Yes. both reports the "
+                             "over-calls and the under-calls together (default: both)")
     parser.add_argument('--limit', type=int, default=20,
-                        help="How many cells --review prints")
+                        help="How many cells --review reports per finding and side")
     return parser.parse_args(argv)
 
 
@@ -123,24 +195,26 @@ def main(argv=None):
         print(f"\nPer-finding table written to {args.out}")
 
     if args.review:
-        pairs = directional.review_pairs(
-            frame, roles, args.review, left=left, right=right,
-            side=args.side, limit=args.limit,
-        )
-        print("\n" + "=" * 72)
-        print("Below this line is report text. Read it, act on it, paste it nowhere.")
-        print("=" * 72)
-        if not pairs:
-            print(f"\n{args.review}: no cell the {args.side} wording holds alone.")
+        wanted = [name.strip() for name in args.review.split(",") if name.strip()]
+        cells = []
+        for finding in wanted:
+            cells.extend(
+                directional.review_pairs(
+                    frame, roles, finding, left=left, right=right,
+                    side=args.side, limit=args.limit,
+                )
+            )
+        if not cells:
+            print(f"\nNo cell any of {wanted} holds under one wording alone.")
             return 0
-        print(f"\n{args.review}: {len(pairs)} cell(s), {args.side} wording alone\n")
-        for number, cell in enumerate(pairs, start=1):
-            print(f"--- {number}")
-            print(f"  {cell['role_yes']:<10} yes   named_outright={cell['named_outright']}  "
-                  f"certainty={cell['certainty']}  severity={cell['severity']}")
-            print(f"      {cell['evidence_yes']}")
-            print(f"  {cell['role_no']:<10} {cell['verdict_no']}")
-            print(f"      {cell['evidence_no']}")
+        if args.review_out:
+            written = write_review(cells, args.review_out)
+            present = len({cell["finding_id"] for cell in cells})
+            print(f"\n{len(cells)} cell(s) over {present} finding(s) written to {written}")
+            print("That file holds report text. Keep it beside the data, out of any repository.")
+        else:
+            print("\n" + BANNER)
+            print(render_review(cells))
     return 0
 
 
