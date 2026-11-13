@@ -8,9 +8,9 @@ answers either agree or they do not. Jaccard over the Yes sets is the figure,
 and it is computed two ways because the two measure different properties:
 
 - **Pairwise**, over each pair of wordings, which is the threshold the project
-  sets. `v0`-`synonym` measures invariance to a changed word and `v0`-`reframe`
-  invariance to a changed interrogative frame. Pooling them would hide which
-  of the two a finding fails.
+  sets. `v0`-`synonym` measures invariance to a changed word and
+  `v0`-`sourced` invariance to a changed interrogative frame. Pooling them
+  would hide which of the two a finding fails.
 - **Three-way**, `1 - D/U` over all three, which is the conservative screen
   beneath it. A low three-way figure establishes that one wording is out of
   line, and `sole_v*` names which, so the screen localises a defect without
@@ -59,10 +59,11 @@ import yaml
 # finding is reported as unmeasured with its three Yes counts beside it.
 MIN_POSITIVES = 30
 
-# The pairwise bar. Recalibrating it needs the clean findings' own pairwise
-# distribution: one measured pure reframe lands between 0.916 and 0.962, so
-# 0.95 is at the edge of what frame invariance delivers on a clean,
-# high-volume finding.
+# The pairwise bar. A30 cut the screen at 0.70 and this figure is reported
+# rather than enforced: the 2026-11-12 pilot found nothing between 0.74 and
+# 0.95 that turned out to be a broken wording. On the 15 findings where the
+# frame matters the median canonical-sourced Jaccard is 0.935, so 0.95 is at
+# the edge of what frame invariance delivers.
 PAIRWISE_TARGET = 0.95
 
 # Below this, one wording is answering a different question.

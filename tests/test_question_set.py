@@ -323,20 +323,20 @@ class TestTheFastConfigAndItsLock:
         assert LOCK["digest"]["question_set"] == expected
 
     def test_every_finding_is_asked_under_two_or_three_wordings(self):
-        """The canonical, an exact synonym where one exists, and the reframe.
+        """The canonical, an exact synonym where one exists, and the frame.
 
         A finding asked under one wording measures nothing about how far its
         answer depends on the question, which is what the variants are for.
         Where the reports dictate no exact synonym the finding is asked under
-        the canonical and its reframe alone, so its figure is frame invariance
-        and not frame plus synonym invariance. Each variant names its role, and
-        the two measurements are reported apart.
+        the canonical and its sourced frame alone, so its figure is frame
+        invariance rather than frame plus synonym invariance. Each variant
+        names its role, and the two measurements are reported apart.
         """
         for identifier, body in LOCK["findings"].items():
             roles = [variant["role"] for variant in body["variants"]]
             assert roles in (
-                ["canonical", "reframe"],
-                ["canonical", "synonym", "reframe"],
+                ["canonical", "sourced"],
+                ["canonical", "synonym", "sourced"],
             ), identifier
         with_synonym = sum(
             1
@@ -395,7 +395,7 @@ class TestTheFastConfigAndItsLock:
             assert question not in asked
             assert [v["role"] for v in LOCK["findings"][identifier]["variants"]] == [
                 "canonical",
-                "reframe",
+                "sourced",
             ]
 
     def test_a_renamed_finding_records_the_id_it_had(self):
