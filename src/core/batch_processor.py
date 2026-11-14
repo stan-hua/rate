@@ -118,19 +118,30 @@ class BatchProcessor:
         no top-level field for it. Absent from the config, nothing is sent and
         the template's own default applies.
 
-        **This has to agree with how the server was launched.** sglang decides
-        at launch whether to wrap the grammar backend:
+        The switch belongs to the request, so a run turns thinking on against
+        a server already serving other runs with it off.
+
+        **Launch the server without `--reasoning-parser` whichever way this
+        goes.** That flag makes sglang wrap the grammar backend at launch:
 
             if server_args.reasoning_parser and hasattr(tokenizer, "think_end_id"):
                 grammar_backend = ReasonerGrammarBackend(grammar_backend, ...)
 
         and `ReasonerGrammarObject` starts with `is_in_reasoning = True`, so it
-        masks nothing until a `</think>` token arrives. With thinking off the
-        model never emits one, so a server started with `--reasoning-parser`
-        would never enforce the schema -- the failure reported in sgl-project
-        #6675 and #9282. Thinking off therefore means launching without
-        `--reasoning-parser`, which leaves the plain grammar backend applying
-        from the first token.
+        masks nothing until a `</think>` token arrives.
+
+        With thinking off the model emits no such token, so the schema would
+        never apply at all -- the failure reported in sgl-project #6675 and
+        #9282. Without the flag the plain grammar backend applies from the
+        first token.
+
+        With thinking on, `enable_thinking` in `src/cli.py` drops the schema,
+        because a mask deferred to the end of a reasoning block constrains
+        nothing and the 2026-11-13 arm lost 91% of its answers to one. No
+        grammar runs at all then, and what the flag would add is moving a
+        closed block into `reasoning_content`. `strip_reasoning` takes the
+        block off the front of `content` instead, so the parse path needs
+        neither the flag nor that field.
         """
         model = self.config.get('model', {})
         if 'enable_thinking' not in model:
