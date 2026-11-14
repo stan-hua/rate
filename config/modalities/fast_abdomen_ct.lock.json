@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "3dffb13cf86c7fbe",
-    "question_set": "00cac89b4bbd4e3f"
+    "file": "d295d2259fe90df7",
+    "question_set": "bf62c30f5f55eff2"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -1352,12 +1352,6 @@
         },
         {
           "index": 1,
-          "md5": "58936c2d",
-          "question": "Is the liver enlarged?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
           "md5": "b43b3aab",
           "question": "According to the report, is there hepatomegaly?",
           "role": "sourced"
@@ -1571,12 +1565,6 @@
         },
         {
           "index": 1,
-          "md5": "fcb0a239",
-          "question": "Are there any metastases or secondary deposits?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
           "md5": "8b10eaa5",
           "question": "According to the report, is there metastatic disease?",
           "role": "sourced"
@@ -3758,6 +3746,13 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatomegaly",
+      "md5": "58936c2d",
+      "question": "Is the liver enlarged?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "reframe",
       "id": "hepatomegaly",
       "md5": "86cbbaa9",
@@ -3839,6 +3834,13 @@
       "id": "metastatic_disease_general",
       "md5": "34f029e6",
       "question": "Does the report describe metastatic disease?"
+    },
+    {
+      "category": "Multi Organs",
+      "dropped_role": "synonym",
+      "id": "metastatic_disease_general",
+      "md5": "fcb0a239",
+      "question": "Are there any metastases or secondary deposits?"
     },
     {
       "category": "Kidney",
