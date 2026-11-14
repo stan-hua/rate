@@ -247,16 +247,19 @@ class BatchProcessor:
             result_content: The batch output file, one JSON object per line.
 
         Returns:
-            The answers keyed by `custom_id`, and the counts of empty answers
-            and of answers readable only in `reasoning_content`.
+            The answers keyed by `custom_id`, and the counts of empty
+            answers, of answers readable only in `reasoning_content`, and of
+            unterminated reasoning blocks.
         """
         lines = result_content.split("\n")
         results = {}
-        # Two counts worth seeing per batch rather than at the end of a
-        # four-million-request run: how many answers arrived empty, and how
-        # many were readable only in `reasoning_content`.
+        # Three counts worth seeing per batch rather than at the end of a
+        # four-million-request run: how many answers arrived empty, how many
+        # were readable only in `reasoning_content`, and how many were a
+        # reasoning block the generation never closed.
         empty = 0
         reasoning_only = 0
+        unterminated = 0
         for line_num, line in enumerate(lines):
             if line.strip():
                 try:
@@ -312,7 +315,14 @@ class BatchProcessor:
                     # Clean up content (remove thinking tags if present)
                     if content and "</think>" in content:
                         content = content.split("</think>")[-1]
-                    
+                    elif content.lstrip().startswith("<think>"):
+                        # A reasoning block with no end: the generation stopped
+                        # before the answer began, so there is nothing to
+                        # store. Counted here because the 2026-11-13 arm wrote
+                        # 1,637 of these to disk as full-looking rows and only
+                        # the empty `verdict` column showed it afterwards.
+                        unterminated += 1
+
                     content = content.strip() if content else ""
                     if not content:
                         empty += 1
@@ -339,7 +349,20 @@ class BatchProcessor:
                 f"Stop the run and check one response before spending more GPU time."
             )
 
-        return results, {"empty": empty, "reasoning_only": reasoning_only}
+        if unterminated:
+            self.logger.warning(
+                f"{unterminated} of {len(results)} answers were a reasoning block "
+                f"the generation never closed, so no answer followed it. Thinking is "
+                f"on and `max_tokens` or the grammar backend is cutting the block "
+                f"short. Stop the run: every one of these rows stores text and no "
+                f"verdict."
+            )
+
+        return results, {
+            "empty": empty,
+            "reasoning_only": reasoning_only,
+            "unterminated": unterminated,
+        }
 
     def _extract_batch_results(self, batch_response: Any, requests: List[Tuple[str, str]], stage_name: str) -> Dict[str, str]:
         """Extract results from completed batch."""
@@ -363,6 +386,13 @@ class BatchProcessor:
                     f"grammar mask until the end-of-think token. Set model.structured_output "
                     f"to false to drop the schema, or launch the server without "
                     f"--reasoning-parser."
+                )
+            if counts["unterminated"]:
+                self.logger.warning(
+                    f"{counts['unterminated']} of {len(results)} answers were a reasoning "
+                    f"block the generation never closed. Thinking is on and no answer "
+                    f"followed the block, so these rows store text and no verdict. Stop "
+                    f"the run."
                 )
             if counts["empty"]:
                 self.logger.warning(

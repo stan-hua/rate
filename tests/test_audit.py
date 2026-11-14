@@ -192,6 +192,9 @@ class TestCounts:
         ])
         assert audit(rows)["parse"] == {
             "answer_empty": 1,
+            "no_verdict": 0,
+            "reasoning_unterminated": 0,
+            "unreadable_other": 0,
             "truncated": 1,
             "evidence_empty_on_yes": 1,
         }

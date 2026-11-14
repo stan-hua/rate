@@ -80,6 +80,14 @@ compressed-tensors = "==0.10.2"
 # To go higher, lower `--mem-fraction-static` in the same step, and move one
 # number at a time. Re-derive from `#token` and `token usage` on other
 # hardware.
+# **One server task, and `extract --thinking` runs against this one too.**
+# `launch-server-thinking` added `--reasoning-parser qwen3` and was removed on
+# 2026-11-13, after the one run that used it: sglang wraps the grammar backend
+# in `ReasonerGrammarBackend` whenever that flag is set, the wrapper masks
+# nothing until a `</think>` token, and 1,637 of that run's 1,800 answers came
+# back as an unterminated reasoning block with no verdict in any of them. So
+# thinking drops the schema instead, which `enable_thinking` in `src/cli.py`
+# does, and the server configuration stays as it is.
 [feature.server.tasks.launch-server]
 description = "Serve the model the extraction asks over HTTP"
 cmd = """
@@ -88,32 +96,6 @@ python -m sglang.launch_server \
   --port 8000 \
   --host 127.0.0.1 \
   --tp 4 \
-  --schedule-conservativeness 0.1 \
-  --attention-backend triton \
-  --sampling-backend pytorch \
-  --grammar-backend llguidance \
-  --constrained-json-whitespace-pattern "[ ]?" \
-  --max-running-requests 512 \
-  --cuda-graph-max-bs 512 \
-  --mem-fraction-static 0.80
-"""
-
-[feature.server.tasks.launch-server-thinking]
-description = "Serve the same model with thinking on, for the diagnostic arm"
-# `--reasoning-parser qwen3` and `extract --thinking` move together, which is
-# what `launch-server` above explains. With thinking on a `</think>` token does
-# arrive, so `ReasonerGrammarBackend` applies the schema after it.
-#
-# Throughput is the cost. The recorded 4.4 requests per second is for an
-# 80-token answer, and the reasoning block was most of the tokens before
-# `e74ae69` turned it off, so size an arm by findings rather than by reports.
-cmd = """
-python -m sglang.launch_server \
-  --model-path Qwen/Qwen3-30B-A3B \
-  --port 8000 \
-  --host 127.0.0.1 \
-  --tp 4 \
-  --reasoning-parser qwen3 \
   --schedule-conservativeness 0.1 \
   --attention-backend triton \
   --sampling-backend pytorch \

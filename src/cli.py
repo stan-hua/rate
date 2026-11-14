@@ -66,10 +66,11 @@ def parse_args():
     parser.add_argument('--config', type=str, default="config/default_config.yaml",
                       help='Path to default configuration file (default: "config/default_config.yaml")')
     parser.add_argument('--thinking', action='store_true',
-                      help='Turn Qwen3 thinking on for this run, over the config. Launch the '
-                           'server with --reasoning-parser qwen3, which launch-server-thinking '
-                           'does, and give the run a fresh --save-dir: the guard refuses to '
-                           'resume a directory filled with thinking off')
+                      help='Turn Qwen3 thinking on for this run, over the config, and drop '
+                           'the answer schema, which cannot hold alongside it. Launch the '
+                           'server with launch-server and no --reasoning-parser, and give '
+                           'the run a fresh --save-dir: the guard refuses to resume a '
+                           'directory filled with thinking off')
     parser.add_argument('--debug', action='store_true',
                       help='Enable debug logging')
     
@@ -79,14 +80,26 @@ THINKING_MIN_TOKENS = 2048
 
 
 def enable_thinking(config: dict) -> list:
-    """Turn Qwen3's thinking on for this run, and give the block room.
+    """Turn Qwen3's thinking on for this run, and drop the answer schema.
 
-    Two settings move together and a third follows. sglang wraps the grammar
-    backend in `ReasonerGrammarBackend` whenever `--reasoning-parser` is set,
-    and that wrapper applies the schema only after a `</think>` token, so the
-    server needs the flag whenever this is on -- `batch_processor` raises
-    where the two disagree. `max_tokens` is 512 for an 80-token answer, which
-    a reasoning block overruns, so this raises it.
+    **Thinking and the schema cannot both be on**, which the 2026-11-13 arm
+    measured at the cost of the run: 1,637 of its 1,800 answers were an
+    unterminated reasoning block, with no verdict in any of them. sglang
+    wraps the grammar backend in `ReasonerGrammarBackend` whenever
+    `--reasoning-parser` is set, and that wrapper masks nothing until a
+    `</think>` token, so the schema constrains nothing while the block runs
+    and the run rests on the model closing the block of its own accord.
+    Without the parser the mask applies from the first token instead, which
+    forbids `<think>` and leaves thinking on in name alone.
+
+    So this drops the schema and the server runs without `--reasoning-parser`:
+    the model reasons unconstrained, writes the object because the prompt asks
+    for one, and `parse_answer` strips the block off the front. An answer that
+    comes back malformed is then a parse failure the audit counts, rather than
+    a silent blank.
+
+    `max_tokens` is 512 for an 80-token answer, which a reasoning block
+    overruns, so this raises it.
 
     Parameters
     ----------
@@ -99,8 +112,14 @@ def enable_thinking(config: dict) -> list:
         What it changed, for the log.
     """
     model = config.setdefault('model', {})
-    changed = ["thinking on: launch the server with --reasoning-parser qwen3"]
+    changed = ["thinking on: launch the server with launch-server, no --reasoning-parser"]
     model['enable_thinking'] = True
+    if model.get('structured_output', True):
+        changed.append(
+            "structured_output -> false, because a grammar mask deferred to the "
+            "end-of-think token constrains nothing"
+        )
+        model['structured_output'] = False
     budget = int(model.get('max_tokens') or 0)
     if budget < THINKING_MIN_TOKENS:
         changed.append(

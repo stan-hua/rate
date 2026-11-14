@@ -26,6 +26,7 @@ from src.core.findings_schema import (
     parse_answer,
     question_guidance,
     response_format,
+    strip_reasoning,
 )
 from src.core.lexicon import (
     CERTAINTY_LEVELS,
@@ -175,6 +176,46 @@ class TestReadingTheOldShape:
         assert got["evidence"] == ""
         assert got["certainty_phrase"] == ""
         assert got["named_outright"] is False
+
+
+class TestReadingPastAReasoningBlock:
+    """What `extract --thinking` stores in front of the answer.
+
+    The batch reader strips a closed block already. This is the second place
+    it happens, because a stored answer can keep the block -- the 2026-11-13
+    arm's 1,800 rows all did -- and `regrade` reads those rows again.
+    """
+
+    def test_an_object_behind_a_closed_block_is_read(self):
+        raw = '<think>\nThe report names ascites.\n</think>\n' + json.dumps(
+            {"answer": "yes", "evidence": "Moderate ascites.", "named_outright": True}
+        )
+        got = parse_answer(raw)
+        assert got["verdict"] == "yes"
+        assert got["evidence"] == "Moderate ascites."
+
+    def test_a_bare_word_behind_a_closed_block_is_read(self):
+        assert parse_answer("<think>\nWeighing it.\n</think>\nNo.")["verdict"] == "no"
+
+    def test_an_unterminated_block_reads_as_nothing(self):
+        """The arm's failure: the generation stopped inside the block, so the
+        answer never began and there is nothing to recover.
+        """
+        assert parse_answer("<think>\nOkay, the report says the kidneys are") is None
+
+    def test_a_bare_open_token_reads_as_nothing(self):
+        assert parse_answer("<think>") is None
+
+    @pytest.mark.parametrize(
+        ("raw", "expected", "had_block"),
+        [
+            ("Yes.", "Yes.", False),
+            ("<think>a</think>Yes.", "Yes.", True),
+            ("<think>a", "", True),
+        ],
+    )
+    def test_the_split_reports_whether_a_block_ran(self, raw, expected, had_block):
+        assert strip_reasoning(raw) == (expected, had_block)
 
 
 class TestTheCertaintyLexicon:

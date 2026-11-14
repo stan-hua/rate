@@ -52,7 +52,7 @@ class TestReadingAnAnswer:
     def test_content_is_read_when_it_is_there(self, processor):
         got, counts = parse(processor, [line("r1", content=ANSWER)])
         assert got["r1"] == ANSWER
-        assert counts == {"empty": 0, "reasoning_only": 0}
+        assert counts == {"empty": 0, "reasoning_only": 0, "unterminated": 0}
 
     def test_an_empty_content_falls_back_to_reasoning_content(self, processor):
         """The documented failure: sgl-project #6675, #9282, ai-dynamo #9006."""
@@ -233,6 +233,27 @@ class TestTheThinkingSwitch:
         )
 
 
+class TestAReasoningBlock:
+    """What the 2026-11-13 arm returned, and what the reader does with it."""
+
+    def test_a_closed_block_is_stripped(self, processor):
+        got, counts = parse(processor, [line("r1", content=f"<think>\nWeighing it.\n</think>\n{ANSWER}")])
+        assert got["r1"] == ANSWER
+        assert counts == {"empty": 0, "reasoning_only": 0, "unterminated": 0}
+
+    def test_an_unclosed_block_is_counted(self, processor):
+        """1,637 of the arm's 1,800 answers. Every one opened the block, not
+        one contained the closing token, and the answer never began.
+        """
+        got, counts = parse(processor, [line("r1", content="<think>\nOkay, the report says")])
+        assert counts["unterminated"] == 1
+        assert counts["empty"] == 0
+
+    def test_an_answer_with_no_block_is_not_counted(self, processor):
+        _, counts = parse(processor, [line("r1", content=ANSWER)])
+        assert counts["unterminated"] == 0
+
+
 class TestTheThinkingOverride:
     """`extract --thinking` turns the config key on for one run."""
 
@@ -261,11 +282,32 @@ class TestTheThinkingOverride:
         enable_thinking(config)
         assert config["model"]["max_tokens"] == 8192
 
+    def test_it_drops_the_answer_schema(self):
+        """The 2026-11-13 arm is why. A grammar mask deferred to the
+        end-of-think token constrains nothing, and the reasoning block then
+        has to close itself: 1,637 of that run's 1,800 answers never did, and
+        no verdict was read from any of them.
+        """
+        from src.cli import enable_thinking
+
+        config = self.config()
+        config["model"]["structured_output"] = True
+        enable_thinking(config)
+        assert config["model"]["structured_output"] is False
+
+    def test_it_drops_a_schema_the_config_leaves_default(self):
+        from src.cli import enable_thinking
+
+        config = self.config()
+        enable_thinking(config)
+        assert config["model"]["structured_output"] is False
+
     def test_it_says_what_it_changed(self):
         from src.cli import enable_thinking
 
         changed = enable_thinking(self.config())
-        assert any("--reasoning-parser qwen3" in line for line in changed)
+        assert any("launch-server" in line for line in changed)
+        assert any("structured_output" in line for line in changed)
         assert any("max_tokens" in line for line in changed)
 
     def test_it_changes_nothing_else(self):

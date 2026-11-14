@@ -34,7 +34,7 @@ from pathlib import Path
 import pandas as pd
 
 # Custom libraries
-from . import stability
+from . import findings_schema, stability
 from .lexicon import NEGATED, STATED, UNSPECIFIED
 from .run_guard import MANIFEST_FILENAME
 from .storage import STAGE_CONFIGS
@@ -368,6 +368,43 @@ def _wording_value(frame):
     return report
 
 
+def _parse_health(frame, yes):
+    """Count the answers the reader could not turn into a verdict.
+
+    `answer_empty` and `truncated` were the whole of this section, and both
+    are computed from a row the reader parsed. An answer it rejected left
+    every derived column blank and nothing counted it, so the 2026-11-13
+    thinking arm reported `answer_empty 0` and `truncated 0` while 1,637 of
+    its 1,800 rows had no verdict at all. `no_verdict` is that count, split
+    two ways: a reasoning block the generation never closed, which means the
+    answer never began, and any other text the schema does not fit.
+
+    Parameters
+    ----------
+    frame : pandas.DataFrame
+        The rows read from `questions.csv`, as text.
+    yes : pandas.DataFrame
+        The Yes rows of that frame.
+
+    Returns
+    -------
+    dict
+        The counts the parse section prints.
+    """
+    unread = frame[(frame["verdict"] == "") & (frame["answer"] != "")]
+    open_block = unread["answer"].str.startswith(findings_schema.THINK_OPEN) & ~unread[
+        "answer"
+    ].str.contains(findings_schema.THINK_CLOSE, regex=False)
+    return {
+        "answer_empty": int((frame["answer"] == "").sum()),
+        "no_verdict": int(len(unread)),
+        "reasoning_unterminated": int(open_block.sum()),
+        "unreadable_other": int(len(unread) - open_block.sum()),
+        "truncated": int(frame["truncated"].str.lower().isin(("true", "1")).sum()),
+        "evidence_empty_on_yes": int((yes["evidence"] == "").sum()),
+    }
+
+
 def _sole_per_finding(frame, table):
     """Add, per finding, the votes each wording alone would take with it."""
     sets = _yes_sets(frame)
@@ -451,11 +488,7 @@ def audit(frame, wordings=None, rule="max", lock_path=None, config_path=None):
     return {
         "coverage": _coverage(frame, wordings),
         "verdicts": _counts(frame["verdict"]),
-        "parse": {
-            "answer_empty": int((frame["answer"] == "").sum()),
-            "truncated": int(frame["truncated"].str.lower().isin(("true", "1")).sum()),
-            "evidence_empty_on_yes": int((yes["evidence"] == "").sum()),
-        },
+        "parse": _parse_health(frame, yes),
         "certainty_on_yes": _counts(yes["certainty"]),
         "severity_on_yes": _counts(yes["severity"]),
         "unquoted_on_yes": {

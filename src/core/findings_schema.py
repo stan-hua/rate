@@ -168,6 +168,41 @@ GRADED_COLUMNS = {"certainty": "certainty_phrase", "severity": "severity_phrase"
 
 _LEADING_VERDICT = re.compile(r"^\s*(yes|no)\b", re.IGNORECASE)
 
+# Qwen3 opens a reasoning block with the first and closes it with the second.
+# Given `--reasoning-parser qwen3` the server splits the two apart into
+# `reasoning_content`; the batch path returns the content unsplit, so the
+# reader has to do it.
+THINK_OPEN = "<think>"
+THINK_CLOSE = "</think>"
+
+
+def strip_reasoning(text):
+    """Return the answer following a reasoning block, and whether one ran.
+
+    The 2026-11-13 thinking arm stored 1,637 of its 1,800 answers as an
+    unterminated reasoning block: every one opened with `<think>` and not one
+    contained `</think>`, so no answer was ever generated. The schema caught
+    none of it either, because a grammar mask deferred to the end-of-think
+    token never applies. Nothing counted those rows, and the audit's parse
+    section read clean while 91% of the run had no verdict.
+
+    Parameters
+    ----------
+    text : str
+        A stored answer, stripped.
+
+    Returns
+    -------
+    tuple of (str, bool)
+        What follows the reasoning block, and whether the text opened one. An
+        unterminated block yields an empty answer, because the generation
+        stopped before the answer began.
+    """
+    if not text.startswith(THINK_OPEN):
+        return text, False
+    _, _, rest = text.partition(THINK_CLOSE)
+    return rest.strip(), True
+
 
 def response_format():
     """Return the `response_format` body that constrains a request.
@@ -190,7 +225,8 @@ def parse_answer(raw):
     ----------
     raw : str
         The `answer` column as the pipeline wrote it: a JSON object from a run
-        after the schema landed, or `Yes`/`No` from any run before it.
+        after the schema landed, `Yes`/`No` from any run before it, or either
+        of those behind a reasoning block from a run with thinking on.
 
     Returns
     -------
@@ -199,6 +235,7 @@ def parse_answer(raw):
         ``None`` when no verdict can be read at all.
     """
     text = str(raw).strip()
+    text, _ = strip_reasoning(text)
     if not text:
         return None
 
