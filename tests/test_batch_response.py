@@ -116,16 +116,22 @@ class TestTheSamplingBlock:
         )
         return processor._sampling()
 
-    def test_the_committed_config_decodes_greedily_with_thinking_off(self):
+    def test_the_committed_config_decodes_greedily(self):
         """Greedy since 2026-11-09: two 20-report runs moved
         `aortic_atherosclerosis` from 4/3/6 Yes to 1/2/5 under three wordings
         none of which changed, so the sampler and the wording were moving
         answers by about the same amount.
 
-        Greedy needs thinking off, because the model card warns that greedy
-        decoding in thinking mode repeats endlessly. Where sampling is put
-        back, Qwen3 publishes a pair per mode -- 0.6 / 0.95 with thinking on,
-        0.7 / 0.8 with it off -- and the two have to match.
+        The model card warns that greedy decoding in thinking mode repeats
+        endlessly, and thinking has been on since 2026-11-14. The 2026-11-14
+        arm is the measurement against that warning: 1,728 of its 1,800
+        answers closed their reasoning block and parsed, and the 72 that did
+        not had spent a 2,048-token budget that `max_tokens` now covers at
+        4,096.
+
+        Where sampling is put back, Qwen3 publishes a pair per mode -- 0.6 /
+        0.95 with thinking on, 0.7 / 0.8 with it off -- and the two have to
+        match.
         """
         import yaml
 
@@ -134,9 +140,7 @@ class TestTheSamplingBlock:
         )
         sampling = self.build(config["model"])
         thinking = config["model"].get("enable_thinking", True)
-        if sampling["temperature"] == 0:
-            assert not thinking
-        else:
+        if sampling["temperature"] != 0:
             assert (sampling["temperature"], sampling["top_p"]) == (
                 (0.6, 0.95) if thinking else (0.7, 0.8)
             )
@@ -211,13 +215,20 @@ class TestTheThinkingSwitch:
         )
         assert "enable_thinking" not in processor._sampling()
 
-    def test_the_committed_config_and_the_launch_task_agree(self):
-        """The one pairing that silently breaks the schema.
+    def test_the_launch_task_sets_no_reasoning_parser(self):
+        """The launch task never sets `--reasoning-parser`, either way.
 
         sglang wraps the grammar backend in `ReasonerGrammarBackend` whenever
-        `--reasoning-parser` is set, and that wrapper masks nothing until a
-        `</think>` token. With thinking off the model never emits one, so the
-        schema would never be enforced and every answer would be free text.
+        that flag is set, and the wrapper masks nothing until a `</think>`
+        token. With thinking off the model never emits one, so the schema
+        would never be enforced and every answer would be free text. With
+        thinking on the mask arrives after the block, by which point the
+        answer is already written, and the 2026-11-13 arm lost 1,637 of 1,800
+        answers to a block the model never closed under it.
+
+        So no configuration wants the flag. `strip_reasoning` takes a closed
+        block off the front of `content`, which needs neither the flag nor
+        `reasoning_content`.
         """
         import yaml
 
@@ -227,12 +238,9 @@ class TestTheThinkingSwitch:
         launch = manifest[manifest.index("[feature.server.tasks.launch-server]"):]
         launch = launch[: launch.index('"""', launch.index('cmd = """') + 10)]
 
-        thinking = config["model"].get("enable_thinking", True)
-        parser = "--reasoning-parser" in launch
-        assert thinking == parser, (
-            "enable_thinking and --reasoning-parser have to move together: "
-            f"config says {thinking}, launch task says {parser}"
-        )
+        assert "--reasoning-parser" not in launch
+        if config["model"].get("enable_thinking"):
+            assert config["model"]["structured_output"] is False
 
 
 class TestAReasoningBlock:
@@ -275,65 +283,41 @@ class TestAReasoningBlock:
         assert counts["unterminated"] == 0
 
 
-class TestTheThinkingOverride:
-    """`extract --thinking` turns the config key on for one run."""
+class TestTheShippedDecodeConfiguration:
+    """The configuration a cohort run reads, rather than a flag it is given.
 
-    def config(self):
-        return {"model": {"name": "Qwen/Qwen3-30B-A3B", "enable_thinking": False, "max_tokens": 512}}
+    `--thinking` was a flag until 2026-11-14, when the arm and its matched
+    control settled the question: 94 answers gained against 12 lost over
+    1,800 cells, about 87 of the 94 right. So thinking is on in
+    `config/default_config.yaml`, for every finding, and the file is the one
+    place to read the decode configuration from.
+    """
 
-    def test_it_turns_thinking_on(self):
-        from src.cli import enable_thinking
+    @pytest.fixture
+    def model(self):
+        import yaml
 
-        config = self.config()
-        enable_thinking(config)
-        assert config["model"]["enable_thinking"] is True
+        path = Path(__file__).resolve().parents[1] / "config" / "default_config.yaml"
+        with open(path) as handle:
+            return yaml.safe_load(handle)["model"]
 
-    def test_it_raises_a_budget_the_reasoning_block_would_overrun(self):
-        from src.cli import THINKING_MIN_TOKENS, enable_thinking
+    def test_thinking_is_on(self, model):
+        assert model["enable_thinking"] is True
 
-        config = self.config()
-        enable_thinking(config)
-        assert config["model"]["max_tokens"] == THINKING_MIN_TOKENS
-
-    def test_it_leaves_a_larger_budget_alone(self):
-        from src.cli import enable_thinking
-
-        config = self.config()
-        config["model"]["max_tokens"] = 8192
-        enable_thinking(config)
-        assert config["model"]["max_tokens"] == 8192
-
-    def test_it_drops_the_answer_schema(self):
-        """The 2026-11-13 arm is why. A grammar mask deferred to the
-        end-of-think token constrains nothing, and the reasoning block then
-        has to close itself: 1,637 of that run's 1,800 answers never did, and
-        no verdict was read from any of them.
+    def test_the_answer_schema_is_off(self, model):
+        """They cannot both be on. A grammar mask deferred to the end-of-think
+        token constrains nothing, and the reasoning block then has to close
+        itself: 1,637 of the 2026-11-13 arm's 1,800 answers never did, and no
+        verdict was read from any of them.
         """
-        from src.cli import enable_thinking
+        assert model["structured_output"] is False
 
-        config = self.config()
-        config["model"]["structured_output"] = True
-        enable_thinking(config)
-        assert config["model"]["structured_output"] is False
+    def test_the_budget_covers_a_reasoning_block(self, model):
+        """2,048 was measured short: 72 of the 2026-11-14 arm's answers spent
+        the whole budget reasoning and produced no verdict.
+        """
+        assert model["max_tokens"] >= 4096
 
-    def test_it_drops_a_schema_the_config_leaves_default(self):
-        from src.cli import enable_thinking
-
-        config = self.config()
-        enable_thinking(config)
-        assert config["model"]["structured_output"] is False
-
-    def test_it_says_what_it_changed(self):
-        from src.cli import enable_thinking
-
-        changed = enable_thinking(self.config())
-        assert any("launch-server" in line for line in changed)
-        assert any("structured_output" in line for line in changed)
-        assert any("max_tokens" in line for line in changed)
-
-    def test_it_changes_nothing_else(self):
-        from src.cli import enable_thinking
-
-        config = self.config()
-        enable_thinking(config)
-        assert config["model"]["name"] == "Qwen/Qwen3-30B-A3B"
+    def test_decoding_stays_greedy(self, model):
+        """What makes a wording's effect attributable at all."""
+        assert model["temperature"] == 0

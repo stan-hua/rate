@@ -135,13 +135,14 @@ class BatchProcessor:
         #9282. Without the flag the plain grammar backend applies from the
         first token.
 
-        With thinking on, `enable_thinking` in `src/cli.py` drops the schema,
-        because a mask deferred to the end of a reasoning block constrains
-        nothing and the 2026-11-13 arm lost 91% of its answers to one. No
-        grammar runs at all then, and what the flag would add is moving a
-        closed block into `reasoning_content`. `strip_reasoning` takes the
-        block off the front of `content` instead, so the parse path needs
-        neither the flag nor that field.
+        With thinking on, `structured_output: false` in the config drops the
+        schema, because a mask deferred to the end of a reasoning block
+        constrains nothing and the 2026-11-13 arm lost 91% of its answers to
+        one. `assert_decode_is_coherent` refuses a configuration that sets
+        both. No grammar runs at all then, and what the flag would add is
+        moving a closed block into `reasoning_content`. `strip_reasoning`
+        takes the block off the front of `content` instead, so the parse path
+        needs neither the flag nor that field.
         """
         model = self.config.get('model', {})
         if 'enable_thinking' not in model:

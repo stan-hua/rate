@@ -29,6 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.core.exceptions import StorageError
 from src.core.run_guard import (
     MANIFEST_FILENAME,
+    assert_decode_is_coherent,
     assert_resume_compatible,
     configured_wordings,
     decode_fingerprint,
@@ -285,3 +286,50 @@ def test_an_unreadable_manifest_raises(tmp_path):
 def test_the_lock_digest_is_recorded_when_given(tmp_path):
     write_manifest(tmp_path, CONFIG, CATEGORIES, question_set_digest="dc0b3e60b0123b59")
     assert read_manifest(tmp_path)["question_set_digest"] == "dc0b3e60b0123b59"
+
+
+class TestTheDecodeIsCoherent:
+    """Thinking and the answer schema cannot both be on.
+
+    The pairing produces a run rather than an error, which is how the
+    2026-11-13 arm spent its GPU time and stored 1,637 unterminated reasoning
+    blocks under 1,800 keys. So the check runs ahead of the manifest, on the
+    configuration alone.
+    """
+
+    def config(self, **model):
+        merged = {"name": "Qwen/Qwen3-30B-A3B", **model}
+        return {"model": merged}
+
+    def test_both_on_raises(self):
+        with pytest.raises(StorageError, match="structured_output"):
+            assert_decode_is_coherent(
+                self.config(enable_thinking=True, structured_output=True)
+            )
+
+    def test_a_defaulted_schema_raises_too(self):
+        """`structured_output` absent means on, which `engine` reads as True."""
+        with pytest.raises(StorageError, match="structured_output"):
+            assert_decode_is_coherent(self.config(enable_thinking=True))
+
+    def test_thinking_without_the_schema_passes(self):
+        assert_decode_is_coherent(
+            self.config(enable_thinking=True, structured_output=False)
+        )
+
+    def test_the_schema_without_thinking_passes(self):
+        assert_decode_is_coherent(
+            self.config(enable_thinking=False, structured_output=True)
+        )
+
+    def test_a_config_with_no_model_block_passes(self):
+        assert_decode_is_coherent({})
+
+
+def test_the_resume_guard_refuses_an_incoherent_decode_first(tmp_path):
+    """Ahead of the manifest, so the pairing cannot reach a GPU."""
+    both_on = json.loads(json.dumps(CONFIG))
+    both_on["model"]["enable_thinking"] = True
+    with pytest.raises(StorageError, match="structured_output"):
+        assert_resume_compatible(tmp_path, both_on, CATEGORIES, "questions")
+    assert not (tmp_path / MANIFEST_FILENAME).exists()

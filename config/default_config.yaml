@@ -16,21 +16,47 @@
 # wording as its only candidate cause.
 model:
   name: "Qwen/Qwen3-30B-A3B"
-  # Constrain the questions stage's decoding to the answer schema. Set this to
-  # false if `content` comes back empty and the answers are readable only in
-  # `reasoning_content`: sglang's grammar backend defers its token mask until
-  # the end-of-think token, so a reasoning parser and a schema can fight.
-  structured_output: true
-  # Thinking off. Extraction from a report is close to a lookup, and the
+  # Constrain the questions stage's decoding to the answer schema.
+  #
+  # **Off, because thinking is on, and the two cannot both run.** sglang wraps
+  # the grammar backend in `ReasonerGrammarBackend` whenever
+  # `--reasoning-parser` is set, and that wrapper masks nothing until a
+  # `</think>` token, so a schema constrains nothing while the block runs:
+  # the 2026-11-13 arm lost 1,637 of 1,800 answers to a block the model never
+  # closed. Without the parser the mask applies from the first token instead,
+  # which forbids `<think>` and leaves thinking on in name alone. Either way
+  # the schema buys nothing here, because the prompt asks for the object and
+  # `parse_answer` closes one left open.
+  #
+  # So the model reasons unconstrained, writes the object because the prompt
+  # asks for one, and `strip_reasoning` takes the block off the front of
+  # `content`. A malformed answer is then a parse failure the audit counts
+  # under `no_verdict`, rather than a silent blank.
+  structured_output: false
+  # Thinking on, since 2026-11-14. It had been off since `e74ae69`, on the
+  # grounds that extraction from a report is close to a lookup and the
   # reasoning block was most of every answer's tokens.
   #
-  # **Launch the server without `--reasoning-parser` when this is false.**
-  # sglang wraps the grammar backend in `ReasonerGrammarBackend` whenever that
-  # flag is set, and the wrapper enforces nothing until a `</think>` token
-  # arrives. With thinking off none ever does, so the schema would never apply
-  # -- sgl-project #6675 and #9282. Without the flag the plain backend
-  # constrains from the first token.
-  enable_thinking: false
+  # A reasoning run and a matched control over the same 18 wordings and 100
+  # reports measured what it buys: 1,800 cells, 94 answers gained and 12 lost,
+  # and reading both sides' evidence puts about 87 of the 94 right against
+  # about 7 wrong. 79 of the 94 are on four compartment probes, where the
+  # plain run answered "no abnormality" to the report's own
+  # `Vasculature: Mild aortoiliac atherosclerosis` and
+  # `Reproductive organs: Prostatomegaly`. That is the inconsistent reading of
+  # "abnormal" across 16 probes that the question set's own
+  # `aortic_atherosclerosis` finding contradicts at 654 positives.
+  #
+  # **It applies to every finding.** Running the probes with thinking and the
+  # findings without would split one run into two manifests, and `run_guard`
+  # compares one decode configuration against one save directory.
+  #
+  # It costs throughput: 3.24 requests/second against 4.4, so 246 wordings
+  # over 12,681 reports is about 11.1 days rather than 8.2.
+  #
+  # **Launch the server with `launch-server` and no `--reasoning-parser`**,
+  # whichever way this goes -- sgl-project #6675 and #9282.
+  enable_thinking: true
 
   # Greedy, since 2026-11-09. This ran at Qwen3's non-thinking 0.7 / 0.8 /
   # 20, and the comment here said a lower temperature was defensible if the
@@ -41,10 +67,13 @@ model:
   # the discordance the variants exist to measure cannot be read while both
   # are in it.
   #
-  # Greedy is safe here. The card's warning about endless repetition is about
-  # thinking mode, which `enable_thinking: false` turns off, and the response
-  # schema bounds every string besides. It also makes a re-run reproduce its
-  # labels, which a cohort of 12,681 reports and 4.3M requests wants.
+  # Greedy stays. The card warns against it in thinking mode, which is now on,
+  # and the 2026-11-14 run is the measurement against that warning: 1,728 of
+  # its 1,800 answers closed their block and parsed, and the 72 that did not
+  # spent a 2,048-token budget, which `max_tokens` below now covers. Greedy
+  # also makes a re-run reproduce its labels, which a cohort of 12,681 reports
+  # and 3.1M requests wants, and it is what makes a wording's effect
+  # attributable at all.
   #
   # `top_p`, `top_k` and `min_p` are inert at temperature 0 and stay here for
   # whoever puts sampling back.
@@ -52,10 +81,14 @@ model:
   top_p: 0.8
   top_k: 20
   min_p: 0
-  # A backstop, not a target. The schema bounds every string, so a well-formed
-  # answer is about 80 tokens and 200 at the very most. 4096 was 8x of wasted
-  # generation per request on any run where the schema failed to apply.
-  max_tokens: 512
+  # A backstop, not a target. An answer alone is about 80 tokens and 200 at
+  # the very most, which is what 512 was sized for. A reasoning block ahead of
+  # it runs 400 to 1,100 tokens, and 2,048 was measured short: 72 of the
+  # 2026-11-14 arm's 1,800 answers spent the whole budget reasoning and
+  # produced no verdict, each one between 8,421 and 9,577 characters. The cap
+  # therefore binds on a tail rather than on the usual row, and raising it
+  # costs nothing on a generation that stops at the end of its answer.
+  max_tokens: 4096
 
 # Server settings
 server:

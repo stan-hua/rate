@@ -28,6 +28,12 @@ Both raise rather than warn. A resume that silently mixes two question sets
 produces a file nothing downstream can separate, and the remedy -- a fresh
 `--save-dir` -- costs only the GPU time already spent.
 
+A third check runs ahead of both and compares the configuration against
+itself: `assert_decode_is_coherent` refuses a run with thinking and the answer
+schema both on. That pairing answers almost nothing and reports no error, so
+the 2026-11-13 arm spent its GPU time and stored 1,637 unterminated reasoning
+blocks under 1,800 keys.
+
 A save directory filled before this guard existed has no manifest. That case
 warns and writes one from the configuration in hand, because the wording check
 still runs and is the stronger of the two.
@@ -275,6 +281,47 @@ def _wording_differences(stored: Dict[str, str], current: Dict[str, str]) -> lis
     return lines
 
 
+def assert_decode_is_coherent(config: Dict[str, Any]) -> None:
+    """Raise where thinking and the answer schema are both on.
+
+    The pairing produces a run rather than an error. sglang wraps the grammar
+    backend in `ReasonerGrammarBackend` whenever `--reasoning-parser` is set,
+    and that wrapper masks nothing until a `</think>` token, so the schema
+    constrains nothing while the reasoning block runs and the run rests on the
+    model closing the block of its own accord. The 2026-11-13 arm measured
+    what that costs: 1,637 of 1,800 answers were an unterminated block with no
+    verdict in any of them, and the 163 that parsed were the reports the model
+    found easy, which is a selected sample rather than a thin one.
+
+    Without the parser the mask applies from the first token instead, which
+    forbids `<think>` and leaves thinking on in name alone. So neither pairing
+    is the one the configuration asks for, and both read as a run that worked.
+
+    Parameters
+    ----------
+    config : dict
+        The merged configuration the engine runs on.
+
+    Raises
+    ------
+    StorageError
+        When `enable_thinking` and `structured_output` are both on.
+    """
+    model = config.get("model") or {}
+    if not model.get("enable_thinking"):
+        return
+    if not model.get("structured_output", True):
+        return
+    raise StorageError(
+        "model.enable_thinking and model.structured_output are both on, and a "
+        "run under both answers almost nothing: the grammar mask is deferred "
+        "to the end-of-think token, so it constrains nothing while the block "
+        "runs.\n\nSet model.structured_output to false. The schema buys nothing "
+        "alongside thinking, because the prompt asks for the object and "
+        "parse_answer closes one left open."
+    )
+
+
 def assert_resume_compatible(
     save_dir: Path,
     config: Dict[str, Any],
@@ -307,9 +354,11 @@ def assert_resume_compatible(
     Raises
     ------
     StorageError
-        When a stored wording or a guarded decode field differs from the
-        configuration in hand.
+        When the decode configuration is incoherent, or when a stored wording
+        or a guarded decode field differs from the configuration in hand.
     """
+    assert_decode_is_coherent(config)
+
     save_dir = Path(save_dir)
     current_wordings = configured_wordings(findings_categories)
 

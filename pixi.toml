@@ -58,12 +58,18 @@ compressed-tensors = "==0.10.2"
 # with no prefill at all. llguidance is an incremental parser and compiles per
 # schema, not per vocabulary.
 #
-# No `--reasoning-parser`, which pairs with `enable_thinking: false` in
-# `config/default_config.yaml`. The flag makes sglang wrap the grammar backend
-# in `ReasonerGrammarBackend`, which enforces nothing until a `</think>` token
-# arrives -- so with thinking off the schema would never apply at all. To put
-# thinking back, set that config key true and add `--reasoning-parser qwen3`
-# here; the two have to move together.
+# **The grammar flags are inert while thinking is on**, which it has been
+# since 2026-11-14: `structured_output: false` in
+# `config/default_config.yaml` means no schema reaches a request, so no
+# grammar compiles. They stay here for a control run, which turns both keys
+# the other way and needs them.
+#
+# No `--reasoning-parser`, whichever way thinking goes. The flag makes sglang
+# wrap the grammar backend in `ReasonerGrammarBackend`, which enforces nothing
+# until a `</think>` token arrives: with thinking off none ever comes and the
+# schema never applies, and with thinking on the mask arrives after the answer
+# is written. `strip_reasoning` takes a closed block off the front of
+# `content` instead.
 #
 # 512 and 512 is the pair measured on four A40s: `cuda graph: True`,
 # `token usage` 0.31, 4.4 requests per second. Both numbers matter together --
@@ -80,14 +86,21 @@ compressed-tensors = "==0.10.2"
 # To go higher, lower `--mem-fraction-static` in the same step, and move one
 # number at a time. Re-derive from `#token` and `token usage` on other
 # hardware.
-# **One server task, and `extract --thinking` runs against this one too.**
+# **One server task, and a thinking run uses this one.**
 # `launch-server-thinking` added `--reasoning-parser qwen3` and was removed on
 # 2026-11-13, after the one run that used it: sglang wraps the grammar backend
 # in `ReasonerGrammarBackend` whenever that flag is set, the wrapper masks
 # nothing until a `</think>` token, and 1,637 of that run's 1,800 answers came
-# back as an unterminated reasoning block with no verdict in any of them. So
-# thinking drops the schema instead, which `enable_thinking` in `src/cli.py`
-# does, and the server configuration stays as it is.
+# back as an unterminated reasoning block with no verdict in any of them.
+#
+# So the configuration drops the schema instead of the parser, and
+# `assert_decode_is_coherent` refuses a run that sets both. The decode
+# configuration lives in `config/default_config.yaml` and the server
+# configuration stays as it is.
+#
+# **Throughput with thinking on is 3.24 requests per second**, measured over
+# 1,800 requests on 2026-11-14, against the 4.4 below. 246 wordings over
+# 12,681 reports is about 11.1 days.
 [feature.server.tasks.launch-server]
 description = "Serve the model the extraction asks over HTTP"
 cmd = """

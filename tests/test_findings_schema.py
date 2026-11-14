@@ -529,13 +529,22 @@ class TestTheStringsAreNotBounded:
         assert props["named_outright"]["type"] == "boolean"
 
     def test_max_tokens_is_the_backstop(self):
-        """Not 4096: on a run where generation escapes, that is the bill."""
+        """512 while the schema ran, because an escaped generation billed the
+        rest. Thinking took the schema with it on 2026-11-14 and the block
+        needs the room: 400 to 1,100 tokens where it closes, and 2,048 was
+        measured short on 72 of 1,800 answers. The ceiling keeps it a backstop
+        rather than a budget.
+        """
         import yaml
 
         config = yaml.safe_load(
             (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
         )
-        assert config["model"]["max_tokens"] <= 512
+        model = config["model"]
+        if model.get("enable_thinking"):
+            assert 4096 <= model["max_tokens"] <= 8192
+        else:
+            assert model["max_tokens"] <= 512
 
 
 class TestClosingAnOpenObject:
