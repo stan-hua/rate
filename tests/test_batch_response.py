@@ -52,7 +52,9 @@ class TestReadingAnAnswer:
     def test_content_is_read_when_it_is_there(self, processor):
         got, counts = parse(processor, [line("r1", content=ANSWER)])
         assert got["r1"] == ANSWER
-        assert counts == {"empty": 0, "reasoning_only": 0, "unterminated": 0}
+        assert counts == {
+            "empty": 0, "reasoning_only": 0, "unterminated": 0, "reasoned": 0,
+        }
 
     def test_an_empty_content_falls_back_to_reasoning_content(self, processor):
         """The documented failure: sgl-project #6675, #9282, ai-dynamo #9006."""
@@ -239,7 +241,26 @@ class TestAReasoningBlock:
     def test_a_closed_block_is_stripped(self, processor):
         got, counts = parse(processor, [line("r1", content=f"<think>\nWeighing it.\n</think>\n{ANSWER}")])
         assert got["r1"] == ANSWER
-        assert counts == {"empty": 0, "reasoning_only": 0, "unterminated": 0}
+        assert counts == {
+            "empty": 0, "reasoning_only": 0, "unterminated": 0, "reasoned": 1,
+        }
+
+    def test_stripping_the_block_is_counted(self, processor):
+        """The count is the only record that a row reasoned.
+
+        The block is discarded before storage, so a thinking run and a run
+        with thinking off store the same thing. The 2026-11-14 arm was read as
+        a run where the model had declined to reason, on 1,728 rows that had
+        reasoned and been stripped here.
+        """
+        got, counts = parse(processor, [
+            line("r1", content=f"<think>\nWeighing it.\n</think>\n{ANSWER}"),
+            line("r2", content=ANSWER),
+            line("r3", content="<think>\nStill weighing it"),
+        ])
+        assert counts["reasoned"] == 1
+        assert counts["unterminated"] == 1
+        assert got["r2"] == ANSWER
 
     def test_an_unclosed_block_is_counted(self, processor):
         """1,637 of the arm's 1,800 answers. Every one opened the block, not

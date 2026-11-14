@@ -271,6 +271,7 @@ class BatchProcessor:
         empty = 0
         reasoning_only = 0
         unterminated = 0
+        reasoned = 0
         for line_num, line in enumerate(lines):
             if line.strip():
                 try:
@@ -323,9 +324,19 @@ class BatchProcessor:
                         self.logger.warning(f"Could not parse response for {redacted(custom_id)}, available keys: {list(result.keys())}")
                         content = ""
                     
-                    # Clean up content (remove thinking tags if present)
+                    # Clean up content (remove thinking tags if present).
+                    # **This is the only record that a row reasoned.** The
+                    # block is discarded here rather than stored, so
+                    # `questions.csv` has the answer alone and a thinking run
+                    # reads from the stored rows as one with thinking off
+                    # would. The 2026-11-14
+                    # arm was read that way for most of a day: 1,728 of its
+                    # 1,800 answers had reasoned and been stripped here, and
+                    # the 72 left looking like reasoning were the ones whose
+                    # block never closed.
                     if content and "</think>" in content:
                         content = content.split("</think>")[-1]
+                        reasoned += 1
                     elif content.lstrip().startswith("<think>"):
                         # A reasoning block with no end: the generation stopped
                         # before the answer began, so there is nothing to
@@ -369,10 +380,17 @@ class BatchProcessor:
                 f"verdict."
             )
 
+        if reasoned:
+            self.logger.info(
+                f"{reasoned} of {len(results)} answers followed a reasoning block, "
+                f"which is stripped before storage. Thinking is on."
+            )
+
         return results, {
             "empty": empty,
             "reasoning_only": reasoning_only,
             "unterminated": unterminated,
+            "reasoned": reasoned,
         }
 
     def _extract_batch_results(self, batch_response: Any, requests: List[Tuple[str, str]], stage_name: str) -> Dict[str, str]:
@@ -409,6 +427,11 @@ class BatchProcessor:
                 self.logger.warning(
                     f"{counts['empty']} of {len(results)} answers in this batch came back "
                     f"empty. Stop the run and check one response before spending more GPU time."
+                )
+            if counts["reasoned"]:
+                self.logger.info(
+                    f"{counts['reasoned']} of {len(results)} answers followed a reasoning "
+                    f"block, which is stripped before storage. Thinking is on."
                 )
 
             # Clean up API files

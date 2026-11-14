@@ -76,7 +76,7 @@ def parse_args():
     
     return parser.parse_args()
 
-THINKING_MIN_TOKENS = 2048
+THINKING_MIN_TOKENS = 4096
 
 
 def enable_thinking(config: dict) -> list:
@@ -99,7 +99,12 @@ def enable_thinking(config: dict) -> list:
     a silent blank.
 
     `max_tokens` is 512 for an 80-token answer, which a reasoning block
-    overruns, so this raises it.
+    overruns, so this raises it. 2,048 was the first value and the 2026-11-14
+    arm measured it short: 72 of its 1,800 answers spent the whole budget
+    reasoning and produced no verdict, each one between 8,421 and 9,577
+    characters. A block that closes runs 400 to 1,100 tokens, so the cap binds
+    on a tail rather than on the usual row, and raising it costs nothing on a
+    generation that stops at the end of its answer.
 
     Parameters
     ----------
