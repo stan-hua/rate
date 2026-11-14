@@ -407,7 +407,7 @@ categories:
         question: "Are there any simple renal cysts?"
         variants:
           - "According to the report, are there any simple renal cysts?"
-        definition: "A simple renal cyst is defined as a thin-walled, fluid-density renal cyst with no septations, no calcification and no solid component. This definition excludes a cyst with any internal complexity, and it excludes a hypodensity the report leaves uncharacterised, which the renal hypodensity umbrella question covers."
+        definition: "A simple renal cyst is defined as a renal cyst the report names without describing any internal complexity. Naming a lesion a renal cyst is itself the characterisation, so a report that describes no more than that counts. This definition excludes a cyst the report calls complex, septated, calcified, thick-walled, enhancing or solid, which the complex-cyst question covers, and it excludes a hypodensity the report leaves uncharacterised, which the renal hypodensity umbrella question covers."
       - id: complex_renal_cyst
         question: "Are there any complex renal cysts?"
         variants:
@@ -622,7 +622,7 @@ categories:
         question: "Is there any ascites?"
         variants:
           - "According to the report, is there any ascites?"
-        definition: "Ascites is defined as free peritoneal fluid the report does not call blood, from cirrhosis, malignancy or heart failure. This definition excludes free blood, which the hemoperitoneum question covers, and fluid the report leaves uncharacterised, which the free-fluid umbrella question covers."
+        definition: "Ascites is defined as free peritoneal fluid the report calls ascites, or attributes to cirrhosis, malignancy or heart failure. This definition excludes free blood, which the hemoperitoneum question covers; fluid the report places by location alone, such as trace free fluid in a dependent space, which the free-fluid umbrella question covers; and a section the report heads \"Ascites\" and then fills with fluid it calls blood or of unclear etiology."
         include_terms:
           - "ascites"
           - "ascitic fluid"
