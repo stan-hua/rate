@@ -834,7 +834,7 @@ categories:
         variants:
           - "Is the prostate enlarged, or is there benign prostatic hyperplasia?"
           - "According to the report, is there prostatomegaly or prostatic hyperplasia?"
-        definition: "Prostatomegaly is defined as an enlarged prostate, or benign prostatic hyperplasia the report names. This definition excludes a prostatic mass and a malignancy."
+        definition: "Prostatomegaly is defined as an enlarged prostate, or benign prostatic hyperplasia the report names. This definition excludes a prostatic mass and a malignancy. A patient with no prostate answers this question No, which covers a report that describes a female pelvis and a report that never mentions the prostate."
 
       - id: any_male_pelvis
         question: "Is there any abnormality of the prostate or scrotum?"

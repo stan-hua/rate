@@ -1,6 +1,6 @@
 {
   "digest": {
-    "file": "a21f34abdcd25cb7",
+    "file": "1d3b5639c2d10acc",
     "question_set": "00cac89b4bbd4e3f"
   },
   "findings": {
@@ -1969,6 +1969,7 @@
     },
     "prostatomegaly_bph": {
       "category": "Male Pelvis",
+      "change": "scope_change",
       "covariate": false,
       "tier": "A",
       "variants": [
@@ -2460,7 +2461,7 @@
       "window": "RUQ/LUQ"
     }
   },
-  "generated": "2026-11-13",
+  "generated": "2026-11-14",
   "modality": "fast_abdominal_ct",
   "retired": [
     {
