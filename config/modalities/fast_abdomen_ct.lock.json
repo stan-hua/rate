@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "d295d2259fe90df7",
-    "question_set": "bf62c30f5f55eff2"
+    "file": "ab8188ff69769266",
+    "question_set": "4c5094c3c894de14"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -1014,6 +1014,7 @@
     },
     "gallbladder_surgically_absent": {
       "category": "Gallbladder",
+      "change": "scope_change",
       "covariate": false,
       "tier": "A",
       "variants": [
@@ -2126,12 +2127,6 @@
         },
         {
           "index": 1,
-          "md5": "4d751f3d",
-          "question": "Is there a renal calculus or a kidney stone?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
           "md5": "5853ad0c",
           "question": "According to the report, are there any renal stones / nephrolithiasis?",
           "role": "sourced"
@@ -4016,6 +4011,13 @@
       "id": "renal_lymphoma",
       "md5": "c2861acc",
       "question": "Does the report describe renal lymphoma?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "synonym",
+      "id": "renal_stones_nephrolithiasis",
+      "md5": "4d751f3d",
+      "question": "Is there a renal calculus or a kidney stone?"
     },
     {
       "category": "Kidney",

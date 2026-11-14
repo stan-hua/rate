@@ -302,7 +302,7 @@ categories:
         variants:
           - "Is there a prior cholecystectomy?"
           - "According to the report, is the gallbladder surgically absent?"
-        definition: "A surgically absent gallbladder is defined as a gallbladder absent after a cholecystectomy, where the report states the prior surgery or records no gallbladder beside surgical clips in the gallbladder fossa. This definition excludes a contracted or poorly distended gallbladder."
+        definition: "A surgically absent gallbladder is defined as a gallbladder absent after a cholecystectomy, where the report states the prior surgery or records no gallbladder beside surgical clips in the gallbladder fossa. A report attributing biliary ductal dilatation to a postcholecystectomy state states the surgery. This definition excludes a contracted or poorly distended gallbladder, and it excludes a gallbladder the report calls unremarkable or normal, which is a gallbladder the patient has."
       - id: choledochal_cysts
         question: "Are there any choledochal cysts?"
         variants:
@@ -434,9 +434,8 @@ categories:
       - id: renal_stones_nephrolithiasis
         question: "Are there any renal stones / nephrolithiasis?"
         variants:
-          - "Is there a renal calculus or a kidney stone?"
           - "According to the report, are there any renal stones / nephrolithiasis?"
-        definition: "A renal stone is defined as a calculus in the kidney, including the renal pelvis. This definition excludes a stone in a ureter or in the bladder."
+        definition: "A renal stone is defined as a calculus in the kidney, including the renal pelvis, whether or not it obstructs. This definition excludes a stone in a ureter or in the bladder."
         include_terms:
           - "nephrolithiasis"
           - "renal calculus"

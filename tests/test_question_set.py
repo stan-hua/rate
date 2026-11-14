@@ -343,7 +343,7 @@ class TestTheFastConfigAndItsLock:
             for b in LOCK["findings"].values()
             if any(v["role"] == "synonym" for v in b["variants"])
         )
-        assert with_synonym == 30
+        assert with_synonym == 29
 
     def test_no_wording_is_asked_under_two_findings(self):
         """The md5 is the resume key, so one of the two would never be asked."""
@@ -464,14 +464,14 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 8
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """107 findings over 244 wordings, so 244 requests per report.
+        """107 findings over 243 wordings, so 243 requests per report.
 
         83 visible findings with a positive in the cohort, 8 tier C questions
         kept as covariates, 5 findings the source never asked about, and one
         compartment probe per compartment. Of the five, two are for free fluid,
         two are halves of a compound question the source asked as one, and one
-        is the hepatic hypodensity umbrella. 30 findings are asked three times
-        and 77 twice, because a finding with no exact synonym has no synonym
+        is the hepatic hypodensity umbrella. 29 findings are asked three times
+        and 78 twice, because a finding with no exact synonym has no synonym
         slot.
 
         It was 113 findings over 339 wordings until 2026-11-11. Seven findings
@@ -486,21 +486,29 @@ class TestTheFastConfigAndItsLock:
         `lymphadenopathy`'s synonym became its canonical, which left that slot
         empty.
 
-        2026-11-14 took two more synonyms to null, which brings a cohort run to
-        3,094,164 requests. `hepatomegaly`'s and
-        `metastatic_disease_general`'s were both the A25 class failure, read
-        from the evidence rather than from their counts: swapping a Latinate
-        diagnosis for a plain-English predicate reads as an exact synonym and
-        holds different scope in these reports. `prostatomegaly_bph`'s survived
-        the same reading, because 19 of its 20 reviewed cells quote one
-        identical sentence naming the finding outright, which is extraction
-        noise under a fixed wording rather than a defect in either.
+        2026-11-14 took three more synonyms to null, which brings a cohort run
+        to 3,081,483 requests. Each of the six A40 measured lopsided was read
+        from its evidence rather than from its counts, and three were defects:
+        `hepatomegaly`'s and `metastatic_disease_general`'s were the A25 class
+        failure, where a plain-English predicate reads as an exact synonym and
+        holds different scope, and `renal_stones_nephrolithiasis`' answered its
+        neighbour's question, since 9 of its 20 lone cells are a stone in a
+        ureter that the definition already excludes.
+
+        The other three stand, and two of them are the better wording.
+        `hepatic_steatosis`' holds 8 correct cells its canonical declined,
+        including focal falciform fat the canonical names in its own text.
+        `gallbladder_surgically_absent`'s holds the cells where the report
+        names the operation rather than the missing organ. `prostatomegaly_bph`'s
+        disagrees with its canonical over one identical sentence naming the
+        finding outright, which is extraction noise rather than a defect in
+        either.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
         assert len(findings) == 107
-        assert wordings == 244
+        assert wordings == 243
         assert len(added) == 21
 
     def test_a_rescoped_finding_records_the_change(self):
