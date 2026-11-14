@@ -202,17 +202,20 @@ categories:
         variants:
           - "Are there any indeterminate liver masses?"
           - "According to the report, are there any indeterminate hepatic masses?"
-        definition: "An indeterminate hepatic mass is defined as a solid hepatic lesion the report describes and does not characterise. This definition excludes a cyst, and it excludes a lesion the report names, such as a hemangioma, a metastasis or a hepatocellular carcinoma."
+        definition: "An indeterminate hepatic mass is defined as a hepatic lesion the report calls a mass or describes as solid and does not characterise further. This definition excludes a cyst, it excludes a lesion the report names, such as a hemangioma, a metastasis or a hepatocellular carcinoma, and it excludes a hypodensity or a low-density lesion the report leaves uncharacterised, which the hepatic hypodensity umbrella question covers."
         include_terms:
           - "indeterminate hepatic lesion"
           - "indeterminate liver mass"
           - "solid hepatic lesion"
+          - "hepatic mass"
         exclude_terms:
           - "hepatic cyst"
           - "simple cyst"
           - "hemangioma"
           - "metastasis"
           - "hepatocellular carcinoma"
+          - "hypodensity"
+          - "too small to characterize"
       - id: hepatocellular_carcinoma_hcc
         question: "Is there hepatocellular carcinoma?"
         variants:
@@ -250,11 +253,11 @@ categories:
           - "According to the report, are there any hepatic changes post-transplantation?"
         definition: "A liver transplant is defined as a transplanted liver, or operative change from one: a vascular or biliary anastomosis, or a prior transplant the report names. This definition excludes a hepatic resection."
       - id: portal_venous_occlusion_thrombosis
-        question: "Is there portal venous occlusion?"
+        question: "Is there portal venous thrombosis or occlusion?"
         variants:
           - "Is the portal vein thrombosed or occluded?"
-          - "According to the report, is there portal venous occlusion?"
-        definition: "Portal venous thrombosis is defined as thrombus in the portal vein or its branches, whether or not it occludes the lumen. This definition includes a chronically occluded vein and cavernous transformation."
+          - "According to the report, is there portal venous thrombosis or occlusion?"
+        definition: "Portal venous thrombosis is defined as thrombus in the main portal vein or its intrahepatic branches, whether or not it occludes the lumen. This definition includes a chronically occluded vein, cavernous transformation, and tumour thrombus. It includes a thrombus at the splenoportal confluence that extends into the portal vein, and it excludes thrombus confined to the splenic vein or the superior mesenteric vein while the portal vein is patent."
       - id: portal_venous_gas
         question: "Is there any portal venous gas?"
         variants:
@@ -263,6 +266,18 @@ categories:
         definition: "Portal venous gas is defined as gas in the portal vein or its intrahepatic branches, extending to the periphery of the liver. This definition excludes gas in the bile ducts, which stays central and which the pneumobilia question covers."
       
       
+      - id: hepatic_hypodensities
+        question: "Are there any hepatic hypodensities?"
+        variants:
+          - "According to the report, are there any hepatic hypodensities?"
+        definition: "A hepatic hypodensity is defined as a low-density lesion in the liver, whatever the report calls it. This definition includes a simple cyst, an indeterminate mass and a hypodensity the report leaves uncharacterised, because this is the umbrella question and the specific liver lesion questions fall under it. It excludes a lesion the report characterises as solid and enhancing."
+        include_terms:
+          - "hepatic hypodensity"
+          - "hypodensity in the liver"
+          - "hypoattenuating hepatic lesion"
+          - "low-density hepatic lesion"
+          - "too small to characterize"
+        severity_scale: "the size the report gives, in centimetres"
       - id: any_liver
         question: "Is there any abnormality of the liver?"
         variants:
@@ -479,10 +494,10 @@ categories:
           - "myolipoma"
           - "adrenal myelolipoma"
       - id: post_nephrectomy
-        question: "Are there any post-nephrectomy changes?"
+        question: "Are there any post-nephrectomy changes in the renal fossa?"
         variants:
-          - "According to the report, are there any post-nephrectomy changes?"
-        definition: "Post-nephrectomy change is defined as operative change from a nephrectomy: a surgical bed or cavity in the renal fossa, clips or sutures, or a parenchymal defect from a partial nephrectomy. This definition includes a partial and a total nephrectomy alike, and a kidney the report states was surgically removed. It excludes an absent kidney alone -- congenital absence, agenesis, or an absence the report does not explain -- and it excludes a renal allograft."
+          - "According to the report, are there any post-nephrectomy changes in the renal fossa?"
+        definition: "Post-nephrectomy change is defined as operative change from a nephrectomy: a surgical bed or cavity in the renal fossa, clips or sutures, or a parenchymal defect from a partial nephrectomy. This definition includes a partial and a total nephrectomy alike, and a kidney the report states was surgically removed. It excludes an absent kidney alone -- congenital absence, agenesis, or an absence the report does not explain -- it excludes a renal allograft, and it excludes operative change from the removal of another organ, which the splenectomy, cholecystectomy and hysterectomy questions cover."
       - id: post_renal_transplant
         question: "Are there any post-renal transplantation changes?"
         variants:
@@ -762,11 +777,10 @@ categories:
     description: "Retroperitoneal space findings"
     questions:
       - id: lymphadenopathy
-        question: "Is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?"
+        question: "Are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?"
         variants:
-          - "Are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?"
-          - "According to the report, is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?"
-        definition: "Lymphadenopathy is defined as an enlarged lymph node in the retroperitoneum, the peritoneum or the pelvis, or lymphadenopathy the report names at one of those sites. This definition excludes a node the report calls normal in size."
+          - "According to the report, are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?"
+        definition: "Lymphadenopathy is defined as a pathologically enlarged lymph node in the retroperitoneum, the peritoneum or the pelvis. This definition excludes a node the report calls prominent, mildly prominent, reactive, nonspecific or normal in size, and it excludes a section the report heads \"Lymphadenopathy\" and then fills with nodes it describes as any of those."
       - id: retroperitoneal_hemorrhage
         question: "Is there retroperitoneal hemorrhage or retroperitoneal hematomas?"
         variants:
@@ -775,10 +789,10 @@ categories:
       
 
       - id: any_retroperitoneum
-        question: "Is there any abnormality of the retroperitoneum?"
+        question: "Is there any abnormality of the retroperitoneum, the space containing the kidneys, adrenals, pancreas, aorta and inferior vena cava?"
         variants:
-          - "According to the report, is there any abnormality of the retroperitoneum?"
-        definition: "An abnormality of the retroperitoneum is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes free fluid inside the peritoneal cavity."
+          - "According to the report, is there any abnormality of the retroperitoneum, the space containing the kidneys, adrenals, pancreas, aorta and inferior vena cava?"
+        definition: "An abnormality of the retroperitoneum is defined as anything the report records as abnormal in the retroperitoneum or around its organs, perinephric, periaortic, peripancreatic or periadrenal, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. It excludes a device where the organ is otherwise normal, a finding the report files under the peritoneum or the mesentery, a finding in the extraperitoneal pelvic spaces -- presacral, retropubic, or the pelvic sidewall -- and a finding in the abdominal wall, the gluteal muscles or the other extra-abdominal soft tissues."
         include_terms:
           - "retroperitoneal fluid or hemorrhage"
           - "retroperitoneal lymphadenopathy"

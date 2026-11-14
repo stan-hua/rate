@@ -172,7 +172,7 @@ def test_an_inherited_canonical_is_byte_for_byte_the_abdomen_set_s():
         for b in LOCK["findings"].values()
         if b.get("replaced")
     }
-    assert len(replaced) == 19
+    assert len(replaced) == 22
     assert CANONICAL_WORDINGS - replaced <= abdomen
     for identifier, body in LOCK["findings"].items():
         if body.get("replaced"):
@@ -343,7 +343,7 @@ class TestTheFastConfigAndItsLock:
             for b in LOCK["findings"].values()
             if any(v["role"] == "synonym" for v in b["variants"])
         )
-        assert with_synonym == 33
+        assert with_synonym == 32
 
     def test_no_wording_is_asked_under_two_findings(self):
         """The md5 is the resume key, so one of the two would never be asked."""
@@ -464,27 +464,34 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 8
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """106 findings over 245 wordings, so 245 requests per report.
+        """107 findings over 246 wordings, so 246 requests per report.
 
         83 visible findings with a positive in the cohort, 8 tier C questions
-        kept as covariates, 4 findings the source never asked about, and one
-        compartment probe per compartment. Of the four, two are for free fluid
-        and two are halves of a compound question the source asked as one. 33
-        findings are asked three times and 73 twice, because a finding with no
-        exact synonym has no synonym slot.
+        kept as covariates, 5 findings the source never asked about, and one
+        compartment probe per compartment. Of the five, two are for free fluid,
+        two are halves of a compound question the source asked as one, and one
+        is the hepatic hypodensity umbrella. 32 findings are asked three times
+        and 75 twice, because a finding with no exact synonym has no synonym
+        slot.
 
         It was 113 findings over 339 wordings until 2026-11-11. Seven findings
         left and the synonym slot became conditional. The 2026-11-12 pilot then
         measured two synonyms as defects and both slots went to null, which
         takes a run over the 12,681-report cohort from 4,298,859 requests to
         3,106,845.
+
+        2026-11-13 moved it once more, to 3,119,526 requests:
+        `hepatic_hypodensities` arrived, because the kidney had an umbrella
+        for an uncharacterised low-density lesion and the liver had none, and
+        `lymphadenopathy`'s synonym became its canonical, which left that slot
+        empty.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
-        assert len(findings) == 106
-        assert wordings == 245
-        assert len(added) == 20
+        assert len(findings) == 107
+        assert wordings == 246
+        assert len(added) == 21
 
     def test_a_rescoped_finding_records_the_change(self):
         """`ifast`'s QC sheet reads this to flag the rows needing a re-read.

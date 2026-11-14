@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "c08bd0a17106fdc8",
-    "question_set": "0fdfd71c6965529e"
+    "file": "a21f34abdcd25cb7",
+    "question_set": "00cac89b4bbd4e3f"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -480,14 +480,14 @@
       "variants": [
         {
           "index": 0,
-          "md5": "44836ede",
-          "question": "Is there any abnormality of the retroperitoneum?",
+          "md5": "d0857373",
+          "question": "Is there any abnormality of the retroperitoneum, the space containing the kidneys, adrenals, pancreas, aorta and inferior vena cava?",
           "role": "canonical"
         },
         {
           "index": 1,
-          "md5": "90fa50f0",
-          "question": "According to the report, is there any abnormality of the retroperitoneum?",
+          "md5": "78398ade",
+          "question": "According to the report, is there any abnormality of the retroperitoneum, the space containing the kidneys, adrenals, pancreas, aorta and inferior vena cava?",
           "role": "sourced"
         }
       ],
@@ -1208,6 +1208,27 @@
       ],
       "window": "RUQ"
     },
+    "hepatic_hypodensities": {
+      "added": true,
+      "category": "Liver",
+      "covariate": false,
+      "tier": "B",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "98147c18",
+          "question": "Are there any hepatic hypodensities?",
+          "role": "canonical"
+        },
+        {
+          "index": 1,
+          "md5": "fa1c2b38",
+          "question": "According to the report, are there any hepatic hypodensities?",
+          "role": "sourced"
+        }
+      ],
+      "window": "RUQ"
+    },
     "hepatic_mass_indeterminate": {
       "category": "Liver",
       "change": "scope_change",
@@ -1513,25 +1534,22 @@
     },
     "lymphadenopathy": {
       "category": "Retroperitoneum",
+      "change": "scope_change",
       "covariate": true,
+      "replaced": true,
+      "source_question": "Is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?",
       "tier": "C",
       "variants": [
         {
           "index": 0,
-          "md5": "14e8d016",
-          "question": "Is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?",
+          "md5": "69eef3fd",
+          "question": "Are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?",
           "role": "canonical"
         },
         {
           "index": 1,
-          "md5": "69eef3fd",
-          "question": "Are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "9eb892ce",
-          "question": "According to the report, is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?",
+          "md5": "cdcd2bf6",
+          "question": "According to the report, are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?",
           "role": "sourced"
         }
       ],
@@ -1775,12 +1793,14 @@
       "category": "Liver",
       "change": "scope_change",
       "covariate": false,
+      "replaced": true,
+      "source_question": "Is there portal venous occlusion?",
       "tier": "B",
       "variants": [
         {
           "index": 0,
-          "md5": "c0516a63",
-          "question": "Is there portal venous occlusion?",
+          "md5": "9c1aad09",
+          "question": "Is there portal venous thrombosis or occlusion?",
           "role": "canonical"
         },
         {
@@ -1791,8 +1811,8 @@
         },
         {
           "index": 2,
-          "md5": "cd2a9dc3",
-          "question": "According to the report, is there portal venous occlusion?",
+          "md5": "0987582d",
+          "question": "According to the report, is there portal venous thrombosis or occlusion?",
           "role": "sourced"
         }
       ],
@@ -1851,18 +1871,20 @@
       "category": "Kidney",
       "change": "scope_change",
       "covariate": false,
+      "replaced": true,
+      "source_question": "Are there any post-nephrectomy changes?",
       "tier": "A",
       "variants": [
         {
           "index": 0,
-          "md5": "64ec8614",
-          "question": "Are there any post-nephrectomy changes?",
+          "md5": "1980d888",
+          "question": "Are there any post-nephrectomy changes in the renal fossa?",
           "role": "canonical"
         },
         {
           "index": 1,
-          "md5": "cd3786cd",
-          "question": "According to the report, are there any post-nephrectomy changes?",
+          "md5": "3b957f96",
+          "question": "According to the report, are there any post-nephrectomy changes in the renal fossa?",
           "role": "sourced"
         }
       ],
@@ -2438,7 +2460,7 @@
       "window": "RUQ/LUQ"
     }
   },
-  "generated": "2026-11-12",
+  "generated": "2026-11-13",
   "modality": "fast_abdominal_ct",
   "retired": [
     {
@@ -2676,6 +2698,13 @@
       "replaced_by": "e8b96714"
     },
     {
+      "category": "Liver",
+      "id": "portal_venous_occlusion_thrombosis",
+      "md5": "c0516a63",
+      "question": "Is there portal venous occlusion?",
+      "replaced_by": "9c1aad09"
+    },
+    {
       "category": "Gallbladder",
       "id": "gallbladder_wall_thickening",
       "md5": "3b06d084",
@@ -2720,6 +2749,13 @@
       "md5": "7500f3a4",
       "question": "Are there any bladder transitional cell carcinomas?",
       "replaced_by": "8a671fa1"
+    },
+    {
+      "category": "Kidney",
+      "id": "post_nephrectomy",
+      "md5": "64ec8614",
+      "question": "Are there any post-nephrectomy changes?",
+      "replaced_by": "1980d888"
     },
     {
       "category": "Kidney",
@@ -3015,6 +3051,13 @@
       "category": "Great Vessel",
       "md5": "3a3629eb",
       "question": "Are there any penetrating atherosclerotic aortic ulcers?"
+    },
+    {
+      "category": "Retroperitoneum",
+      "id": "lymphadenopathy",
+      "md5": "14e8d016",
+      "question": "Is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?",
+      "replaced_by": "69eef3fd"
     },
     {
       "category": "Retroperitoneum",
@@ -3433,6 +3476,20 @@
       "question": "Does the report describe any abnormality of the retroperitoneum?"
     },
     {
+      "category": "Retroperitoneum",
+      "dropped_role": "canonical",
+      "id": "any_retroperitoneum",
+      "md5": "44836ede",
+      "question": "Is there any abnormality of the retroperitoneum?"
+    },
+    {
+      "category": "Retroperitoneum",
+      "dropped_role": "sourced",
+      "id": "any_retroperitoneum",
+      "md5": "90fa50f0",
+      "question": "According to the report, is there any abnormality of the retroperitoneum?"
+    },
+    {
       "category": "Spleen",
       "dropped_role": "reframe",
       "id": "any_spleen",
@@ -3763,6 +3820,13 @@
     },
     {
       "category": "Retroperitoneum",
+      "dropped_role": "sourced",
+      "id": "lymphadenopathy",
+      "md5": "9eb892ce",
+      "question": "According to the report, is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?"
+    },
+    {
+      "category": "Retroperitoneum",
       "dropped_role": "reframe",
       "id": "lymphadenopathy",
       "md5": "c5e37eec",
@@ -3846,6 +3910,13 @@
       "question": "Does the report describe portal venous occlusion?"
     },
     {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "portal_venous_occlusion_thrombosis",
+      "md5": "cd2a9dc3",
+      "question": "According to the report, is there portal venous occlusion?"
+    },
+    {
       "category": "Female pelvis",
       "dropped_role": "reframe",
       "id": "post_hysterectomy",
@@ -3865,6 +3936,13 @@
       "id": "post_nephrectomy",
       "md5": "c7d65259",
       "question": "Does the report describe post-nephrectomy changes?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "post_nephrectomy",
+      "md5": "cd3786cd",
+      "question": "According to the report, are there any post-nephrectomy changes?"
     },
     {
       "category": "Kidney",
