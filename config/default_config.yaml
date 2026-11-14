@@ -67,27 +67,52 @@ model:
   # the discordance the variants exist to measure cannot be read while both
   # are in it.
   #
-  # Greedy stays. The card warns against it in thinking mode, which is now on,
-  # and the 2026-11-14 run is the measurement against that warning: 1,728 of
-  # its 1,800 answers closed their block and parsed, and the 72 that did not
-  # spent a 2,048-token budget, which `max_tokens` below now covers. Greedy
-  # also makes a re-run reproduce its labels, which a cohort of 12,681 reports
-  # and 3.1M requests wants, and it is what makes a wording's effect
-  # attributable at all.
+  # Greedy stays, and the reason it stays has changed. `e74ae69` argued the
+  # card's warning about greedy decoding applies to thinking mode alone, which
+  # was then off; thinking is on again, so that argument is gone and the
+  # measurement is what carries it.
+  #
+  # **What the warning costs here: 0.75% of label cells.** Of the 2026-11-14
+  # run's 1,800 answer rows, 75 carried no verdict, 4.17%. A row is one
+  # wording, and `q_<finding>` is `max` over the wordings, so a dead row costs
+  # a label only where every wording of that finding dies: 63 of 800 label
+  # cells had a dead row and 6 lost every wording. The vote rescued 57 of the
+  # 63. Measuring the 72 unterminated bodies, the tail is partly circling
+  # rather than merely long -- a median zlib ratio of 0.208 against roughly
+  # 0.35 to 0.40 for prose, with 70 of the 72 repeating at least a tenth of
+  # their 40-character windows -- so if the rate ever needs fixing, the lever
+  # is `presence_penalty` near 0.3 rather than a larger cap.
+  #
+  # **What greedy buys** is a re-run that reproduces its labels over 12,681
+  # reports and 3.1M requests, and a wording whose effect is attributable at
+  # all. Those outweigh 0.75%, and the two failure modes are not comparable
+  # anyway: without thinking the compartment probes returned about 87
+  # incorrect answers per 1,800 cells, where this returns 6 cells per 800 with
+  # no answer, and `-1` leaves the loss by design.
   #
   # `top_p`, `top_k` and `min_p` are inert at temperature 0 and stay here for
-  # whoever puts sampling back.
+  # whoever puts sampling back. **`top_p: 0.8` is the non-thinking figure**,
+  # kept from `e74ae69`; the thinking pair is 0.6 / 0.95, and
+  # `test_the_committed_config_decodes_greedily` refuses the mismatched pair if
+  # sampling ever returns.
   temperature: 0
   top_p: 0.8
   top_k: 20
   min_p: 0
-  # A backstop, not a target. An answer alone is about 80 tokens and 200 at
-  # the very most, which is what 512 was sized for. A reasoning block ahead of
-  # it runs 400 to 1,100 tokens, and 2,048 was measured short: 72 of the
-  # 2026-11-14 arm's 1,800 answers spent the whole budget reasoning and
-  # produced no verdict, each one between 8,421 and 9,577 characters. The cap
-  # therefore binds on a tail rather than on the usual row, and raising it
-  # costs nothing on a generation that stops at the end of its answer.
+  # A backstop, not a target, and back to the value upstream shipped. An answer
+  # alone is about 80 tokens and 200 at the very most, which is what 512 was
+  # sized for in `776a8a9`, the commit that bounded every schema string. A
+  # reasoning block ahead of it runs 400 to 1,100 tokens, and 2,048 was
+  # measured short: 72 of the 2026-11-14 arm's 1,800 answers spent the whole
+  # budget reasoning and produced no verdict, each one between 8,421 and 9,577
+  # characters.
+  #
+  # So the cap binds on a tail rather than on the usual row. It does not follow
+  # that raising it is free: part of that tail repeats itself, and a
+  # generation that circles will spend whatever it is given. What raising it
+  # buys is the share of the tail that was reasoning honestly and ran out of
+  # room, and the smoke over all 243 wordings is what says how large that
+  # share is.
   max_tokens: 4096
 
 # Server settings
