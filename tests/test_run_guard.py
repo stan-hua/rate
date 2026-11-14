@@ -227,6 +227,9 @@ def test_a_removed_finding_is_reported(tmp_path):
     [
         ("temperature", 0.7),
         ("enable_thinking", True),
+        ("presence_penalty", 0.5),
+        ("frequency_penalty", 0.5),
+        ("repetition_penalty", 1.1),
         ("structured_output", False),
         ("name", "Qwen/Qwen3-32B"),
         ("max_tokens", 4096),

@@ -66,6 +66,16 @@ GUARDED_MODEL_FIELDS = (
     "max_tokens",
     "enable_thinking",
     "structured_output",
+    # Forwarded to the server since the beginning and guarded only from
+    # 2026-11-14. Any of the three changes what a wording answers, and the
+    # reason to reach for one is live: Qwen3's card calls for a presence
+    # penalty where thinking repeats, and 72 of the 2026-11-14 run's 1,800
+    # answers circled to the token cap without closing their reasoning block.
+    # Unguarded, adding one mid-run would have resumed a directory filled
+    # without it.
+    "repetition_penalty",
+    "presence_penalty",
+    "frequency_penalty",
 )
 
 QUESTIONS_FILENAME = "questions.csv"
