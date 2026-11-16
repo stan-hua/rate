@@ -16,6 +16,7 @@ Every fixture here is synthetic. No row comes from a patient report.
 
 # Standard libraries
 import json
+import logging
 import sys
 from pathlib import Path
 
@@ -211,15 +212,98 @@ def test_a_dropped_v1_refuses_the_resume(tmp_path):
         assert_resume_compatible(tmp_path, CONFIG, shortened, "questions")
 
 
-def test_a_removed_finding_is_reported(tmp_path):
-    _questions_csv(
-        tmp_path / "questions.csv", _stored_rows(configured_wordings(CATEGORIES))
-    )
-    write_manifest(tmp_path, CONFIG, CATEGORIES)
+class TestAFindingTheConfigurationNoLongerAsks:
+    """A withdrawal warns and the run continues.
 
-    fewer = {"Liver": {"questions": [CATEGORIES["Liver"]["questions"][0]]}}
-    with pytest.raises(StorageError, match="no longer\nasks|no longer asks"):
-        assert_resume_compatible(tmp_path, CONFIG, fewer, "questions")
+    This raised until 2026-11-16, when `any_retroperitoneum` left the set a day
+    into the cohort run and the guard refused a resume over 304 stored rows of
+    a tier C question nothing downstream reads. Nothing is mixed in this case:
+    the builder asks that key no more, so no request is filtered against those
+    rows.
+    """
+
+    def fewer(self):
+        """The categories with `hepatomegaly` withdrawn.
+
+        Deep-copied, because a test below rewords the question it keeps and
+        `CATEGORIES` is shared with every other test in this file.
+        """
+        kept = json.loads(json.dumps(CATEGORIES["Liver"]["questions"][0]))
+        return {"Liver": {"questions": [kept]}}
+
+    def filled(self, tmp_path):
+        """A save directory the whole question set has written to."""
+        _questions_csv(
+            tmp_path / "questions.csv", _stored_rows(configured_wordings(CATEGORIES))
+        )
+        write_manifest(tmp_path, CONFIG, CATEGORIES, "aaaaaaaaaaaaaaaa")
+
+    def test_the_resume_goes_ahead(self, tmp_path):
+        self.filled(tmp_path)
+        assert_resume_compatible(tmp_path, CONFIG, self.fewer(), "questions")
+
+    def test_the_warning_names_every_withdrawn_key(self, tmp_path, caplog):
+        self.filled(tmp_path)
+        logger = logging.getLogger("test_withdrawal")
+        with caplog.at_level(logging.WARNING):
+            assert_resume_compatible(
+                tmp_path, CONFIG, self.fewer(), "questions", logger=logger
+            )
+        message = caplog.text
+        assert "hepatomegaly_v0" in message
+        assert "hepatomegaly_v1" in message
+        assert "hepatomegaly_v2" in message
+        assert "cirrhosis" not in message
+
+    def test_the_manifest_records_the_withdrawal(self, tmp_path):
+        self.filled(tmp_path)
+        assert_resume_compatible(
+            tmp_path, CONFIG, self.fewer(), "questions", question_set_digest="bbbb"
+        )
+
+        manifest = read_manifest(tmp_path)
+        assert manifest["withdrawn_mid_run"] == [
+            "hepatomegaly_v0",
+            "hepatomegaly_v1",
+            "hepatomegaly_v2",
+        ]
+        assert manifest["question_set_digest_latest"] == "bbbb"
+        # What the directory was opened under stays as it was.
+        assert manifest["question_set_digest"] == "aaaaaaaaaaaaaaaa"
+        assert "hepatomegaly_v0" in manifest["wordings"]
+
+    def test_a_repeated_resume_writes_the_same_manifest(self, tmp_path):
+        self.filled(tmp_path)
+        assert_resume_compatible(tmp_path, CONFIG, self.fewer(), "questions")
+        once = (tmp_path / MANIFEST_FILENAME).read_bytes()
+        assert_resume_compatible(tmp_path, CONFIG, self.fewer(), "questions")
+
+        assert (tmp_path / MANIFEST_FILENAME).read_bytes() == once
+
+    def test_a_moved_digest_is_warned_about(self, tmp_path, caplog):
+        """The two halves of the file were asked under two question sets."""
+        self.filled(tmp_path)
+        logger = logging.getLogger("test_digest")
+        with caplog.at_level(logging.WARNING):
+            assert_resume_compatible(
+                tmp_path,
+                CONFIG,
+                self.fewer(),
+                "questions",
+                logger=logger,
+                question_set_digest="bbbbbbbbbbbbbbbb",
+            )
+        assert "aaaaaaaaaaaaaaaa" in caplog.text
+        assert "bbbbbbbbbbbbbbbb" in caplog.text
+
+    def test_a_reworded_question_still_raises(self, tmp_path):
+        """The withdrawal must not excuse the case the guard exists for."""
+        self.filled(tmp_path)
+        both = self.fewer()
+        both["Liver"]["questions"][0]["question"] = "Is the liver cirrhotic?"
+
+        with pytest.raises(StorageError, match="cirrhosis_v0"):
+            assert_resume_compatible(tmp_path, CONFIG, both, "questions")
 
 
 @pytest.mark.parametrize(

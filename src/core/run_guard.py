@@ -24,9 +24,19 @@ So two things are compared before any request is filtered:
 - **The decode configuration against `run_manifest.json`**, written into the
   save directory on the first batch.
 
-Both raise rather than warn. A resume that silently mixes two question sets
-produces a file nothing downstream can separate, and the remedy -- a fresh
-`--save-dir` -- costs only the GPU time already spent.
+Both raise rather than warn where a stored key's wording moved. A resume
+that silently mixes two question sets produces a file nothing downstream can
+separate, and the remedy -- a fresh `--save-dir` -- costs only the GPU time
+already spent.
+
+**A wording the configuration no longer asks warns instead.** Nothing is
+mixed: the builder asks that key no more, so no request is filtered against
+those rows and no column the run writes has two questions' answers in it. The
+stored rows become orphans, which `audit` already counts as `not_in_lock`, and
+the manifest records the withdrawal so the file's provenance names it. This
+arrived on 2026-11-16, when `any_retroperitoneum` left the set a day into the
+cohort run and the guard refused a resume over 304 rows of a tier C question
+nothing reads.
 
 A third check runs ahead of both and compares the configuration against
 itself: `assert_decode_is_coherent` refuses a run with thinking and the answer
@@ -256,6 +266,38 @@ def write_manifest(
     return manifest
 
 
+def record_withdrawn(
+    save_dir: Path,
+    keys: list,
+    question_set_digest: Optional[str] = None,
+) -> None:
+    """Record in the manifest that a stored wording left the configuration.
+
+    Without this the manifest describes a question set the later half of the
+    file was not asked under, and nothing in the save directory says which
+    wordings the two halves differ by.
+
+    The union is stored rather than one entry per resume, so repeating a
+    resume writes the same manifest.
+
+    Parameters
+    ----------
+    save_dir : Path
+        The run's save directory.
+    keys : list of str
+        The resume keys whose stored answers the configuration no longer asks.
+    question_set_digest : str, optional
+        The digest of the configuration in hand.
+    """
+    path = Path(save_dir) / MANIFEST_FILENAME
+    manifest = read_manifest(save_dir) or {}
+    withdrawn = set(manifest.get("withdrawn_mid_run") or []) | set(keys)
+    manifest["withdrawn_mid_run"] = sorted(withdrawn)
+    manifest["question_set_digest_latest"] = question_set_digest
+    with open(path, "w") as handle:
+        json.dump(manifest, handle, indent=2, sort_keys=True)
+
+
 def _decode_differences(stored: Dict[str, Any], current: Dict[str, Any]) -> list:
     """Return one line per guarded field the two configurations disagree on."""
     lines = []
@@ -267,11 +309,23 @@ def _decode_differences(stored: Dict[str, Any], current: Dict[str, Any]) -> list
 
 
 def _wording_differences(stored: Dict[str, str], current: Dict[str, str]) -> list:
-    """Return one line per resume key whose wording moved.
+    """Return one line per resume key the two configurations word differently.
 
-    A key the configuration no longer asks is reported too, because its stored
-    answers stay in the file and the column they feed has no question behind it
-    any more.
+    Only a key both ask can be worded two ways, and that is the case the
+    resume filter cannot survive: the key matches, the stored answer belongs to
+    the old text, and the request is skipped.
+
+    Parameters
+    ----------
+    stored : dict
+        Wording text, keyed as the resume key is, from `questions.csv`.
+    current : dict
+        The same, from the configuration in hand.
+
+    Returns
+    -------
+    list of str
+        One line per key, naming both md5s and the configured wording.
     """
     lines = []
     for key in sorted(set(stored) & set(current)):
@@ -281,14 +335,25 @@ def _wording_differences(stored: Dict[str, str], current: Dict[str, str]) -> lis
                 f"configured {wording_md5(current[key])!r} "
                 f"-- {current[key]!r}"
             )
-    retired = sorted(set(stored) - set(current))
-    if retired:
-        lines.append(
-            f"    {len(retired)} stored wording(s) the configuration no longer "
-            f"asks: {', '.join(retired[:8])}"
-            + (", ..." if len(retired) > 8 else "")
-        )
     return lines
+
+
+def _withdrawn_wordings(stored: Dict[str, str], current: Dict[str, str]) -> list:
+    """Return the resume keys with stored answers that the configuration drops.
+
+    Parameters
+    ----------
+    stored : dict
+        Wording text, keyed as the resume key is, from `questions.csv`.
+    current : dict
+        The same, from the configuration in hand.
+
+    Returns
+    -------
+    list of str
+        The keys, sorted.
+    """
+    return sorted(set(stored) - set(current))
 
 
 def assert_decode_is_coherent(config: Dict[str, Any]) -> None:
@@ -404,6 +469,35 @@ def assert_resume_compatible(
         problems.append(
             "  stored answers were asked under a different wording:\n"
             + "\n".join(wording_lines)
+        )
+
+    withdrawn = _withdrawn_wordings(stored_text, current_wordings)
+    if withdrawn:
+        if logger is not None:
+            logger.warning(
+                "%d stored wording(s) the configuration no longer asks: %s. "
+                "The rows stay in %s as orphans, which the audit counts as "
+                "not_in_lock, and nothing builds a request for them. Recorded "
+                "in %s as withdrawn_mid_run.",
+                len(withdrawn),
+                ", ".join(withdrawn),
+                QUESTIONS_FILENAME,
+                MANIFEST_FILENAME,
+            )
+        record_withdrawn(save_dir, withdrawn, question_set_digest)
+
+    stored_digest = manifest.get("question_set_digest")
+    if (
+        question_set_digest
+        and stored_digest
+        and stored_digest != question_set_digest
+        and logger is not None
+    ):
+        logger.warning(
+            "the question set moved: this directory was opened under digest "
+            "%s and the configuration in hand is %s.",
+            stored_digest,
+            question_set_digest,
         )
 
     if not problems:
