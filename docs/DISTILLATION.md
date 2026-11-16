@@ -201,9 +201,51 @@ test cells over 47 findings, 30 of them with 10 or more positives in the split:
 | --- | ---: | ---: | ---: | ---: |
 | training prevalence | 0.1235 | 0.5000 | 0.0000 | 1.0000 |
 | TF-IDF char 3-5 grams, per-finding logistic regression | 0.8071 | 0.9501 | 0.7908 | 0.9684 |
+| BioClinical-ModernBERT-base, 20 epochs at batch 8 | **0.9644** | 0.9895 | 0.9334 | 0.9871 |
 
 The prevalence row is the floor a ranking metric gives for free. The arm is
-positive-enriched, so neither row is a cohort figure.
+positive-enriched, so no row here is a cohort figure.
+
+**The encoder is ahead by 0.157 macro AUPRC, and its 93.3% agreement with the
+teacher's Yes answers is close to the teacher's own 94.6% agreement with the
+reader.** A first run at 5 epochs tied the lexical model at 0.8062, with the
+validation loss still falling when the schedule ran out, so the margin needs
+the epochs rather than a different model.
+
+**Per finding the split is the one the design predicted.** Of the 30 findings
+both models measure, the encoder is ahead on 26, level on 3 and behind on 1,
+at a median of +0.135 AUPRC.
+
+| the encoder is ahead | TF-IDF | encoder |
+| --- | ---: | ---: |
+| `spleen_absent` | 0.423 | 0.959 |
+| `hepatic_cysts_simple` | 0.471 | 1.000 |
+| `gallbladder_wall_thickening` | 0.484 | 0.935 |
+| `lymphadenopathy` | 0.612 | 0.915 |
+| `hepatic_hypodensities` | 0.679 | 0.950 |
+| `acute_cholecystitis` | 0.666 | 0.924 |
+
+| level or behind | TF-IDF | encoder |
+| --- | ---: | ---: |
+| `pleural_effusion` | 0.992 | 0.980 |
+| `cirrhosis_portal_hypertension` | 0.980 | 0.970 |
+| `hepatic_steatosis` | 0.964 | 0.958 |
+| `aortic_atherosclerosis` | 0.954 | 0.960 |
+
+The second table is four findings a radiologist names in a fixed phrase, where
+character n-grams already score 0.95 to 0.99 and nothing is left to win. The
+first is where a judgement decides the answer: `spleen_absent` turns on whether
+the spleen is described and called normal, `lymphadenopathy` on whether a node
+the report calls prominent or reactive counts, `hepatic_cysts_simple` and
+`hepatic_hypodensities` on the boundary between a characterised lesion and an
+uncharacterised one, and `acute_cholecystitis` reads a diagnosis out of a triad
+where the radiologist dictated "equivocal for". `hepatic_mass_indeterminate`,
+the finding A40 measured running on inference throughout, has too few
+positives in this split to score.
+
+**So the hybrid still has a case, and a smaller one than it looked.** The
+lexical model costs seconds and no GPU, and on the findings a report names it
+is already at the ceiling.
 
 **The regex table is not built yet.** It needs each finding's patterns
 restricted to its own compartment's section, and the hybrid that routes between
@@ -230,13 +272,29 @@ transformers 5.23.0, and 21 GB of system RAM.
   conflicts with the CUDA wheels; `ifast`'s `[feature.train]` needs
   `no-default-feature` for the opposite reason. `pixi run -e student
   check-student-env` prints the build, the GPU and its capability.
-- **16 GB fits the base model with room.** 150M parameters is about 2.4 GB of
-  weights, gradients and AdamW state, and bf16 activations at 600 tokens take a
-  few GB at batch 16. The large variant at 396M needs a smaller batch, gradient
+- **Batch 8, and never 16.** Measured over 240 arm reports at one epoch:
+
+  | batch | peak VRAM | seconds |
+  | ---: | ---: | ---: |
+  | 4 | 5,114 MiB | 5.8 |
+  | 8 | 8,210 MiB | 7.0 |
+  | 16 | 16,859 MiB | over 120 |
+
+  The card has 16,302 MiB, and **the driver spills into host memory rather
+  than raising**. So batch 16 ran and reported a peak above the card's
+  capacity: 760 seconds per epoch over 1,571 reports against 46 at batch 8, a
+  twelvefold slowdown over PCIe with no error anywhere. `train` warns above 90%
+  of the card. The large variant at 396M needs batch 4 or less, gradient
   accumulation and gradient checkpointing.
-- **The budget is small.** One epoch over 12,681 reports at about 600 tokens
-  through 150M parameters is roughly 6 PFLOPs of forward and backward.
-  Inference over the whole cohort is about 2 PFLOPs.
+- **The budget is small where it fits.** Measured: 1,571 reports take 37.5
+  seconds an epoch at batch 8 and peak at 9,457 MiB, so 20 epochs is 13
+  minutes. The whole cohort is then about 5 minutes an epoch and a 20-epoch run
+  about 1.7 hours, against 11 days for the teacher. Inference is one forward
+  pass per report.
+- **`--epochs 10` is enough on the arm.** The 20-epoch run's best validation
+  loss arrived at epoch 8, at 0.334, and rose to 0.436 by epoch 19 while the
+  training loss fell to 0.014. The checkpoint comes from the best epoch, so the
+  later ones cost time rather than accuracy.
 - **21 GB of system RAM is the binding constraint, and not for the student.**
   Its own inputs are small: 25 MB of report text and 1.34M label cells.
   `two_step.read_verdicts` reads `questions.csv` in 500k-row chunks and is safe

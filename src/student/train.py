@@ -319,6 +319,20 @@ def train(
         if device.type == "cuda"
         else 0
     )
+    if device.type == "cuda" and logger is not None:
+        total = torch.cuda.get_device_properties(device).total_memory // 2**20
+        if peak > 0.9 * total:
+            # Measured on 2026-11-16: batch 16 at about 600 tokens peaked at
+            # 16,859 MiB on a 16,302 MiB card and ran 760 s per epoch over
+            # 1,571 reports, where batch 8 peaked at 8,210 MiB and ran 46 s.
+            # The driver spills into host memory instead of raising, so the
+            # symptom is a run twelve times slower with no error anywhere.
+            logger.warning(
+                "peak VRAM %d MiB of %d MiB. Above about 90%% the driver "
+                "spills into host memory instead of raising, which costs "
+                "roughly a tenfold slowdown over PCIe. Halve --batch-size.",
+                peak, total,
+            )
     return {
         "epochs": history,
         "best_epoch": best[1] if best else len(history) - 1,
