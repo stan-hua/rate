@@ -75,6 +75,16 @@ def redacted(request_id):
     """
     text = str(request_id)
     match = _REQUEST_ID.match(text)
-    report, rest = (match.group(1), match.group(2)) if match else (text, "")
+    # The prefix is matched non-greedily, so the split lands on the first
+    # segment that could open a finding id. `SITE_A_12345_hepatic_cysts_v1`
+    # splits correctly, because neither `A` nor `12345` can start one. A report
+    # id with a lowercase segment splits early and the log then shows the rest
+    # of it: `ab12_cd_ascites_v0` would print `cd`. A lowercase letter in the
+    # prefix is therefore the signature of a bad split, and the whole id is
+    # hashed instead. This cohort's accessions are all digits.
+    if match and not any(character.islower() for character in match.group(1)):
+        report, rest = match.group(1), match.group(2)
+    else:
+        report, rest = text, ""
     digest = hashlib.sha256(report.encode()).hexdigest()[:8]
     return f"{digest}_{rest}" if rest else digest

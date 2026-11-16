@@ -133,7 +133,14 @@ def load_reports_from_files(input_files: list, accession_col: str, report_col: s
         
         try:
             if file_extension == '.csv':
-                df = pd.read_csv(input_file)
+                # `dtype=str` keeps the accession as text. Pandas would type an
+                # all-digit column int64 and drop a leading zero, or float64
+                # from one blank cell and append `.0` to every id -- either way
+                # renaming `report_id` for the whole run and breaking the join
+                # back to the match list. This cohort's accessions are 7 and 8
+                # digits with no leading zero, so the bug is latent here and
+                # fires at the first site whose ids are shaped differently.
+                df = pd.read_csv(input_file, dtype=str)
                 print(f"Loading {len(df)} reports from CSV file: {input_file}")
                 
                 # Collect all (accession_number, report) tuples
@@ -188,6 +195,11 @@ def load_reports_from_files(input_files: list, accession_col: str, report_col: s
             raise
 
     reports_dict = {str(rid): text for rid, text in all_reports}
+    collapsed = len(all_reports) - len(reports_dict)
+    if collapsed:
+        # Last one wins, which the dict already did. The count is new: the only
+        # hint before was the per-file "Loading N" differing from this total.
+        print(f"{collapsed} duplicate accession(s) collapsed, last one kept")
     
     # Apply debug subsampling if enabled
     if debug_config and debug_config.get('enabled', False):

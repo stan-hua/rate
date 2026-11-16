@@ -1,6 +1,7 @@
 """Improved batch processing with better error handling and validation."""
 
 import json
+import os
 import time
 from pathlib import Path
 from datetime import datetime
@@ -198,9 +199,19 @@ class BatchProcessor:
                     self.logger.warning(f"Could not delete temp file {temp_file}: {e}")
     
     def _create_batch_file(self, batch_requests: List[Dict], attempt: int) -> Path:
-        """Create temporary batch file."""
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        temp_file = Path(f"temp_batch_{timestamp}_attempt_{attempt}.jsonl")
+        """Write the batch as JSONL, beside the run and under a unique name.
+
+        It went to the current working directory under a name good to one
+        second, so two runs started in the same second from one directory
+        overwrote each other's upload -- and at 4,096 requests the file is
+        about 20 MB of report text, which does not belong in a repository
+        checkout.
+        """
+        save_dir = Path(self.config.get('processing', {}).get('save-dir', '.'))
+        save_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+        temp_file = save_dir / f"temp_batch_{timestamp}_attempt_{attempt}_{os.getpid()}.jsonl"
+
         
         try:
             with open(temp_file, "w") as f:
@@ -279,6 +290,12 @@ class BatchProcessor:
         # were readable only in `reasoning_content`, and how many were a
         # reasoning block the generation never closed.
         empty = 0
+        # A line the reader could not use at all, and an id that arrived twice.
+        # Both used to pass without a count: the first reappeared as a
+        # `missing_id` filled with "" and the second silently overwrote an
+        # answer.
+        unreadable = 0
+        duplicated = 0
         reasoning_only = 0
         unterminated = 0
         reasoned = 0
@@ -349,22 +366,40 @@ class BatchProcessor:
                         reasoned += 1
                     elif content.lstrip().startswith("<think>"):
                         # A reasoning block with no end: the generation stopped
-                        # before the answer began, so there is nothing to
-                        # store. Counted here because the 2026-11-13 arm wrote
-                        # 1,637 of these to disk as full-looking rows and only
-                        # the empty `verdict` column showed it afterwards.
+                        # before the answer began. Counted here because the
+                        # 2026-11-13 arm wrote 1,637 of these to disk as
+                        # full-looking rows and only the empty `verdict` column
+                        # showed it afterwards.
+                        #
+                        # The block itself is replaced by the bare tag. Storing
+                        # the row is what makes the run terminate: decoding is
+                        # greedy, so re-asking the same prompt fails the same
+                        # way, and a row left unstored would be asked again on
+                        # every resume forever. But the 8-9 kB body is the
+                        # model reasoning over a patient's report, and
+                        # `questions.csv` has no use for it -- the tag alone
+                        # keeps the audit's `reasoning_unterminated` count
+                        # working, since that test reads the opening tag.
                         unterminated += 1
+                        content = "<think>"
 
                     content = content.strip() if content else ""
                     if not content:
                         empty += 1
+                    # Last line wins, which is what the dict already did. The
+                    # count is new: a duplicated `custom_id` used to replace
+                    # one answer with another and report nothing.
+                    if custom_id in results:
+                        duplicated += 1
                     results[custom_id] = content
-                    
+
                 except json.JSONDecodeError as e:
                     self.logger.warning(f"Could not parse result line {line_num}: {line[:100]}... Error: {e}")
+                    unreadable += 1
                     continue
                 except Exception as e:
                     self.logger.warning(f"Unexpected error parsing line {line_num}: {e}")
+                    unreadable += 1
                     continue
         
         if reasoning_only:
@@ -396,11 +431,27 @@ class BatchProcessor:
                 f"which is stripped before storage. Thinking is on."
             )
 
+        if unreadable:
+            self.logger.warning(
+                f"{unreadable} result line(s) in this batch could not be read at "
+                f"all. Each one reappears as a missing answer and is asked again "
+                f"on the next run."
+            )
+
+        if duplicated:
+            self.logger.warning(
+                f"{duplicated} custom_id(s) arrived more than once in this batch "
+                f"and the last answer won. Two answers to one question means the "
+                f"request ids are not unique."
+            )
+
         return results, {
             "empty": empty,
             "reasoning_only": reasoning_only,
             "unterminated": unterminated,
             "reasoned": reasoned,
+            "unreadable": unreadable,
+            "duplicated": duplicated,
         }
 
     def _extract_batch_results(self, batch_response: Any, requests: List[Tuple[str, str]], stage_name: str) -> Dict[str, str]:
@@ -417,32 +468,9 @@ class BatchProcessor:
 
             results, counts = self._parse_result_lines(result_content)
 
-            if counts["reasoning_only"]:
-                self.logger.warning(
-                    f"{counts['reasoning_only']} of {len(results)} answers were empty in "
-                    f"`content` and read from `reasoning_content` instead. The reasoning "
-                    f"parser and the response schema are both on, and sglang defers the "
-                    f"grammar mask until the end-of-think token. Set model.structured_output "
-                    f"to false to drop the schema, or launch the server without "
-                    f"--reasoning-parser."
-                )
-            if counts["unterminated"]:
-                self.logger.warning(
-                    f"{counts['unterminated']} of {len(results)} answers were a reasoning "
-                    f"block the generation never closed. Thinking is on and no answer "
-                    f"followed the block, so these rows store text and no verdict. Stop "
-                    f"the run."
-                )
-            if counts["empty"]:
-                self.logger.warning(
-                    f"{counts['empty']} of {len(results)} answers in this batch came back "
-                    f"empty. Stop the run and check one response before spending more GPU time."
-                )
-            if counts["reasoned"]:
-                self.logger.info(
-                    f"{counts['reasoned']} of {len(results)} answers followed a reasoning "
-                    f"block, which is stripped before storage. Thinking is on."
-                )
+            # `_parse_result_lines` has already warned about every count it
+            # returns. Repeating them here doubled each one in the log, so a
+            # reader counting warnings read twice the real number.
 
             # Clean up API files
             try:

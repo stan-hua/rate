@@ -58,7 +58,8 @@ class TestReadingAnAnswer:
         got, counts = parse(processor, [line("r1", content=ANSWER)])
         assert got["r1"] == ANSWER
         assert counts == {
-            "empty": 0, "reasoning_only": 0, "unterminated": 0, "reasoned": 0,
+            "empty": 0, "reasoning_only": 0, "unterminated": 0,
+            "reasoned": 0, "unreadable": 0, "duplicated": 0,
         }
 
     def test_an_empty_content_falls_back_to_reasoning_content(self, processor):
@@ -255,7 +256,8 @@ class TestAReasoningBlock:
         got, counts = parse(processor, [line("r1", content=f"<think>\nWeighing it.\n</think>\n{ANSWER}")])
         assert got["r1"] == ANSWER
         assert counts == {
-            "empty": 0, "reasoning_only": 0, "unterminated": 0, "reasoned": 1,
+            "empty": 0, "reasoning_only": 0, "unterminated": 0,
+            "reasoned": 1, "unreadable": 0, "duplicated": 0,
         }
 
     def test_stripping_the_block_is_counted(self, processor):
@@ -352,3 +354,35 @@ class TestATerminalBatchStatus:
         stub.status = status
         with pytest.raises(BatchProcessingError, match=status):
             processor._wait_for_batch_completion(stub)
+
+
+class TestWhatTheReaderCountsRatherThanDrops:
+    """Three losses that used to pass without a count."""
+
+    def test_an_unreadable_line_is_counted(self, processor):
+        got, counts = parse(processor, [line("r1", content=ANSWER), "{not json"])
+        assert set(got) == {"r1"}
+        assert counts["unreadable"] == 1
+
+    def test_a_duplicated_custom_id_is_counted_and_the_last_wins(self, processor):
+        got, counts = parse(
+            processor,
+            [line("r1", content=ANSWER), line("r1", content='{"answer": "no"}')],
+        )
+        assert got["r1"] == '{"answer": "no"}'
+        assert counts["duplicated"] == 1
+
+    def test_an_unterminated_block_stores_the_tag_and_not_the_body(self, processor):
+        """The row has to be stored, and the body does not.
+
+        Decoding is greedy, so re-asking the same prompt fails the same way:
+        a row left unstored would be asked again on every resume forever. The
+        8-9 kB body is the model reasoning over a patient's report, and the
+        bare tag keeps the audit's `reasoning_unterminated` test working.
+        """
+        body = "<think>" + ("the liver appears " * 500)
+        got, counts = parse(processor, [line("r1", content=body)])
+
+        assert counts["unterminated"] == 1
+        assert got["r1"] == "<think>"
+        assert "liver" not in got["r1"]

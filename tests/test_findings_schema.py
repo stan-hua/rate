@@ -981,6 +981,20 @@ class TestTheLogsDoNotNameAReport:
         assert "12345" not in got
         assert got.endswith("_hepatic_cysts_simple_v12")
 
+    def test_a_lowercase_segment_in_the_report_id_leaks_nothing(self):
+        """The split lands early when a prefix segment starts lowercase.
+
+        `ab12_cd_ascites_v0` matched with `ab12` as the report and
+        `cd_ascites_v0` as the finding, so `cd` reached the log. A lowercase
+        letter in the prefix now hashes the whole id instead.
+        """
+        from src.core.logging_config import redacted
+
+        got = redacted("ab12_cd_ascites_v0")
+        assert "cd" not in got
+        assert "ab12" not in got
+        assert "_" not in got
+
     def test_an_id_of_another_shape_is_hashed_whole(self):
         """The category stage keys on `{report_id}_{category}`, which no
         pattern separates safely, so none of it is printed."""

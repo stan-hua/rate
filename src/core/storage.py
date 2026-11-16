@@ -89,6 +89,15 @@ STAGE_CONFIGS = {
 
 PRE_SCHEMA_QUESTION_COLUMNS = ('finding_id', 'variant_index')
 
+# The columns each request-id pattern is built from, so a resume reads those
+# and not the whole file.
+_KEY_COLUMNS = {
+    '{report_id}_{category}': ['report_id', 'category'],
+    '{report_id}_{finding_id}_v{variant_index}': [
+        'report_id', 'finding_id', 'variant_index',
+    ],
+}
+
 
 def _require_question_schema(df: pd.DataFrame, file_path) -> None:
     """Raise when a stored `questions.csv` predates the finding-id schema.
@@ -188,15 +197,37 @@ class StorageManager:
         if not file_path.exists():
             return set()
         
+        if id_type == 'report':
+            wanted = [config['key_column']]
+        elif id_type == 'request' and 'request_id_pattern' in config:
+            wanted = _KEY_COLUMNS.get(config['request_id_pattern'])
+            if wanted is None:
+                raise ValueError(
+                    f"Unsupported request ID pattern: {config['request_id_pattern']}"
+                )
+        else:
+            return set()
+
         try:
-            df = pd.read_csv(file_path)
-            
+            # Read the header, then only the columns the key is built from.
+            # `questions.csv` has eighteen columns and reaches about 1.4 GB at
+            # 3M rows, and the key needs three of them. `dtype=str` keeps a
+            # leading zero on an identifier, and restricting the columns keeps
+            # the boolean ones out, where a string "False" would read as true.
+            #
+            # A column absent from the file is left out of `usecols` instead of
+            # raising there, so `_reconstruct_request_ids` still reports a
+            # pre-schema file as the schema error rather than as a pandas one.
+            available = set(pd.read_csv(file_path, nrows=0).columns)
+            df = pd.read_csv(
+                file_path,
+                usecols=[c for c in wanted if c in available],
+                dtype=str,
+            )
+
             if id_type == 'report':
                 return set(df[config['key_column']].astype(str))
-            elif id_type == 'request' and 'request_id_pattern' in config:
-                return self._reconstruct_request_ids(df, config)
-            else:
-                return set()
+            return self._reconstruct_request_ids(df, config)
                 
         except StorageError:
             # The file is readable and its shape is wrong, which a resumed run
@@ -271,9 +302,12 @@ class StorageManager:
                     "processing_time": result["processing_time"]
                 }
         
-        # Save as JSON with pretty printing
+        # Not indented. At 12,681 reports this file holds every raw report and
+        # all 3.06M answers, so the indentation was gigabytes of spaces on the
+        # last write of a ten-day run. Every reader uses `json.load`, which
+        # does not care.
         with open(self.save_dir / "final_results.json", "w") as f:
-            json.dump(final_results, f, indent=2)
+            json.dump(final_results, f)
 
     # Helper methods
     def _get_stage_config(self, stage_name: str) -> Dict:
@@ -433,17 +467,37 @@ class StorageManager:
         return results
     
     def _reconstruct_request_ids(self, df: pd.DataFrame, config: Dict) -> set:
-        """Reconstruct request IDs from DataFrame based on pattern."""
+        """Rebuild the request id of every stored row, from its key columns.
+
+        Built by concatenating columns rather than by `iterrows`, which took
+        minutes over the 3M rows a cohort run writes and runs on every resume.
+        `astype(str)` keeps the result identical to the f-string this replaced,
+        including the "nan" an empty cell produced.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            The key columns of the stage file, read as text.
+        config : dict
+            The stage's entry in `STAGE_CONFIGS`.
+
+        Returns
+        -------
+        set
+            One request id per stored row.
+        """
         pattern = config['request_id_pattern']
-        
+
         if pattern == '{report_id}_{category}':
-            return {f"{row['report_id']}_{row['category']}" for _, row in df.iterrows()}
-        elif pattern == '{report_id}_{finding_id}_v{variant_index}':
+            return set(df['report_id'].astype(str) + '_' + df['category'].astype(str))
+        if pattern == '{report_id}_{finding_id}_v{variant_index}':
             _require_question_schema(df, self.save_dir / config['filename'])
-            return {f"{row['report_id']}_{row['finding_id']}_v{row['variant_index']}"
-                   for _, row in df.iterrows()}
-        else:
-            raise ValueError(f"Unsupported request ID pattern: {pattern}")
+            return set(
+                df['report_id'].astype(str)
+                + '_' + df['finding_id'].astype(str)
+                + '_v' + df['variant_index'].astype(str)
+            )
+        raise ValueError(f"Unsupported request ID pattern: {pattern}")
 
     def _generate_question_id(self, question_text: str) -> str:
         """Generate a hash-based question ID from question text."""

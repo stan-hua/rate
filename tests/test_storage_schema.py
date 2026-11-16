@@ -191,3 +191,79 @@ class TestTheAppendHoldsALock:
         frame = pd.read_csv(tmp_path / "questions.csv", dtype=str)
         assert set(frame["report_id"]) == {"SYN0003", "SYN0009"}
         assert len(frame) == 2
+
+
+class TestAnIdentifierIsText:
+    """A leading zero and a letter both survive the resume key.
+
+    Six readers in the data path lacked `dtype=str` against seventeen
+    elsewhere that had it, and the resume key is rebuilt from what pandas
+    inferred. An all-digit accession column types int64 and loses a leading
+    zero, so the key no longer matches the request that wrote it: the row is
+    asked again and the deduplication misses it too, which appends it twice on
+    every resume. This cohort's accessions are 7 and 8 digits with no leading
+    zero, so these fixtures are the shape that would have broken it.
+    """
+
+    def rows(self, report_id):
+        """One stored answer row, keyed however the caller spells the report."""
+        return [
+            {
+                "report_id": report_id,
+                "category": "Liver",
+                "finding_id": "cirrhosis",
+                "variant_index": "0",
+                "question_id": "00000000",
+                "question": "Is there cirrhosis?",
+                "answer": "Yes",
+                "verdict": "yes",
+            }
+        ]
+
+    @pytest.mark.parametrize(
+        "report_id", ["0012345", "00000001", "12345678", "A0012345", "0012345A"]
+    )
+    def test_the_resume_key_round_trips(self, tmp_path, report_id):
+        path = tmp_path / "questions.csv"
+        pd.DataFrame(self.rows(report_id)).to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        assert store.get_processed_request_ids("questions") == {
+            f"{report_id}_cirrhosis_v0"
+        }
+
+    def test_two_accessions_differing_by_a_leading_zero_stay_apart(self, tmp_path):
+        """Typed as int64 these collide, and one report's answers are lost."""
+        path = tmp_path / "questions.csv"
+        frame = pd.DataFrame(self.rows("0012345") + self.rows("12345"))
+        frame.to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        assert store.get_processed_request_ids("questions") == {
+            "0012345_cirrhosis_v0",
+            "12345_cirrhosis_v0",
+        }
+
+    def test_a_boolean_column_does_not_reach_the_key(self, tmp_path):
+        """Reading only the key columns keeps `named_outright` out of it."""
+        path = tmp_path / "questions.csv"
+        frame = pd.DataFrame(self.rows("0012345"))
+        frame["named_outright"] = False
+        frame["truncated"] = False
+        frame.to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        assert store.get_processed_request_ids("questions") == {
+            "0012345_cirrhosis_v0"
+        }
+
+    def test_a_pre_schema_file_still_reports_the_schema_error(self, tmp_path):
+        """Restricting the columns must not turn this into a pandas error."""
+        path = tmp_path / "questions.csv"
+        pd.DataFrame(
+            [{"report_id": "0012345", "category": "Liver", "question_id": "abc"}]
+        ).to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        with pytest.raises(StorageError, match="finding_id"):
+            store.get_processed_request_ids("questions")
