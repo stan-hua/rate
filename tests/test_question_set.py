@@ -446,33 +446,46 @@ class TestTheFastConfigAndItsLock:
         There were 17 until the `Heart` compartment left on 2026-11-11, with
         its probe, `cardiomegaly`, and `any_pericardium` -- a finding worded
         like a probe, over the pericardial space the subxiphoid view certainly
-        shows.
+        shows. `any_retroperitoneum` left on 2026-11-15, because four probes
+        that remain ask about the organs its wording names, so the question
+        became their union. `docs/data/findings.md` in `ifast` records what it
+        measured.
         """
         probes = {i: b["category"] for i, b in LOCK["findings"].items() if b.get("probe")}
-        assert len(probes) == 16
-        assert len(set(probes.values())) == 16, "two probes in one compartment"
+        assert len(probes) == 15
+        assert len(set(probes.values())) == 15, "two probes in one compartment"
         assert "any_pericardium" not in LOCK["findings"]
 
         config = yaml.safe_load(FAST_ABDOMEN.read_text())
         flagged = {n for n, b in config["categories"].items() if b.get("cross_cutting")}
         assert flagged == {"Multi Organs", "Device"}
-        assert flagged == set(config["categories"]) - set(probes.values())
+        # `Retroperitoneum` keeps its own findings and lost its probe on
+        # 2026-11-15, so it joins the cross-cutting two in asking nothing
+        # about the compartment as a whole.
+        assert set(config["categories"]) - set(probes.values()) == flagged | {
+            "Retroperitoneum"
+        }
 
     def test_the_covariates_are_marked_and_counted(self):
-        """Tier C questions kept to explain the sweep's mistakes, never labels."""
+        """Tier C questions extracted and never made labels.
+
+        Eight explain the sweep's mistakes. `hepatic_mass_indeterminate` is
+        the ninth, demoted on 2026-11-15 for an instability no rewording
+        reached.
+        """
         covariates = [i for i, b in LOCK["findings"].items() if b["covariate"]]
-        assert len(covariates) == 8
+        assert len(covariates) == 9
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """107 findings over 243 wordings, so 243 requests per report.
+        """106 findings over 241 wordings, so 241 requests per report.
 
-        83 visible findings with a positive in the cohort, 8 tier C questions
+        82 visible findings with a positive in the cohort, 9 tier C questions
         kept as covariates, 5 findings the source never asked about, and one
-        compartment probe per compartment. Of the five, two are for free fluid,
-        two are halves of a compound question the source asked as one, and one
-        is the hepatic hypodensity umbrella. 29 findings are asked three times
-        and 78 twice, because a finding with no exact synonym has no synonym
-        slot.
+        compartment probe for each compartment but the retroperitoneum. Of the
+        five, two are for free fluid, two are halves of a compound question the
+        source asked as one, and one is the hepatic hypodensity umbrella. 29
+        findings are asked three times and 77 twice, because a finding with no
+        exact synonym has no synonym slot.
 
         It was 113 findings over 339 wordings until 2026-11-11. Seven findings
         left and the synonym slot became conditional. The 2026-11-12 pilot then
@@ -503,13 +516,17 @@ class TestTheFastConfigAndItsLock:
         disagrees with its canonical over one identical sentence naming the
         finding outright, which is extraction noise rather than a defect in
         either.
+
+        2026-11-15 settled the last two, which brings a cohort run to
+        3,056,121 requests. `any_retroperitoneum` left the set and
+        `hepatic_mass_indeterminate` became a covariate.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
-        assert len(findings) == 107
-        assert wordings == 243
-        assert len(added) == 21
+        assert len(findings) == 106
+        assert wordings == 241
+        assert len(added) == 20
 
     def test_a_rescoped_finding_records_the_change(self):
         """`ifast`'s QC sheet reads this to flag the rows needing a re-read.
@@ -532,4 +549,4 @@ class TestTheFastConfigAndItsLock:
         """
         added = {i for i, b in LOCK["findings"].items() if b.get("added")}
         assert {"hemoperitoneum", "free_intraperitoneal_fluid"} <= added
-        assert sum(1 for i in added if LOCK["findings"][i].get("probe")) == 16
+        assert sum(1 for i in added if LOCK["findings"][i].get("probe")) == 15

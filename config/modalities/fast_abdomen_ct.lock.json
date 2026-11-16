@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "ab8188ff69769266",
-    "question_set": "4c5094c3c894de14"
+    "file": "96bf2f8d9b8758b0",
+    "question_set": "f950cefadbcb2c2f"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -470,28 +470,6 @@
         }
       ],
       "window": "thoracic"
-    },
-    "any_retroperitoneum": {
-      "added": true,
-      "category": "Retroperitoneum",
-      "covariate": false,
-      "probe": true,
-      "tier": "C",
-      "variants": [
-        {
-          "index": 0,
-          "md5": "d0857373",
-          "question": "Is there any abnormality of the retroperitoneum, the space containing the kidneys, adrenals, pancreas, aorta and inferior vena cava?",
-          "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "78398ade",
-          "question": "According to the report, is there any abnormality of the retroperitoneum, the space containing the kidneys, adrenals, pancreas, aorta and inferior vena cava?",
-          "role": "sourced"
-        }
-      ],
-      "window": "-"
     },
     "any_spleen": {
       "added": true,
@@ -1233,10 +1211,10 @@
     "hepatic_mass_indeterminate": {
       "category": "Liver",
       "change": "scope_change",
-      "covariate": false,
+      "covariate": true,
       "replaced": true,
       "source_question": "Are there any hepatic masses?",
-      "tier": "A",
+      "tier": "C",
       "variants": [
         {
           "index": 0,
@@ -1257,7 +1235,7 @@
           "role": "sourced"
         }
       ],
-      "window": "RUQ"
+      "window": "-"
     },
     "hepatic_metastases": {
       "category": "Liver",
@@ -2444,7 +2422,7 @@
       "window": "RUQ/LUQ"
     }
   },
-  "generated": "2026-11-14",
+  "generated": "2026-11-15",
   "modality": "fast_abdominal_ct",
   "retired": [
     {

@@ -786,16 +786,6 @@ categories:
         definition: "Retroperitoneal hemorrhage is defined as blood in the retroperitoneum: a hematoma, active bleeding, or high-density fluid the report attributes to haemorrhage. This definition includes a psoas and a perinephric hematoma."
       
 
-      - id: any_retroperitoneum
-        question: "Is there any abnormality of the retroperitoneum, the space containing the kidneys, adrenals, pancreas, aorta and inferior vena cava?"
-        variants:
-          - "According to the report, is there any abnormality of the retroperitoneum, the space containing the kidneys, adrenals, pancreas, aorta and inferior vena cava?"
-        definition: "An abnormality of the retroperitoneum is defined as anything the report records as abnormal in the retroperitoneum or around its organs, perinephric, periaortic, peripancreatic or periadrenal, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. It excludes a device where the organ is otherwise normal, a finding the report files under the peritoneum or the mesentery, a finding in the extraperitoneal pelvic spaces -- presacral, retropubic, or the pelvic sidewall -- and a finding in the abdominal wall, the gluteal muscles or the other extra-abdominal soft tissues."
-        include_terms:
-          - "retroperitoneal fluid or hemorrhage"
-          - "retroperitoneal lymphadenopathy"
-          - "retroperitoneal fibrosis"
-          - "a retroperitoneal mass or collection"
   Multi Organs:
     description: "Findings affecting multiple organ systems"
     cross_cutting: true
