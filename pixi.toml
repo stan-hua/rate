@@ -122,8 +122,38 @@ python -m sglang.launch_server \
 [feature.server.activation.env]
 PYTORCH_CUDA_ALLOC_CONF = "expandable_segments:True"
 
+# The student: one encoder forward pass per report against the teacher's 241
+# wordings, which `docs/DISTILLATION.md` designs. `pixi install -e student`.
+#
+# This feature extends `default` rather than replacing it, because nothing in
+# `default` has torch and so nothing conflicts with the CUDA wheels. `ifast`'s
+# `[feature.train]` needs `no-default-feature` for the opposite reason: its
+# default environment has conda-forge's CPU `pytorch`.
+[feature.student]
+platforms = ["linux-64"]
+
+[feature.student.dependencies]
+# AUPRC per finding, and the TF-IDF baseline the encoder has to beat.
+scikit-learn = ">=1.4"
+
+[feature.student.pypi-dependencies]
+# cu128 because the training GPU here is a 5070 Ti, which is Blackwell
+# (sm_120) and has no kernels in an earlier build. The wheels run on CPU too,
+# so the tests need no GPU.
+torch = { version = ">=2.7", index = "https://download.pytorch.org/whl/cu128" }
+# 4.48 is the first release with ModernBERT, which every candidate encoder is.
+transformers = ">=4.48"
+
+[feature.student.tasks]
+check-student-env = { cmd = "python -m src.student_cli environment", description = "Report the torch build, the GPU and what the arm's labels hold" }
+student = { cmd = "python -m src.student_cli", description = "Train and score the encoder that answers the question set in one pass" }
+# `pixi run test` skips what needs torch or scikit-learn, which the default
+# environment has neither of.
+test-student = { cmd = "pytest tests", description = "The whole suite, including the student's torch and scikit-learn tests" }
+
 [environments]
 server = { features = ["server"], no-default-feature = true }
+student = { features = ["student"] }
 
 [tasks]
 extract = { cmd = "python -m src.cli", description = "Run the extraction stages over a set of reports" }
