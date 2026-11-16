@@ -125,9 +125,69 @@ class TestANewSchemaFile:
             "SYN0003_cirrhosis_v1",
         }
 
-    def test_an_unreadable_file_is_still_treated_as_corrupted(self, tmp_path):
-        """Only a failure to read means corrupted, and that path still works."""
+    def test_an_unreadable_file_stops_the_run_and_is_left_alone(self, tmp_path):
+        """A file that will not read is never replaced by the batch in hand.
+
+        This test pinned the opposite until 2026-11-16. Recovering by writing
+        the batch over the file turns one failed read of a 1.4 GB
+        `questions.csv` into the loss of 3M answer rows, and `MemoryError` is
+        the likely arrival on a file that size. Stopping costs a re-run.
+        """
+        path = tmp_path / "questions.csv"
+        path.write_text('report_id,"unclosed\n')
+        before = path.read_bytes()
+        store = StorageManager(save_dir=str(tmp_path))
+
+        with pytest.raises(StorageError, match="Could not read"):
+            store.save_incremental_results("questions", CHUNK)
+
+        assert path.read_bytes() == before, "the unreadable file was modified"
+
+    def test_an_unreadable_file_stops_a_resume_rather_than_re_asking(self, tmp_path):
+        """`get_processed_ids` raises instead of reporting nothing processed.
+
+        An empty set here re-asks every question, and the append that followed
+        replaced the file, so the two recoveries compounded.
+        """
         (tmp_path / "questions.csv").write_text('report_id,"unclosed\n')
         store = StorageManager(save_dir=str(tmp_path))
+
+        with pytest.raises(StorageError, match="Could not read"):
+            store.get_processed_request_ids("questions")
+
+
+class TestTheAppendHoldsALock:
+    """Two writers on one save directory must not lose a batch.
+
+    `fcntl` was imported and never called while the docstring promised
+    locking. The rename is atomic for a reader and gives two writers nothing:
+    each reads the same rows and each replaces the file with its own version.
+    """
+
+    def test_a_lock_file_is_taken_beside_the_csv(self, tmp_path):
+        store = StorageManager(save_dir=str(tmp_path))
         store.save_incremental_results("questions", CHUNK)
-        assert len(pd.read_csv(tmp_path / "questions.csv")) == 1
+        assert (tmp_path / "questions.csv.lock").exists()
+
+    def test_a_second_writer_waits_and_keeps_both_batches(self, tmp_path):
+        """The lock serialises, and the deduplication settles the overlap."""
+        store = StorageManager(save_dir=str(tmp_path))
+        store.save_incremental_results("questions", CHUNK)
+
+        other = {
+            "SYN0009": {
+                "Liver": [
+                    {
+                        "finding_id": "cirrhosis",
+                        "variant_index": 0,
+                        "question": "Is there cirrhosis?",
+                        "answer": "No",
+                    }
+                ]
+            }
+        }
+        store.save_incremental_results("questions", other)
+
+        frame = pd.read_csv(tmp_path / "questions.csv", dtype=str)
+        assert set(frame["report_id"]) == {"SYN0003", "SYN0009"}
+        assert len(frame) == 2

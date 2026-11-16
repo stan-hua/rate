@@ -463,6 +463,7 @@ class Engine:
         
         # Process requests in batches with improved error handling
         all_results = {}
+        lost = []
         chunks = [requests[i:i + self._batch_size] for i in range(0, len(requests), self._batch_size)]
         
         for i, chunk in enumerate(tqdm(chunks, desc=f"Processing {stage_name} batches", unit="batch")):
@@ -503,10 +504,13 @@ class Engine:
                 
             except BatchProcessingError as e:
                 self.logger.error(f"Batch {i+1}/{len(chunks)} failed: {str(e)}")
-                # Continue with next batch rather than failing entire stage
+                # Carry on, so one bad batch does not end a run of days, and
+                # count it so the stage cannot report success having lost it.
+                lost.append((i + 1, "batch", str(e)))
                 continue
             except ValidationError as e:
                 self.logger.error(f"Validation failed for batch {i+1}/{len(chunks)}: {str(e)}")
+                lost.append((i + 1, "validation", str(e)))
                 continue
             except Exception as e:
                 self.logger.error(f"Unexpected error in batch {i+1}/{len(chunks)}: {str(e)}")
@@ -516,7 +520,27 @@ class Engine:
         # Validate CSV file integrity after processing
         if not self.storage.validate_csv_file(stage_name):
             self.logger.warning(f"CSV file validation failed for {stage_name}")
-        
+
+        # A skipped batch used to leave the stage returning normally and the
+        # CLI printing that it had completed, so a run could exit 0 having
+        # dropped thousands of requests. The rows that did land are on disk,
+        # and a re-run asks the rest, so this raises after the work rather
+        # than instead of it.
+        if lost:
+            requests_lost = sum(
+                len(chunks[index - 1]) for index, _, _ in lost
+            )
+            for index, kind, message in lost:
+                self.logger.error(
+                    "%s batch %d of %d was lost (%s): %s",
+                    stage_name, index, len(chunks), kind, message,
+                )
+            raise BatchProcessingError(
+                f"{stage_name}: {len(lost)} of {len(chunks)} batches were lost, "
+                f"{requests_lost} requests. Every answer that did land is "
+                f"saved; re-run with the same --save-dir to ask the rest."
+            )
+
         return all_results
 
     def _apply_debug_subsampling(self):

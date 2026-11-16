@@ -22,7 +22,12 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # Custom libraries
-from src.core.batch_processor import SAMPLING_FIELDS, BatchProcessor
+from src.core.batch_processor import (
+    SAMPLING_FIELDS,
+    TERMINAL_STATUSES,
+    BatchProcessor,
+)
+from src.core.exceptions import BatchProcessingError
 from src.core.validators import ResultValidator
 
 ANSWER = json.dumps({"answer": "yes", "evidence": "Moderate ascites.", "named_outright": True})
@@ -321,3 +326,29 @@ class TestTheShippedDecodeConfiguration:
     def test_decoding_stays_greedy(self, model):
         """What makes a wording's effect attributable at all."""
         assert model["temperature"] == 0
+
+
+class TestATerminalBatchStatus:
+    """Which statuses stop the polling loop.
+
+    `expired` was absent from the exit set, so a batch that ran past its
+    completion window left `_wait_for_batch_completion` polling every three
+    seconds for as long as the process lived, behind a progress bar that shows
+    elapsed time alone. A stalled run read as a running run.
+    """
+
+    def test_expired_is_terminal(self):
+        assert "expired" in TERMINAL_STATUSES
+
+    def test_cancelling_is_not_terminal_because_it_becomes_cancelled(self):
+        assert "cancelling" not in TERMINAL_STATUSES
+
+    @pytest.mark.parametrize("status", ["failed", "cancelled", "expired"])
+    def test_a_terminal_failure_raises_instead_of_polling(self, processor, status):
+        class Stub:
+            id = "batch_expired_0001"
+
+        stub = Stub()
+        stub.status = status
+        with pytest.raises(BatchProcessingError, match=status):
+            processor._wait_for_batch_completion(stub)

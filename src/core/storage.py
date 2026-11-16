@@ -1,6 +1,8 @@
 import json
 import pandas as pd
 import fcntl
+import logging
+import os
 import tempfile
 from pathlib import Path
 from datetime import datetime
@@ -8,6 +10,41 @@ from typing import Dict, List, Union, Optional, Any
 import hashlib
 from .exceptions import StorageError
 from .findings_schema import ANSWER_COLUMNS, parse_answer
+
+logger = logging.getLogger(__name__)
+
+
+def _unreadable(file_path: Path, error: Exception) -> StorageError:
+    """Return the error raised when an existing stage file will not read.
+
+    Every caller of this had recovered instead, and both recoveries destroy
+    data: `get_processed_ids` returning an empty set re-asks every question,
+    and `_safe_append_to_csv` treating the file as absent replaces it with the
+    batch in hand. A 3M-row `questions.csv` is about 1.4 GB, so `MemoryError`
+    is the likely arrival and it says nothing about the rows on disk.
+
+    The file is left exactly as it is. A transient failure costs a re-run; a
+    genuinely corrupt file is moved aside by hand, which is a decision no
+    automatic rename should make on a 10-day run's only output.
+
+    Parameters
+    ----------
+    file_path : Path
+        The file that would not read.
+    error : Exception
+        What `pd.read_csv` raised.
+
+    Returns
+    -------
+    StorageError
+        The error to raise.
+    """
+    return StorageError(
+        f"Could not read {file_path} ({type(error).__name__}: {error}). "
+        "Nothing was written and the file is unchanged. Re-run to retry, "
+        "since a large file can fail to read for want of memory alone. Move "
+        "the file aside by hand only once you have established it is corrupt."
+    )
 
 # Stage configuration registry
 STAGE_CONFIGS = {
@@ -168,8 +205,7 @@ class StorageManager:
             # file.
             raise
         except Exception as e:
-            print(f"Warning: Could not read {file_path} ({type(e).__name__})")
-            return set()
+            raise _unreadable(file_path, e) from e
 
     # Backward compatibility methods (thin wrappers)
     def save_no_comparisons(self, results: Dict[str, str]) -> None:
@@ -414,13 +450,33 @@ class StorageManager:
         return hashlib.md5(question_text.encode('utf-8')).hexdigest()[:8]
 
     def _safe_append_to_csv(self, new_df: pd.DataFrame, file_path: Path) -> None:
-        """Safely append DataFrame to CSV file with atomic operations and file locking."""
+        """Append a frame to a CSV under an exclusive lock, replacing it atomically.
+
+        `fcntl` was imported and never called while this docstring promised
+        locking. The temp-file-and-rename gives a reader a consistent file; it
+        gives two writers nothing. Two processes on one save directory each
+        read the same rows and each replace the file with their own version,
+        so the loser's batch disappears with no error anywhere -- and
+        relaunching a run that looks stalled is the natural way to arrive
+        there.
+
+        The lock is a sidecar file and the wait is unbounded, which is the
+        behaviour wanted: the second writer reads the file after the first has
+        written it, and the deduplication then drops what it already has.
+        """
         if new_df.empty:
             return
-            
+
         # Ensure parent directory exists
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
+        lock_path = file_path.with_name(file_path.name + ".lock")
+        with open(lock_path, "w") as lock_handle:
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
+            self._append_under_lock(new_df, file_path)
+
+    def _append_under_lock(self, new_df: pd.DataFrame, file_path: Path) -> None:
+        """Read, deduplicate, concatenate and replace, with the lock held."""
         # Use atomic write with temporary file
         temp_file = None
         try:
@@ -447,28 +503,26 @@ class StorageManager:
                     try:
                         existing_df = pd.read_csv(file_path)
                     except Exception as e:
-                        print(
-                            f"Warning: Could not read existing file {file_path} "
-                            f"({type(e).__name__}), starting fresh"
-                        )
-                        existing_df = None
+                        raise _unreadable(file_path, e) from e
 
-                    if existing_df is None:
-                        combined_df = new_df
-                    else:
-                        new_df = self._deduplicate_new_data(existing_df, new_df, file_path)
-                        if new_df.empty:
-                            temp_path = Path(temp_file.name)
-                            temp_file.close()
-                            temp_path.unlink(missing_ok=True)
-                            return  # Nothing new to add
-                        combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+                    new_df = self._deduplicate_new_data(existing_df, new_df, file_path)
+                    if new_df.empty:
+                        temp_path = Path(temp_file.name)
+                        temp_file.close()
+                        temp_path.unlink(missing_ok=True)
+                        return  # Nothing new to add
+                    combined_df = pd.concat([existing_df, new_df], ignore_index=True)
                 else:
                     combined_df = new_df
                 
                 # Write combined data to temp file
                 combined_df.to_csv(temp_file, index=False)
-            
+                # The rename below can be durable while these bytes are not,
+                # which leaves a truncated file that the next append refuses
+                # to read.
+                temp_file.flush()
+                os.fsync(temp_file.fileno())
+
             # Atomic move - this is the critical section
             temp_path.replace(file_path)
             

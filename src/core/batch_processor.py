@@ -41,6 +41,12 @@ QUESTION_SYSTEM_PROMPT = (
 
 
 
+# Every batch status the server will not move away from. The OpenAI batch
+# literal is validating, failed, in_progress, finalizing, completed, expired,
+# cancelling and cancelled; `cancelling` becomes `cancelled`, so the other
+# four are the ones to stop on.
+TERMINAL_STATUSES = ("completed", "failed", "cancelled", "expired")
+
 class BatchProcessor:
     """Handles batch processing with improved error handling and validation."""
     
@@ -233,7 +239,10 @@ class BatchProcessor:
                  unit="check", 
                  bar_format='{desc}: {elapsed}') as pbar:
             
-            while batch_response.status not in ["completed", "failed", "cancelled"]:
+            # `expired` is terminal and was absent, so a batch that ran past
+            # its completion window left this loop polling every 3 s forever,
+            # behind a progress bar that only shows elapsed time.
+            while batch_response.status not in TERMINAL_STATUSES:
                 time.sleep(3)
                 try:
                     batch_response = self.client.batches.retrieve(batch_response.id)
