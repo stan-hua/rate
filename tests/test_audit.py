@@ -54,6 +54,8 @@ def row(report="R001", finding="ascites", index="0", verdict="yes", **overrides)
         "question": "Is there ascites?",
         "answer": "{}",
         "template": "A",
+        "trauma_indication": "yes",
+        "trauma_terms": "vehicle",
         "verdict": verdict,
         "evidence": "Trace free fluid in the pelvis.",
         "certainty_phrase": "",

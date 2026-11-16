@@ -261,7 +261,7 @@ def test_the_questions_stage_writes_the_columns_the_sheets_read():
     # that identify a row, the raw answer, the covariates of the report it came
     # from, and whatever the reader produces from that answer. A literal copy
     # drifts, and this one did when a column was added to the reader.
-    covariates = ["template"]
+    covariates = ["template", "trauma_indication", "trauma_terms"]
     assert config["columns"][: len(keys)] == keys
     assert config["columns"][len(keys) : len(keys) + len(covariates)] == covariates
     assert config["columns"][len(keys) + len(covariates) :] == list(ANSWER_COLUMNS)

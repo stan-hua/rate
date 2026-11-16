@@ -37,6 +37,9 @@ STAGE_CONFIGS = {
             'question_id', 'question', 'answer',
             # The dictation template of the report, not of the row.
             'template',
+            # Whether the report's indication describes a traumatic
+            # presentation, and which categories named it.
+            'trauma_indication', 'trauma_terms',
             'verdict', 'evidence',
             'certainty_phrase', 'certainty', 'severity_phrase', 'severity',
             'attribution', 'named_outright', 'truncated', 'unquoted',
@@ -316,6 +319,12 @@ class StorageManager:
                         # appear at all, so every stability figure is reported
                         # per template.
                         "template": record.get("template", ""),
+                        # Read off the indication where the raw text was last
+                        # loaded. A FAST is a trauma protocol, so this splits
+                        # the cohort into the two groups a claim about what a
+                        # sweep misses has to be read against.
+                        "trauma_indication": record.get("trauma_indication", ""),
+                        "trauma_terms": record.get("trauma_terms", ""),
                         "category": category,
                         "finding_id": record["finding_id"],
                         "variant_index": record["variant_index"],

@@ -20,6 +20,7 @@ from .batch_processor import (
 from .findings_schema import question_guidance, response_format
 from .run_guard import assert_resume_compatible
 from .template import detect_template
+from .trauma import trauma_columns
 
 class Engine:
     def __init__(self, config: Union[str, Dict]):
@@ -37,6 +38,8 @@ class Engine:
         # Setup logging and storage with proper directories
         self.logger = setup_logging('Engine', save_dir=save_dir, filename=input_filename)
         self.storage = StorageManager(save_dir=save_dir)
+        # Report id to the two trauma columns, filled beside the template.
+        self._trauma: Dict[str, tuple] = {}
         # Report id to dictation template, filled where a report's raw text is
         # read and written onto every answer row.
         self._templates: Dict[str, str] = {}
@@ -354,6 +357,7 @@ class Engine:
             # that first reads a report; `process-questions` reads the raw text
             # too, and keying it here needs no second pass over the reports.
             self._templates[report_id] = detect_template(raw_text)
+            self._trauma[report_id] = trauma_columns(raw_text)
             for category_name, category in self.findings_categories.items():
                 for question in category['questions']:
                     finding_id = question.get('id') or self.storage._generate_question_id(
@@ -403,6 +407,8 @@ class Engine:
                 "question": question_text,
                 "answer": answer,
                 "template": self._templates.get(report_id, ""),
+                "trauma_indication": self._trauma.get(report_id, ("", ""))[0],
+                "trauma_terms": self._trauma.get(report_id, ("", ""))[1],
             })
         return chunk_nested_results
 
