@@ -122,7 +122,14 @@ server:
 
 # Processing settings
 processing:
-  batch-size: 1024
+  # 4096 rather than 1024, measured 2026-11-16. A batch drains to
+  # `#queue-req: 0` while its longest generations finish, and that tail falls
+  # inside the batch's wall time where the client log cannot see it: 1,024
+  # requests of about 900 output tokens is 261 s of saturated decode against
+  # the 295 s a batch took. A larger batch amortises one tail over four times
+  # the work. Nothing under `processing` is guarded, so this resumes a save
+  # directory filled at 1024.
+  batch-size: 4096
   max_retries: 2
   retry_delay: 5
   validation:
