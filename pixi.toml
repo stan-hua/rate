@@ -136,7 +136,7 @@ defer = { cmd = "python -m src.defer_cli", description = "Rewrite a No to not_as
 trauma = { cmd = "python -m src.trauma_cli", description = "Say whether each report's indication describes a traumatic presentation" }
 pilot = { cmd = "python -m src.pilot_cli", description = "Write the reports and the config for a positive-enriched pilot run" }
 directional = { cmd = "python -m src.directional_cli", description = "Say which way a pair of wordings disagrees, and what the cells have in common" }
-gate = { cmd = "python -m src.gate_cli", description = "Say what a compartment-level gate would save, and what it would hide" }
+two-step = { cmd = "python -m src.two_step_cli", description = "Say what a two-step extraction would save, and what it would miss" }
 test = { cmd = "pytest", description = "The test suite" }
 # Scoped to `tests`: `ruff check src` reports 738 pre-existing findings.
 # Widen once `src` is clean.

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Say what a compartment-level gate would save, and what it would hide.
+Says what a two-step extraction would save, and what it would miss.
 
 Two measurements over a run's output, in counts alone. The first asks what
-gating the specific questions on the compartment probes would cost: a probe
+the two-step method the specific questions on the compartment questions would cost: a question
 that answered No writes No to its compartment without asking, so the saving is
 the calls skipped and the cost is the positives those calls would have found.
-The second asks whether `category_findings` flags a coverage cell the probes
+The second asks whether `category_findings` flags a coverage cell the compartment questions
 do not, which is what decides whether the `map-categories` stage earns its
 calls.
 
@@ -17,16 +17,16 @@ as a smaller sample. The report count is printed, and a figure from a partial
 run belongs beside it.
 
 Usage examples:
-    # The gate, over whatever the run has finished so far
-    python3 -m src.gate_cli --questions <run>/questions.csv
+    # The two-step saving, over whatever the run has finished so far
+    python3 -m src.two_step_cli --questions <run>/questions.csv
 
-    # Always ask the findings a probe was measured to hide
-    python3 -m src.gate_cli --questions <run>/questions.csv \
+    # Always ask the findings a question was measured to hide
+    python3 -m src.two_step_cli --questions <run>/questions.csv \
         --exempt free_intraperitoneal_fluid,hepatic_steatosis
 
     # Add the coverage comparison, and write both tables
-    python3 -m src.gate_cli --questions <run>/questions.csv \
-        --category-findings <run>/category_findings.csv --out gate.csv
+    python3 -m src.two_step_cli --questions <run>/questions.csv \
+        --category-findings <run>/category_findings.csv --out two-step.csv
 """
 
 import argparse
@@ -34,12 +34,12 @@ import sys
 from pathlib import Path
 
 from .core.audit import expected_wordings, manifest_wordings
-from .core.gating import (
+from .core.two_step import (
     category_of_finding,
     category_yield,
     finding_sizes,
-    gate_counts,
-    probe_by_category,
+    two_step_counts,
+    compartment_question_by_category,
     read_summaries,
     read_verdicts,
 )
@@ -50,7 +50,7 @@ DEFAULT_LOCK = Path(__file__).resolve().parents[1] / "config" / "modalities" / "
 def parse_args(argv=None):
     """Read the command line."""
     parser = argparse.ArgumentParser(
-        description="What a compartment gate would save, and what it would hide"
+        description="What a two-step extraction would save, and what it would miss"
     )
     parser.add_argument("--questions", required=True, help="questions.csv from a run")
     parser.add_argument(
@@ -62,7 +62,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "--exempt",
         default="",
-        help="findings always asked, whatever their probe answered, comma separated",
+        help="findings always asked, whatever their question answered, comma separated",
     )
     parser.add_argument("--out", default=None, help="write the per-compartment table here")
     return parser.parse_args(argv)
@@ -80,7 +80,7 @@ def _lines(title, body):
 
 
 def main(argv=None):
-    """Report the gate and, where asked, the coverage comparison."""
+    """Report the two-step saving and, where asked, the coverage comparison."""
     args = parse_args(argv)
     path = Path(args.questions)
     lock = Path(args.lock)
@@ -90,7 +90,7 @@ def main(argv=None):
             return 1
 
     categories = category_of_finding(lock)
-    probes = probe_by_category(lock)
+    questions = compartment_question_by_category(lock)
     # What the directory was filled under governs completeness, because a
     # pilot asks a subset of the lock and is complete at that subset.
     asked = manifest_wordings(path.parent) or expected_wordings(lock)
@@ -115,24 +115,24 @@ def main(argv=None):
         print("no complete report yet", file=sys.stderr)
         return 1
 
-    gate = gate_counts(yes, complete, findings, probes, exempt=exempt)
+    counts = two_step_counts(yes, complete, findings, questions, exempt=exempt)
     _lines(
-        "Gating the specific questions on the compartment probes",
+        "Asking a compartment's findings only where its question answered Yes",
         {
-            "reports": gate["reports"],
-            "calls if nothing gated": gate["calls_flat"],
-            "calls skipped": gate["calls_skipped"],
-            "calls still asked": gate["calls_gated"],
-            "of which probes": gate["probe_calls"],
-            "speedup": gate["speedup"],
-            "positives kept": gate["positives_kept"],
-            "positives hidden": gate["positives_hidden"],
-            "recall": gate["recall"],
+            "reports": counts["reports"],
+            "calls if nothing is skipped": counts["calls_flat"],
+            "calls skipped": counts["calls_skipped"],
+            "calls still asked": counts["calls_two_step"],
+            "of which compartment questions": counts["compartment_calls"],
+            "speedup": counts["speedup"],
+            "positives kept": counts["positives_kept"],
+            "positives hidden": counts["positives_hidden"],
+            "recall": counts["recall"],
         },
     )
-    if gate["hidden_by_finding"]:
-        print("\nPositives the gate would hide, per finding")
-        for finding, count in gate["hidden_by_finding"].items():
+    if counts["hidden_by_finding"]:
+        print("\nPositives a two-step extraction would miss, per finding")
+        for finding, count in counts["hidden_by_finding"].items():
             print(f"  {count:>6,}  {finding}")
 
     if args.category_findings:
@@ -142,21 +142,21 @@ def main(argv=None):
             return 1
         informative, with_marker = read_summaries(summaries)
         coverage = category_yield(
-            yes, complete, findings, probes, informative, with_marker
+            yes, complete, findings, questions, informative, with_marker
         )
         _lines(
             "Coverage cells, where every specific question of a compartment said No",
             {
                 "report x compartment cells": coverage["cells"],
                 "every question said No": coverage["all_no"],
-                "summary and probe both flag": coverage["both"],
+                "summary and question both flag": coverage["both"],
                 "summary alone flags": coverage["summary_only"],
                 "  of those, names an abnormality": coverage["marker_only"],
-                "probe alone flags": coverage["probe_only"],
+                "question alone flags": coverage["compartment_only"],
             },
         )
         print(
-            "\nWhat map-categories adds over the probes lies between "
+            "\nWhat map-categories adds over the compartment questions lies between "
             f"{coverage['marker_only']:,} and {coverage['summary_only']:,} cells. "
             "The rest of the summaries restate that the organ is normal."
         )
@@ -165,8 +165,8 @@ def main(argv=None):
         import pandas as pd
 
         out = Path(args.out)
-        pd.DataFrame(gate["per_category"]).to_csv(out, index=False)
-        print(f"\nPer-compartment gate table written to {out}")
+        pd.DataFrame(counts["per_category"]).to_csv(out, index=False)
+        print(f"\nPer-compartment table written to {out}")
         if args.category_findings:
             beside = out.with_name(f"{out.stem}-coverage{out.suffix}")
             pd.DataFrame(coverage["per_category"]).to_csv(beside, index=False)

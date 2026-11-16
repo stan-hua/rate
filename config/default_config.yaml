@@ -40,14 +40,14 @@ model:
   # A reasoning run and a matched control over the same 18 wordings and 100
   # reports measured what it buys: 1,800 cells, 94 answers gained and 12 lost,
   # and reading both sides' evidence puts about 87 of the 94 right against
-  # about 7 wrong. 79 of the 94 are on four compartment probes, where the
+  # about 7 wrong. 79 of the 94 are on four compartment questions, where the
   # plain run answered "no abnormality" to the report's own
   # `Vasculature: Mild aortoiliac atherosclerosis` and
   # `Reproductive organs: Prostatomegaly`. That is the inconsistent reading of
-  # "abnormal" across 16 probes that the question set's own
+  # "abnormal" across 16 compartment questions that the question set's own
   # `aortic_atherosclerosis` finding contradicts at 654 positives.
   #
-  # **It applies to every finding.** Running the probes with thinking and the
+  # **It applies to every finding.** Running the compartment questions with thinking and the
   # findings without would split one run into two manifests, and `run_guard`
   # compares one decode configuration against one save directory.
   #
@@ -86,7 +86,7 @@ model:
   # **What greedy buys** is a re-run that reproduces its labels over 12,681
   # reports and 3.1M requests, and a wording whose effect is attributable at
   # all. Those outweigh 0.75%, and the two failure modes are not comparable
-  # anyway: without thinking the compartment probes returned about 87
+  # anyway: without thinking the compartment questions returned about 87
   # incorrect answers per 1,800 cells, where this returns 6 cells per 800 with
   # no answer, and `-1` leaves the loss by design.
   #

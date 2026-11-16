@@ -73,7 +73,7 @@ def reworded_findings(lock, stored_wordings):
 
     `changed_findings` reads the lock's `change` marks, which the generator
     writes against the *source* config. A wording can therefore differ from
-    what the stopped run asked and carry no mark: all 16 compartment probes had
+    what the stopped run asked and carry no mark: all 16 compartment questions had
     their existential and report-framed wordings swapped by A24, and they are
     the highest-volume, worst-agreeing findings in the question set. Comparing
     the lock against the stored text catches that case, and the union of the

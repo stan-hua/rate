@@ -7,7 +7,7 @@ Description: Say which way a pair of wordings disagrees, and what the cells
 The audit reports a pair's Jaccard, which is symmetric: it says how far two
 wordings disagree and not which of them answered Yes. A35 measured the sourced
 frame reproducing the canonical's Yes count on a named finding, and the third
-pilot then found the compartment probes losing Yes answers under it. This
+pilot then found the compartment questions losing Yes answers under it. This
 splits a pair's disagreement into its two directions and reports what
 separates a Yes one wording holds alone from a Yes both wordings reach.
 
@@ -197,7 +197,7 @@ def pooled(joined, groups=None):
     joined : pandas.DataFrame
         What `paired` returns.
     groups : dict, optional
-        Finding id to a group name. `probe_groups` reads one from the lock.
+        Finding id to a group name. `compartment_question_groups` reads one from the lock.
 
     Returns
     -------
@@ -216,8 +216,8 @@ def pooled(joined, groups=None):
     return pd.DataFrame(rows)
 
 
-def probe_groups(lock_path):
-    """Return each finding id as `probe` or `finding`, read from the lock.
+def compartment_question_groups(lock_path):
+    """Return each finding id as `question` or `finding`, read from the lock.
 
     Parameters
     ----------
@@ -234,7 +234,7 @@ def probe_groups(lock_path):
         return {}
     record = json.loads(path.read_text())
     return {
-        identifier: "probe" if body.get("probe") else "finding"
+        identifier: "compartment" if body.get("compartment_question") else "specific"
         for identifier, body in (record.get("findings") or {}).items()
     }
 

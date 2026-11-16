@@ -179,7 +179,7 @@ def main(argv=None):
         return 1
     print(f"{joined['finding_id'].nunique()} finding(s) over {len(joined)} report-cell(s).")
 
-    groups = directional.probe_groups(args.lock)
+    groups = directional.compartment_question_groups(args.lock)
     print("\nWhere the Yes answers land, and how often they were named outright")
     print(directional.pooled(joined, groups).to_string(index=False))
 

@@ -1,34 +1,39 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Measure what a compartment-level signal would buy if it gated the specific
-questions.
+two_step.py
+
+Description: Measures what a two-step extraction would save and what it would
+miss.
 
 Two signals could stand in for asking every finding of every report. The
-compartment probes are questions the set already asks, and `category_findings`
-is the free-text summary the `map-categories` stage writes. This module
-reports what each one would save and what it would hide.
+compartment questions are questions the set already asks, and
+`category_findings` is the free-text summary the `map-categories` stage
+writes. This module reports what each one saves and what it misses.
 
-`gate_counts` reads the probes. Where a compartment's probe answered No, the
-gate writes No to that compartment's specific findings without asking them.
-The saving is the share of calls skipped and the cost is the positives those
-calls would have found. A finding in a category with no probe is always asked,
-as is a finding named in `exempt`.
+`two_step_counts` reads the compartment questions. Where a compartment
+question answered No, a two-step extraction records No for that compartment's
+specific findings and never asks them. The saving is the share of calls
+skipped. The cost is the positives those calls would have found.
+`compartment_recall` is the statistic the method is judged on: of the
+positives a flat extraction finds in one compartment, the share a two-step
+extraction still finds, summed over that compartment's specific findings. A
+finding in a category with no compartment question is always asked, as is a
+finding named in `exempt`.
 
-`category_yield` reads `category_findings` against the probes. A compartment
-whose summary names something while every specific question answered No is a
-finding the question set missed, which is the coverage audit. A probe answers
-that question too, so what decides whether `map-categories` earns its 16 calls
-per report is the count of cells the summary flags and the probe does not.
+`category_yield` reads `category_findings` against the compartment questions.
+A compartment whose summary names something while every specific question
+answered No is a finding the question set missed, which is the coverage audit.
+A compartment question answers that too, so what decides whether
+`map-categories` earns its 16 calls per report is the count of cells the
+summary flags and the compartment question does not.
 
 **A summary that restates normal anatomy flags nothing.** Measured on the
-2026-11-14 smoke, 860 of 1,303 all-No cells had a summary the
-`UNINFORMATIVE` list did not catch, and 728 of those 860 named no abnormality
-at all -- "Liver is unremarkable", at a median of 25 characters against 73 for
-the rest. So `ABNORMAL` screens for a dictated abnormality and the two counts
-bound the yield from both sides: `summary_only` is the upper bound and
-`marker_only` the lower one, since a lexical screen misses an abnormality
-dictated in words it does not list.
+2026-11-14 smoke, 815 of 1,303 all-No cells had a summary the `UNINFORMATIVE`
+list did not catch, and 683 of those 815 named no abnormality at all --
+"Liver is unremarkable", at a median of 25 characters against 73 for the rest.
+So `ABNORMAL` screens for a dictated abnormality and the two counts bound the
+yield from both sides: `summary_only` is the upper bound and `marker_only` the
+lower one, since a lexical screen misses an abnormality dictated in words it
+does not list.
 
 **A partial run is readable.** `read_verdicts` keeps the reports whose row
 count matches what the run asked, so a run still writing reads as a smaller
@@ -79,8 +84,8 @@ ABNORMAL = re.compile(
 )
 
 
-def probe_by_category(lock_path):
-    """Return each category's compartment probe.
+def compartment_question_by_category(lock_path):
+    """Return each category's compartment question.
 
     Parameters
     ----------
@@ -90,8 +95,9 @@ def probe_by_category(lock_path):
     Returns
     -------
     dict
-        Category to probe finding id. A category whose probe left the question
-        set is absent, and its findings are then always asked.
+        Category to the finding id of its compartment question. A category
+        whose compartment question left the question set is absent, and its
+        findings are then always asked.
     """
     lock = json.loads(Path(lock_path).read_text())
     return {
@@ -207,8 +213,8 @@ def read_summaries(path):
     return informative, set(zip(marked["report_id"], marked["category"]))
 
 
-def gate_counts(yes, reports, findings, probes, exempt=()):
-    """Count what gating the specific questions on the probes would cost.
+def two_step_counts(yes, reports, findings, questions, exempt=()):
+    """Count what the two-step method the specific questions on the compartment questions would cost.
 
     Parameters
     ----------
@@ -219,10 +225,10 @@ def gate_counts(yes, reports, findings, probes, exempt=()):
         The complete reports to measure over.
     findings : dict
         As `finding_sizes` returns.
-    probes : dict
-        As `probe_by_category` returns.
+    questions : dict
+        As `compartment_question_by_category` returns.
     exempt : iterable of str, optional
-        Findings always asked, whatever their probe answered.
+        Findings always asked, whatever their question answered.
 
     Returns
     -------
@@ -234,9 +240,9 @@ def gate_counts(yes, reports, findings, probes, exempt=()):
     exempt = set(exempt)
     specific = {f: v for f, v in findings.items() if not f.startswith("any_")}
 
-    probe_calls = sum(n for f, (_, n) in findings.items() if f.startswith("any_"))
+    compartment_calls = sum(n for f, (_, n) in findings.items() if f.startswith("any_"))
     calls_flat = sum(n for _, n in findings.values()) * len(reports)
-    calls_gated = probe_calls * len(reports)
+    calls_two_step = compartment_calls * len(reports)
     kept = 0
     hidden = Counter()
     per_category = Counter()
@@ -245,12 +251,12 @@ def gate_counts(yes, reports, findings, probes, exempt=()):
 
     for report in reports:
         for finding, (category, wordings) in specific.items():
-            probe = probes.get(category)
+            question = questions.get(category)
             positive = (report, finding) in yes
             if positive:
                 positives_by_category[category] += 1
-            if probe is None or finding in exempt or (report, probe) in yes:
-                calls_gated += wordings
+            if question is None or finding in exempt or (report, question) in yes:
+                calls_two_step += wordings
                 asked_by_category[category] += wordings
                 kept += positive
             elif positive:
@@ -260,17 +266,17 @@ def gate_counts(yes, reports, findings, probes, exempt=()):
     rows = []
     for category in sorted({c for c, _ in findings.values()}):
         fine = sum(n for f, (c, n) in specific.items() if c == category)
-        probe = probes.get(category)
+        question = questions.get(category)
         rows.append(
             {
                 "category": category,
-                "probe": probe or "",
-                "probe_yes_reports": sum(
-                    1 for r in reports if probe and (r, probe) in yes
+                "question": question or "",
+                "compartment_yes_reports": sum(
+                    1 for r in reports if question and (r, question) in yes
                 ),
                 "fine_wordings": fine,
                 "calls_flat": fine * len(reports),
-                "calls_gated": asked_by_category[category],
+                "calls_two_step": asked_by_category[category],
                 "positives": positives_by_category[category],
                 "hidden": per_category[category],
             }
@@ -280,10 +286,10 @@ def gate_counts(yes, reports, findings, probes, exempt=()):
     return {
         "reports": len(reports),
         "calls_flat": calls_flat,
-        "calls_gated": calls_gated,
-        "calls_skipped": calls_flat - calls_gated,
-        "probe_calls": probe_calls * len(reports),
-        "speedup": calls_flat / calls_gated if calls_gated else 0.0,
+        "calls_two_step": calls_two_step,
+        "calls_skipped": calls_flat - calls_two_step,
+        "compartment_calls": compartment_calls * len(reports),
+        "speedup": calls_flat / calls_two_step if calls_two_step else 0.0,
         "positives_kept": kept,
         "positives_hidden": sum(hidden.values()),
         "recall": kept / total_positives if total_positives else 1.0,
@@ -292,10 +298,10 @@ def gate_counts(yes, reports, findings, probes, exempt=()):
     }
 
 
-def category_yield(yes, reports, findings, probes, informative, with_marker=None):
-    """Count the coverage cells `category_findings` flags and the probes miss.
+def category_yield(yes, reports, findings, questions, informative, with_marker=None):
+    """Count the coverage cells `category_findings` flags and the compartment questions miss.
 
-    A cell is one report and one probed compartment. `all_no` counts the cells
+    A cell is one report and one compartment with a question. `all_no` counts the cells
     where every specific finding of that compartment answered No, which is
     where a missed finding could hide. `summary_only` is the count that
     decides whether the `map-categories` stage earns its calls.
@@ -308,8 +314,8 @@ def category_yield(yes, reports, findings, probes, informative, with_marker=None
         The complete reports to measure over.
     findings : dict
         As `finding_sizes` returns.
-    probes : dict
-        As `probe_by_category` returns.
+    questions : dict
+        As `compartment_question_by_category` returns.
     informative : set
         The cells whose summary says anything, as `read_summaries` returns.
     with_marker : set, optional
@@ -330,8 +336,8 @@ def category_yield(yes, reports, findings, probes, informative, with_marker=None
 
     totals = Counter()
     rows = []
-    for category in sorted(probes):
-        probe = probes[category]
+    for category in sorted(questions):
+        question = questions[category]
         members = specific_by_category.get(category, [])
         counts = Counter()
         for report in reports:
@@ -341,18 +347,18 @@ def category_yield(yes, reports, findings, probes, informative, with_marker=None
             counts["all_no"] += 1
             said = (report, category) in informative
             marked = (report, category) in with_marker
-            probe_yes = (report, probe) in yes
-            if said and probe_yes:
+            question_yes = (report, question) in yes
+            if said and question_yes:
                 counts["both"] += 1
             elif said:
                 counts["summary_only"] += 1
                 if marked:
                     counts["marker_only"] += 1
-            elif probe_yes:
-                counts["probe_only"] += 1
+            elif question_yes:
+                counts["compartment_only"] += 1
         counts["cells"] = len(reports)
         totals.update(counts)
-        rows.append({"category": category, "probe": probe, "members": len(members), **counts})
+        rows.append({"category": category, "question": question, "members": len(members), **counts})
 
     return {
         "reports": len(reports),
@@ -361,6 +367,6 @@ def category_yield(yes, reports, findings, probes, informative, with_marker=None
         "both": totals["both"],
         "summary_only": totals["summary_only"],
         "marker_only": totals["marker_only"],
-        "probe_only": totals["probe_only"],
+        "compartment_only": totals["compartment_only"],
         "per_category": rows,
     }

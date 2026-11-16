@@ -194,26 +194,29 @@ class TestThePooledProfile:
                 ("cirrhosis", 2): {},
             }
         )
-        groups = {"ascites": "probe", "cirrhosis": "finding"}
+        groups = {"ascites": "compartment", "cirrhosis": "specific"}
         table = directional.pooled(directional.paired(frame, ROLES), groups)
-        assert list(table["group"]) == ["all", "finding", "probe"]
+        assert list(table["group"]) == ["all", "compartment", "specific"]
 
-    def test_probe_groups_reads_the_lock(self, tmp_path):
+    def test_compartment_question_groups_reads_the_lock(self, tmp_path):
         lock = tmp_path / "x.lock.json"
         lock.write_text(
             json.dumps(
                 {
                     "findings": {
-                        "any_liver": {"probe": True, "variants": []},
+                        "any_liver": {"compartment_question": True, "variants": []},
                         "ascites": {"variants": []},
                     }
                 }
             )
         )
-        assert directional.probe_groups(lock) == {"any_liver": "probe", "ascites": "finding"}
+        assert directional.compartment_question_groups(lock) == {
+            "any_liver": "compartment",
+            "ascites": "specific",
+        }
 
     def test_a_missing_lock_names_no_group(self, tmp_path):
-        assert directional.probe_groups(tmp_path / "absent.json") == {}
+        assert directional.compartment_question_groups(tmp_path / "absent.json") == {}
 
 
 class TestReviewingTheCells:

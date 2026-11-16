@@ -51,7 +51,7 @@ LOCK = json.loads(LOCK_PATH.read_text())
 
 # The wording each finding inherited from `abdomen_ct.yaml`, byte for byte.
 # Everything else in the FAST set is authored: the two free-fluid findings, one
-# compartment probe per category, and the two variant wordings every finding
+# compartment question per category, and the two variant wordings every finding
 # gained. Two of those variants are an exception and were inherited too,
 # because the source asked bowel obstruction and hiatal hernia twice.
 CANONICAL_WORDINGS = {
@@ -436,33 +436,33 @@ class TestTheFastConfigAndItsLock:
         assert not names & {"Genitourinary", "Visible Thoracic", "Heart"}
         assert {"Kidney", "Urinary tract", "Pleura and lung bases"} <= names
 
-    def test_every_compartment_has_one_probe_and_the_cross_cutting_two_have_none(self):
+    def test_every_compartment_has_one_question_and_the_cross_cutting_two_have_none(self):
         """Which is what separates a compartment from a cross-cutting category.
 
-        A probe asks whether anything in its compartment is abnormal, so it is
+        A question asks whether anything in its compartment is abnormal, so it is
         the compartment's own coarse label. `Multi Organs` and `Device`
         describe findings across organs, so neither has one.
 
         There were 17 until the `Heart` compartment left on 2026-11-11, with
-        its probe, `cardiomegaly`, and `any_pericardium` -- a finding worded
-        like a probe, over the pericardial space the subxiphoid view certainly
-        shows. `any_retroperitoneum` left on 2026-11-15, because four probes
+        its question, `cardiomegaly`, and `any_pericardium` -- a finding worded
+        like a question, over the pericardial space the subxiphoid view certainly
+        shows. `any_retroperitoneum` left on 2026-11-15, because four questions
         that remain ask about the organs its wording names, so the question
         became their union. `docs/data/findings.md` in `ifast` records what it
         measured.
         """
-        probes = {i: b["category"] for i, b in LOCK["findings"].items() if b.get("probe")}
-        assert len(probes) == 15
-        assert len(set(probes.values())) == 15, "two probes in one compartment"
+        questions = {i: b["category"] for i, b in LOCK["findings"].items() if b.get("compartment_question")}
+        assert len(questions) == 15
+        assert len(set(questions.values())) == 15, "two questions in one compartment"
         assert "any_pericardium" not in LOCK["findings"]
 
         config = yaml.safe_load(FAST_ABDOMEN.read_text())
         flagged = {n for n, b in config["categories"].items() if b.get("cross_cutting")}
         assert flagged == {"Multi Organs", "Device"}
-        # `Retroperitoneum` keeps its own findings and lost its probe on
+        # `Retroperitoneum` keeps its own findings and lost its question on
         # 2026-11-15, so it joins the cross-cutting two in asking nothing
         # about the compartment as a whole.
-        assert set(config["categories"]) - set(probes.values()) == flagged | {
+        assert set(config["categories"]) - set(questions.values()) == flagged | {
             "Retroperitoneum"
         }
 
@@ -481,7 +481,7 @@ class TestTheFastConfigAndItsLock:
 
         82 visible findings with a positive in the cohort, 9 tier C questions
         kept as covariates, 5 findings the source never asked about, and one
-        compartment probe for each compartment but the retroperitoneum. Of the
+        compartment question for each compartment but the retroperitoneum. Of the
         five, two are for free fluid, two are halves of a compound question the
         source asked as one, and one is the hepatic hypodensity umbrella. 29
         findings are asked three times and 77 twice, because a finding with no
@@ -549,4 +549,4 @@ class TestTheFastConfigAndItsLock:
         """
         added = {i for i, b in LOCK["findings"].items() if b.get("added")}
         assert {"hemoperitoneum", "free_intraperitoneal_fluid"} <= added
-        assert sum(1 for i in added if LOCK["findings"][i].get("probe")) == 15
+        assert sum(1 for i in added if LOCK["findings"][i].get("compartment_question")) == 15

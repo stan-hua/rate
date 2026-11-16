@@ -321,7 +321,7 @@ def test_the_subset_lock_is_what_the_audit_reads():
 #
 # The lock's `change` marks are written against the source config, so a wording
 # can differ from what the stopped run asked and carry no mark. A24 swapped the
-# existential and report-framed wordings of all 16 compartment probes, which are
+# existential and report-framed wordings of all 16 compartment questions, which are
 # the worst-agreeing findings in the question set, and the first pilot left them
 # out for that reason.
 

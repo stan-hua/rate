@@ -188,8 +188,8 @@
     "any_adrenals": {
       "added": true,
       "category": "Adrenal gland",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -210,8 +210,8 @@
     "any_biliary": {
       "added": true,
       "category": "Biliary Tree",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -232,8 +232,8 @@
     "any_bowel": {
       "added": true,
       "category": "Gastrointestinal",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -254,8 +254,8 @@
     "any_female_pelvis": {
       "added": true,
       "category": "Female pelvis",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -276,8 +276,8 @@
     "any_gallbladder": {
       "added": true,
       "category": "Gallbladder",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -298,8 +298,8 @@
     "any_great_vessels": {
       "added": true,
       "category": "Great Vessel",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -320,8 +320,8 @@
     "any_kidneys": {
       "added": true,
       "category": "Kidney",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -342,8 +342,8 @@
     "any_liver": {
       "added": true,
       "category": "Liver",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -364,8 +364,8 @@
     "any_male_pelvis": {
       "added": true,
       "category": "Male Pelvis",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -386,8 +386,8 @@
     "any_musculoskeletal": {
       "added": true,
       "category": "Musculoskeletal",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -408,8 +408,8 @@
     "any_pancreas": {
       "added": true,
       "category": "Pancreas",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "C",
       "variants": [
         {
@@ -430,8 +430,8 @@
     "any_peritoneum": {
       "added": true,
       "category": "Peritoneum",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -452,8 +452,8 @@
     "any_pleura": {
       "added": true,
       "category": "Pleura and lung bases",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -474,8 +474,8 @@
     "any_spleen": {
       "added": true,
       "category": "Spleen",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -496,8 +496,8 @@
     "any_urinary_tract": {
       "added": true,
       "category": "Urinary tract",
+      "compartment_question": true,
       "covariate": false,
-      "probe": true,
       "tier": "A",
       "variants": [
         {
@@ -2422,7 +2422,7 @@
       "window": "RUQ/LUQ"
     }
   },
-  "generated": "2026-11-15",
+  "generated": "2026-11-16",
   "modality": "fast_abdominal_ct",
   "retired": [
     {
