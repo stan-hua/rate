@@ -11,6 +11,7 @@ subcommands, each printing counts alone:
     prepare       the votes, the splits and the token lengths
     train         fit the encoder and score it against the teacher
     baselines     the same splits through TF-IDF and the prevalence floor
+    curve         the same encoder over 250, 500, 1,000 and every report
 
 Examples
 --------
@@ -92,6 +93,16 @@ def parse_args(argv=None):
                        help='train on this many reports, for the learning curve')
 
     common('baselines', 'TF-IDF and the prevalence floor on the same splits')
+
+    curve = common('curve', 'the learning curve, as the portability claim')
+    curve.add_argument('--encoder', default=None)
+    curve.add_argument('--epochs', type=int, default=10)
+    curve.add_argument('--batch-size', type=int, default=8)
+    curve.add_argument('--accumulate', type=int, default=1)
+    curve.add_argument('--learning-rate', type=float, default=3e-5)
+    curve.add_argument('--max-length', type=int, default=None)
+    curve.add_argument('--points', default='250,500,1000,0',
+                       help='training sizes, comma separated; 0 is every report')
 
     return parser.parse_args(argv)
 
@@ -251,6 +262,58 @@ def main(argv=None):
         summaries.append(_score(
             "tfidf", finding_ids, test_labels, probabilities, args.out_dir, logger
         ))
+
+    if args.command == 'curve':
+        from .student import train as training
+
+        rows = []
+        for point in [int(p) for p in args.points.split(',')]:
+            subset = (
+                student_data.subsample(train_split, point, seed=f"curve:{args.seed}")
+                if point else train_split
+            )
+            texts_at, labels_at = _rows_for(subset, report_ids, labels, texts)
+            logger.info("curve point: %d reports", len(texts_at))
+            # A fresh encoder per point, so a later point never warm-starts
+            # from an earlier one and the curve measures the data alone.
+            model, tokenizer, device = training.build(
+                encoder_name=args.encoder or training.DEFAULT_ENCODER,
+                n_findings=len(finding_ids),
+            )
+            history = training.train(
+                model, tokenizer, device,
+                texts_at, labels_at, val_texts, val_labels,
+                epochs=args.epochs,
+                batch_size=args.batch_size,
+                accumulate=args.accumulate,
+                learning_rate=args.learning_rate,
+                max_length=args.max_length or training.DEFAULT_MAX_LENGTH,
+                logger=logger,
+            )
+            loader = training._loader(
+                test_texts, test_labels, tokenizer,
+                args.max_length or training.DEFAULT_MAX_LENGTH, args.batch_size, False,
+            )
+            probabilities, held_out = training.predict(model, loader, device)
+            summary = _score(
+                f"curve-{len(texts_at)}", finding_ids, held_out, probabilities,
+                args.out_dir, logger,
+            )
+            rows.append({
+                "n_train": len(texts_at),
+                "seconds": history['seconds'],
+                "best_epoch": history['best_epoch'],
+                "peak_vram_mib": history['peak_vram_mib'],
+                **summary,
+            })
+            del model
+            if device.type == 'cuda':
+                __import__('torch').cuda.empty_cache()
+        frame = pd.DataFrame(rows)
+        print()
+        print(frame[["n_train", "n_measured", "auprc", "auroc", "seconds"]].to_string(index=False))
+        _write(args.out_dir, "curve.csv", frame, logger)
+        return 0
 
     if args.command == 'train':
         from .student import train as training

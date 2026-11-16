@@ -4,16 +4,22 @@ train.py
 Description: Trains the student on a finished extraction's labels.
 
 One pass over the reports, bf16 on the GPU, AdamW with a linear decay and a
-short warmup. The budget is small: one epoch over 12,681 reports at about 560
-tokens through 150M parameters is roughly 6 PFLOPs, so a few minutes, and a
-sweep is affordable.
+short warmup. The budget is small: 1,571 arm reports take 37.5 seconds an epoch
+at batch 8 on a 5070 Ti, which puts the cohort at about 5 minutes an epoch and
+a 20-epoch run at 1.7 hours, so a sweep is affordable.
+
+**Batch size is the one setting to get right, and the failure is silent.**
+Batch 16 at these lengths peaked at 16,859 MiB on a 16,302 MiB card, and the
+driver served the overflow from host memory rather than raising: 760 seconds an
+epoch against 37.5, with no error anywhere. The run below warns above 90% of
+the card.
 
 **The maximum length is 2,048 rather than the encoder's 8,192.** Measured over
-all 12,681 cohort reports, the median is about 560 tokens, the 99th percentile
-about 1,100 and the longest about 2,100, so every report fits and the
-remaining window would cost attention time for nothing. A 512-token encoder
-truncates 45% to 65% of the cohort, and it truncates the end of the report,
-where the pelvic compartments are dictated.
+the 2,195 arm reports under BioClinical-ModernBERT's own tokenizer, the median
+is 598 tokens, the 99th percentile 1,095 and the longest 1,544, so every report
+fits and the remaining window would cost attention time for nothing. 70.8% of
+those reports exceed 512 tokens, and a 512-token encoder truncates the end of
+the report, where the pelvic compartments are dictated.
 
 **The attention path is SDPA.** ModernBERT's unpadding route needs flash-attn
 2, prebuilt sm_120 wheels are scarce and a source build on 21 GB of system RAM

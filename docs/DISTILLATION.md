@@ -122,6 +122,12 @@ cells.
 - Per-head `pos_weight` handles the imbalance, capped at 100 so a finding with
   two positives cannot dominate the gradient. AUPRC is the headline metric,
   because most findings are rare.
+- **The label step costs 4 minutes at cohort scale and needs no rewrite.**
+  Measured on 3.14M synthetic rows in the committed set's shape:
+  `aggregate_findings` produced 1,344,186 cells in 232.6 seconds at a peak
+  resident 1.9 GiB. That matters because it runs on this desktop, where 21 GB
+  of system RAM is the binding constraint and `stability.by_template` already
+  exceeds it at cohort scale.
 
 **`disc_<finding_id>` is the next head group to try.** It records whether the
 teacher's wordings disagreed on a cell, so a student that predicts discordance
@@ -181,11 +187,34 @@ where it matches those two numbers within 2 points on the same rows. A student
 that reproduces the teacher faithfully and disagrees with the reader has
 inherited the teacher's errors, and part 1 cannot tell those two cases apart.
 
-**3. The learning curve.** Train on 500, 1k, 2k, 4k, 8k and every report and
-plot per-finding AUPRC. This answers the question another institution asks
-first: how much teacher time buys a working student. A curve that saturates at
-2,000 reports puts the teacher's cost at about 1.7 days instead of 11, and that
-figure is the portability claim. `--limit-train` takes the prefix.
+**3. The learning curve**, which answers the question another institution asks
+first: how much teacher time buys a working student. `pixi run -e student
+student curve --points 250,500,1000,0` trains a fresh encoder at each size
+against one validation and one test split.
+
+**Measured on the arm**, 10 epochs per point, scored on the same 298 held-out
+reports:
+
+| training reports | macro AUPRC | macro AUROC | agreement on the teacher's yes |
+| ---: | ---: | ---: | ---: |
+| 250 | 0.4968 | 0.7979 | 0.6111 |
+| 500 | 0.6646 | 0.8884 | 0.7831 |
+| 1,000 | 0.9339 | 0.9814 | 0.9067 |
+| 1,571 | 0.9306 | 0.9832 | 0.9231 |
+
+**The curve saturates between 500 and 1,000 reports**, and the last 571 add
+nothing beyond noise. At the cohort's 241 wordings and the teacher's measured
+3.24 requests per second, 1,000 reports is **about 21 hours of teacher time**
+against 11 days for 12,681, which is the portability claim.
+
+Two things bound that figure, and both argue the same way. **The arm is
+positive-enriched**, so 1,000 of its reports contain more positives than 1,000
+consecutive reports would, and the saturation point on an unenriched sample is
+higher. And **each point trained for 10 epochs rather than a fixed number of
+optimizer steps**, so the small points saw fewer updates as well as fewer
+reports; selecting each point's checkpoint on validation loss softens that
+without removing it. A step-matched curve over the cohort is the version to
+quote.
 
 ## The baselines the student has to beat
 
