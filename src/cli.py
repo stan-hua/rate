@@ -57,8 +57,8 @@ def parse_args():
 
     
     # Optional settings
-    parser.add_argument('--batch-size', type=int, default=1024,
-                      help='Batch size for processing reports (default: 1024)')
+    parser.add_argument('--batch-size', type=int, default=None,
+                      help='Batch size for processing reports (default: the configured value)')
     parser.add_argument('--accession-col', default='Accession',
                       help='Column name for accession numbers in CSV (default: Accession)')
     parser.add_argument('--report-col', default='Report Text',
@@ -69,6 +69,34 @@ def parse_args():
                       help='Enable debug logging')
     
     return parser.parse_args()
+
+def _processing(config: dict, args) -> dict:
+    """Return the processing block, with the command line overriding the file.
+
+    `config.update` replaces a whole mapping, so building this block from the
+    arguments alone dropped every other key the file sets -- `batch-size`
+    among them, which left `--batch-size`'s default silently overriding the
+    configured value.
+
+    Parameters
+    ----------
+    config : dict
+        The configuration as loaded from the YAML file.
+    args : argparse.Namespace
+        The parsed command line.
+
+    Returns
+    -------
+    dict
+        The file's processing block with `save-dir` set and `batch-size`
+        overridden where the command line names one.
+    """
+    processing = dict(config.get('processing', {}))
+    processing['save-dir'] = args.save_dir
+    if args.batch_size is not None:
+        processing['batch-size'] = args.batch_size
+    return processing
+
 
 def validate_stage_inputs(stages: list, args) -> dict:
     """Validate that required inputs are available for selected stages."""
@@ -223,10 +251,7 @@ def main():
         'modality-config': args.modality_config,
         'accession-col': args.accession_col,
         'report-col': args.report_col,
-        'processing': {
-            'batch-size': args.batch_size,
-            'save-dir': args.save_dir
-        },
+        'processing': _processing(config, args),
         'debug': {
             'enabled': args.debug_mode,
             'sample': args.debug_sample,

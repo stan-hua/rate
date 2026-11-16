@@ -200,8 +200,8 @@ def read_summaries(path):
         summary names an abnormality. No text is returned.
     """
     frame = pd.read_csv(path, dtype=str).fillna("")
-    text = frame["findings"].str.strip()
-    said = frame[~text.str.lower().isin(UNINFORMATIVE)]
+    text = frame["findings"].str.strip().str.lower().str.rstrip(".;: ")
+    said = frame[~text.isin(UNINFORMATIVE)]
     informative = set(zip(said["report_id"], said["category"]))
     marked = said[said["findings"].str.contains(ABNORMAL, regex=True)]
     return informative, set(zip(marked["report_id"], marked["category"]))
