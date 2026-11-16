@@ -51,18 +51,21 @@ STAGE_CONFIGS = {
     'no_comparisons': {
         'filename': 'no_comparisons.csv',
         'columns': ['report_id', 'no_comparison_text'],
+        'required_columns': ['report_id', 'no_comparison_text'],
         'key_column': 'report_id',
         'data_type': 'simple',  # Dict[str, str]
     },
     'findings': {
         'filename': 'findings.csv', 
         'columns': ['report_id', 'findings'],
+        'required_columns': ['report_id', 'findings'],
         'key_column': 'report_id',
         'data_type': 'simple',  # Dict[str, str]
     },
     'category_findings': {
         'filename': 'category_findings.csv',
         'columns': ['report_id', 'category', 'findings'],
+        'required_columns': ['report_id', 'category', 'findings'],
         'key_column': 'report_id',
         'data_type': 'nested',  # Dict[str, Dict[str, str]]
         'request_id_pattern': '{report_id}_{category}',
@@ -80,6 +83,18 @@ STAGE_CONFIGS = {
             'verdict', 'evidence',
             'certainty_phrase', 'certainty', 'severity_phrase', 'severity',
             'attribution', 'named_outright', 'truncated', 'unquoted',
+        ],
+        # What a reader needs, which is a subset of what a writer produces.
+        # `columns` grows whenever a covariate is added -- `template` on
+        # 2026-11-12, `trauma_indication` and `trauma_terms` on 2026-11-15 --
+        # and a stored file written before that addition has none of them.
+        # Requiring the whole list refused to load such a file and stopped a
+        # ten-day run on its own output, so the check asks for the columns the
+        # transform below reads and leaves the rest to `pd.concat`, which fills
+        # an absent column on the next append.
+        'required_columns': [
+            'report_id', 'category', 'finding_id', 'variant_index',
+            'question', 'answer',
         ],
         'key_column': 'report_id',
         'data_type': 'complex',  # Dict[str, Dict[str, List[Dict]]]
@@ -163,7 +178,7 @@ class StorageManager:
         if file_path is None:
             file_path = self.save_dir / config['filename']
         
-        df = self._validate_and_load_csv(file_path, config['columns'])
+        df = self._validate_and_load_csv(file_path, config['required_columns'])
         return self._transform_df_to_results(stage_name, df)
     
     def save_incremental_results(self, stage_name: str, results: Dict) -> None:
@@ -317,14 +332,42 @@ class StorageManager:
         return STAGE_CONFIGS[stage_name]
     
     def _validate_and_load_csv(self, file_path: Path, required_columns: List[str]) -> pd.DataFrame:
-        """Validate and load CSV file with required columns."""
+        """Read a stage file, after checking it has the columns a reader needs.
+
+        The message names the columns that are absent and the file they are
+        absent from. It had printed the whole required list instead, which on
+        the questions stage is twenty column names and says nothing about which
+        one is the problem.
+
+        Parameters
+        ----------
+        file_path : Path
+            The stage file.
+        required_columns : list of str
+            The columns a reader needs, which `STAGE_CONFIGS` records as
+            `required_columns`.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The whole file.
+        """
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
         
-        df = pd.read_csv(file_path)
-        required_columns_set = set(required_columns)
-        if not required_columns_set.issubset(set(df.columns)):
-            raise ValueError(f"CSV file must contain columns: {required_columns_set}")
+        # `dtype=str` because `report_id` is an accession number: typed as
+        # int64 it loses a leading zero, and the key it is then stored under
+        # matches neither the report it came from nor the request that asked
+        # it. Every column a transform reads is text, so the cast costs
+        # nothing. Measured latent on this cohort, whose accessions are 7 and
+        # 8 digits with none leading zero.
+        df = pd.read_csv(file_path, dtype=str)
+        missing = [column for column in required_columns if column not in df.columns]
+        if missing:
+            raise ValueError(
+                f"{file_path} has no {missing} column(s), which a reader needs. "
+                f"It has {list(df.columns)}."
+            )
         
         return df
     
@@ -448,6 +491,7 @@ class StorageManager:
         df = df.sort_values(['report_id', 'category', 'finding_id', 'variant_index'])
         
         results = {}
+        unreadable_variant = 0
         for _, row in df.iterrows():
             report_id = str(row["report_id"])
             category = row["category"]
@@ -457,13 +501,30 @@ class StorageManager:
             if category not in results[report_id]:
                 results[report_id][category] = []
             
+            # A blank cell here used to raise, which stopped a resume on the
+            # one file a ten-day run has written. The wording index is stored
+            # as written instead and the row is counted, because a row whose
+            # key will not read is a row the resume filter cannot match either
+            # and the question is asked again.
+            variant = row["variant_index"]
+            try:
+                variant = int(variant)
+            except (TypeError, ValueError):
+                unreadable_variant += 1
+
             results[report_id][category].append({
                 "finding_id": row["finding_id"],
-                "variant_index": int(row["variant_index"]),
+                "variant_index": variant,
                 "question": row["question"],
                 "answer": row["answer"],
             })
-        
+
+        if unreadable_variant:
+            logger.warning(
+                "%d stored row(s) have no readable variant_index",
+                unreadable_variant,
+            )
+
         return results
     
     def _reconstruct_request_ids(self, df: pd.DataFrame, config: Dict) -> set:
@@ -555,7 +616,14 @@ class StorageManager:
                     # `questions.csv` with millions of answers in it was
                     # replaced by the first batch of a resumed run.
                     try:
-                        existing_df = pd.read_csv(file_path)
+                        # `dtype=str` for the reason the resume read has it:
+                        # the deduplication key below starts with the
+                        # accession number, and an all-digit column typed as
+                        # int64 drops a leading zero. The key would then differ
+                        # from the one the resume filter built, and the row
+                        # would be appended a second time. Every cell is
+                        # written back as the text it already was.
+                        existing_df = pd.read_csv(file_path, dtype=str)
                     except Exception as e:
                         raise _unreadable(file_path, e) from e
 
@@ -634,10 +702,11 @@ class StorageManager:
         try:
             df = pd.read_csv(file_path)
             
-            # Check required columns
-            required_columns = set(config['columns'])
-            if not required_columns.issubset(set(df.columns)):
-                print(f"CSV validation failed: missing columns in {file_path}")
+            # Against what a reader needs, for the reason `required_columns`
+            # records: this file may predate a covariate the writer now adds.
+            missing = [c for c in config['required_columns'] if c not in df.columns]
+            if missing:
+                print(f"CSV validation failed: {file_path} has no {missing}")
                 return False
             
             # Check for completely empty rows

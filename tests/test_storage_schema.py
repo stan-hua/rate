@@ -267,3 +267,109 @@ class TestAnIdentifierIsText:
 
         with pytest.raises(StorageError, match="finding_id"):
             store.get_processed_request_ids("questions")
+
+
+class TestAFileWrittenBeforeAColumnWasAdded:
+    """A covariate added mid-run must not stop the run that is writing it.
+
+    `template` arrived on 2026-11-12 and `trauma_indication` and
+    `trauma_terms` on 2026-11-15, each as a new entry in the stage's `columns`.
+    The reader required every one of them, so pulling the commit that adds one
+    made the next resume refuse the file it had been appending to all along:
+
+        CSV file must contain columns: {'trauma_terms', 'template', ...}
+
+    The run stopped on its own output, and the message printed the twenty names
+    it wanted rather than the one it lacked.
+    """
+
+    def rows(self):
+        """One stored answer, in the column set of 2026-11-14."""
+        return [
+            {
+                "report_id": "0012345",
+                "category": "Liver",
+                "finding_id": "cirrhosis",
+                "variant_index": 0,
+                "question_id": "00000000",
+                "question": "Is there cirrhosis?",
+                "answer": '{"answer": "yes"}',
+                "verdict": "yes",
+            }
+        ]
+
+    def test_the_file_loads_without_the_later_covariates(self, tmp_path):
+        path = tmp_path / "questions.csv"
+        pd.DataFrame(self.rows()).to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        answers = store.load_questions(path)
+
+        assert list(answers) == ["0012345"]
+        assert answers["0012345"]["Liver"][0]["finding_id"] == "cirrhosis"
+
+    def test_the_append_adds_the_new_columns(self, tmp_path):
+        """One append brings the file up to the current column set."""
+        path = tmp_path / "questions.csv"
+        pd.DataFrame(self.rows()).to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        store.save_incremental_results("questions", CHUNK)
+
+        frame = pd.read_csv(path)
+        assert "trauma_indication" in frame.columns
+        assert "template" in frame.columns
+        assert len(frame) == 2
+
+    def test_the_validator_passes_on_it(self, tmp_path):
+        path = tmp_path / "questions.csv"
+        pd.DataFrame(self.rows()).to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        assert store.validate_csv_file("questions")
+
+    def test_a_column_a_reader_needs_is_named(self, tmp_path):
+        """The message says which column, and which file."""
+        path = tmp_path / "questions.csv"
+        frame = pd.DataFrame(self.rows()).drop(columns=["answer"])
+        frame.to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        with pytest.raises(ValueError, match="answer"):
+            store.load_questions(path)
+
+    def test_a_blank_wording_index_does_not_stop_the_load(self, tmp_path):
+        """`int("")` raised, on the one file a ten-day run has written."""
+        path = tmp_path / "questions.csv"
+        frame = pd.DataFrame(self.rows())
+        frame["variant_index"] = ""
+        frame.to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        answers = store.load_questions(path)
+
+        assert len(answers["0012345"]["Liver"]) == 1
+
+    def test_a_leading_zero_is_not_appended_twice(self, tmp_path):
+        """The deduplication key has to read the accession the way the resume does."""
+        path = tmp_path / "questions.csv"
+        pd.DataFrame(self.rows()).to_csv(path, index=False)
+        store = StorageManager(save_dir=str(tmp_path))
+
+        store.save_incremental_results(
+            "questions",
+            {
+                "0012345": {
+                    "Liver": [
+                        {
+                            "finding_id": "cirrhosis",
+                            "variant_index": 0,
+                            "question": "Is there cirrhosis?",
+                            "answer": '{"answer": "yes"}',
+                        }
+                    ]
+                }
+            },
+        )
+
+        assert len(pd.read_csv(path, dtype=str)) == 1
