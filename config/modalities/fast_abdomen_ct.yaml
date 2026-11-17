@@ -63,7 +63,7 @@ categories:
         question: "Is the spleen absent?"
         variants:
           - "According to the report, is the spleen absent?"
-        definition: "An absent spleen is defined as no spleen in the splenic fossa, from any cause: a splenectomy, congenital asplenia, or an autosplenectomy."
+        definition: "An absent spleen is defined as no spleen in the splenic fossa, from any cause. This definition includes a splenectomy, congenital asplenia, and an autosplenectomy."
         include_terms:
           - "splenectomy"
           - "surgically absent spleen"
@@ -552,7 +552,7 @@ categories:
         question: "Is either kidney absent?"
         variants:
           - "According to the report, is either kidney absent?"
-        definition: "An absent kidney is defined as no kidney in a renal fossa, from any cause: a nephrectomy, congenital absence, or agenesis. This definition excludes a kidney present but atrophic, and a transplanted kidney in an iliac fossa."
+        definition: "An absent kidney is defined as no kidney in a renal fossa, from any cause. This definition includes a nephrectomy, congenital absence, and agenesis. This definition excludes a kidney present but atrophic, and a transplanted kidney in an iliac fossa."
         include_terms:
           - "absent kidney"
           - "surgically absent kidney"
