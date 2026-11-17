@@ -1014,7 +1014,7 @@ categories:
         variants:
           - "Is there bladder perforation?"
           - "According to the report, is there bladder rupture?"
-        definition: "Bladder rupture is defined as a breach of the bladder wall, with contrast or urine leaking intraperitoneally or extraperitoneally. This definition includes a demonstrated leak is not required: a wall defect with adjacent extravesical fluid."
+        definition: "Bladder rupture is defined as a breach of the bladder wall, with contrast or urine leaking intraperitoneally or extraperitoneally. This definition includes a wall defect with adjacent extravesical fluid, where no leak is demonstrated."
       - id: any_urinary_tract
         question: "Is there any abnormality of the ureters or bladder?"
         variants:
