@@ -82,7 +82,8 @@ STAGE_CONFIGS = {
             'trauma_indication', 'trauma_terms',
             'verdict', 'evidence',
             'certainty_phrase', 'certainty', 'severity_phrase', 'severity',
-            'attribution', 'named_outright', 'truncated', 'unquoted',
+            'attribution', 'named_outright', 'definition_match',
+            'truncated', 'unquoted',
         ],
         # What a reader needs, which is a subset of what a writer produces.
         # `columns` grows whenever a covariate is added -- `template` on

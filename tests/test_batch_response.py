@@ -386,3 +386,78 @@ class TestWhatTheReaderCountsRatherThanDrops:
         assert counts["unterminated"] == 1
         assert got["r1"] == "<think>"
         assert "liver" not in got["r1"]
+
+
+class TestA50sGradedArm:
+    """One more field, asked only where the flag is on."""
+
+    def config(self):
+        import yaml
+
+        return yaml.safe_load(
+            (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
+        )
+
+    def rendered(self, graded):
+        templates = self.config()["prompt_templates"]
+        block = "\n" + templates["graded_match_block"].rstrip() + "\n" if graded else ""
+        return templates["findings_question"].format(
+            report="<REPORT>", question="<QUESTION>", guidance="<GUIDANCE>", graded=block
+        )
+
+    def test_the_arm_is_off_in_the_committed_config(self):
+        """The cohort run asks the fields it has always asked."""
+        assert self.config()["model"]["graded_match"] is False
+
+    def test_the_flag_off_leaves_the_prompt_as_it_was(self):
+        """The whole reason the block is a placeholder rather than a second
+        template: an arm that changes the shipped prompt by existing would
+        make every answer on disk incomparable with the next one.
+
+        This compares against the committed prompt itself, so the check holds
+        whatever else the template gains.
+        """
+        import subprocess
+
+        head = subprocess.run(
+            ["git", "show", "HEAD:config/default_config.yaml"],
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).resolve().parents[1],
+        )
+        if head.returncode != 0:
+            pytest.skip("no git object for the committed config")
+        import yaml
+
+        before = yaml.safe_load(head.stdout)["prompt_templates"]["findings_question"]
+        fields = {"report": "<REPORT>", "question": "<QUESTION>", "guidance": "<GUIDANCE>"}
+        if "{graded}" in before:
+            fields["graded"] = ""
+        assert self.rendered(graded=False) == before.format(**fields)
+
+    def test_the_flag_on_asks_for_the_graded_figure(self):
+        text = self.rendered(graded=True)
+        assert "`definition_match`" in text
+        assert "Grade from 0 to 1" in text
+        # Ahead of the report, with the other field descriptions.
+        assert text.index("`definition_match`") < text.index("<REPORT>")
+
+    def test_the_block_tells_the_model_what_it_is_not(self):
+        """The field it would otherwise duplicate.
+
+        `certainty_phrase` records the hedge the radiologist put on the
+        finding. This one grades the description against the definition, and a
+        report can describe a whole definition flatly while naming none of it,
+        which is the case A50 exists for.
+        """
+        text = self.rendered(graded=True)
+        assert "`certainty_phrase` records" in text
+        assert "never writes cirrhosis" in text
+
+    def test_the_flag_is_guarded(self):
+        """It changes the prompt for every finding, so a mid-run flip has to
+        refuse the resume. A48 found the three sampling penalties forwarded
+        and unguarded, which is the same defect."""
+        from src.core.run_guard import GUARDED_MODEL_FIELDS
+
+        assert "graded_match" in GUARDED_MODEL_FIELDS

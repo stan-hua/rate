@@ -151,3 +151,51 @@ class TestTheCovariatesAreReadForEveryReport:
     def test_a_template_is_detected_rather_than_left_blank(self, engine):
         engine._build_process_questions_requests(REPORTS)
         assert all(value for value in engine._templates.values())
+
+
+class TestA50sGradedArmReachesThePrompt:
+    """The flag has to change the prompt the model sees, not just the config."""
+
+    def engine(self, graded):
+        obj = Engine.__new__(Engine)
+        obj._findings_categories = {
+            "Liver": {"questions": [{"id": "cirrhosis", "question": "Is there cirrhosis?"}]}
+        }
+        obj.config = {
+            "model": {"graded_match": graded},
+            "prompt_templates": {
+                "findings_question": (
+                    "Fields:\n"
+                    "    `named_outright`\n"
+                    "      true when the report names it.\n"
+                    "{graded}"
+                    "Report:\n{report}\n\nQuestion: {question}\n{guidance}"
+                ),
+                "graded_match_block": "`definition_match`\n  Grade from 0 to 1.",
+            },
+        }
+        obj._templates = {}
+        obj._trauma = {}
+        return obj
+
+    def test_the_block_is_absent_with_the_flag_off(self):
+        requests, _ = self.engine(graded=False)._build_process_questions_requests(REPORTS)
+        prompt = requests[0][1]
+        assert "definition_match" not in prompt
+        assert "true when the report names it.\nReport:" in prompt
+
+    def test_the_block_is_in_every_prompt_with_the_flag_on(self):
+        requests, _ = self.engine(graded=True)._build_process_questions_requests(REPORTS)
+        assert requests
+        for _, prompt in requests:
+            assert "`definition_match`" in prompt
+            assert "Grade from 0 to 1." in prompt
+            assert prompt.index("definition_match") < prompt.index("Report:")
+
+    def test_a_missing_block_raises_rather_than_asking_for_nothing(self):
+        """Loudly, because an arm that silently asks the old fields would come
+        back with an empty column and read as the model declining to grade."""
+        obj = self.engine(graded=True)
+        del obj.config["prompt_templates"]["graded_match_block"]
+        with pytest.raises(KeyError):
+            obj._build_process_questions_requests(REPORTS)

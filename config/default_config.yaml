@@ -58,6 +58,21 @@ model:
   # whichever way this goes -- sgl-project #6675 and #9282.
   enable_thinking: true
 
+  # A50's arm, off for the cohort run. On, the prompt asks for one more field,
+  # `definition_match`, graded 0 to 1: how far what the report describes meets
+  # the definition. The axes record the report's hedge (`certainty`) and
+  # whether the report named the finding (`named_outright`), and neither
+  # records the extraction's own call where a report describes the picture and
+  # never names it -- `hepatic_mass_indeterminate` has `named_agreed` 0.26 and
+  # `stated_agreed` 0.049 against 0.967 for the run, so it answers from signs
+  # throughout and nothing says how close the call was. `human_label` grades
+  # that band and the extraction has no counterpart, so a reader's 0.3 can
+  # only be compared against a hard Yes.
+  #
+  # It changes the prompt for every finding, so it is guarded: flipping it
+  # mid-run would resume a directory whose rows were asked for fewer fields.
+  graded_match: false
+
   # Greedy, since 2026-11-09. This ran at Qwen3's non-thinking 0.7 / 0.8 /
   # 20, and the comment here said a lower temperature was defensible if the
   # answers varied too much between wordings. Two 20-report runs measured
@@ -216,13 +231,33 @@ prompt_templates:
     `named_outright`
       true when the report uses this finding's name or a synonym for it, and
       false when your answer rests on a related sign.
-
+    {graded}
     Report:
     {report}
 
     Question: {question}
     {guidance}
     Answer with a JSON object and nothing else.
+
+  # Interpolated into `findings_question` as `{graded}`, and the empty string
+  # where `graded_match` is off, so one template serves both and neither can
+  # drift from the other. The first line takes the template's own indent.
+  graded_match_block: |-
+    `definition_match`
+      Grade from 0 to 1 how far what the report describes meets the definition
+      above. 1 the report names this finding or a synonym for it. 0.5 to 0.9
+      the report describes the finding without naming it, or names it as
+      trace, mild or hedged. Below 0.5 the report describes a related sign
+      that is not this finding. 0 the report denies it, or describes the
+      anatomy and leaves it out.
+
+      Grade the description against the definition rather than how confident
+      the radiologist sounds, which is what `certainty_phrase` records. A
+      report reading "nodular hepatic contour with caudate hypertrophy" that
+      never writes cirrhosis describes most of that definition, so it grades
+      high while `named_outright` is false. Answer near 0.5 where the
+      description half meets the definition, and keep `answer` consistent with
+      the figure: 0.5 and above is a `yes`.
 
   map_category_findings: |
     Given the following findings from a radiology report:

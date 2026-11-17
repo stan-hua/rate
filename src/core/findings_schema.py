@@ -138,6 +138,22 @@ RESPONSE_SCHEMA = {
                 "False when the answer rests on a related sign instead."
             ),
         },
+        "definition_match": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": (
+                "How far what the report describes meets this definition, on "
+                "the scale a human annotator uses. 1 the report names the "
+                "finding or a synonym. 0.5 to 0.9 the report describes the "
+                "finding without naming it, or names it as trace, mild or "
+                "hedged. Below 0.5 the report describes a related sign that "
+                "is not this finding. 0 the report denies it, or describes "
+                "the anatomy and leaves it out. A figure near 0.5 is the "
+                "honest answer where the description half meets the "
+                "definition."
+            ),
+        },
     },
     "required": ["answer", "evidence", "named_outright"],
     "additionalProperties": False,
@@ -154,6 +170,10 @@ ANSWER_COLUMNS = (
     "severity",
     "attribution",
     "named_outright",
+    # Graded 0 to 1 by the model, and empty on every run with
+    # `graded_match: false`, which is every run before 2026-11-17. A50's
+    # arm measures it; see `_match`.
+    "definition_match",
     # Set by the reader rather than the model: the generation ran past the end
     # of the object into whitespace and was closed here.
     "truncated",
@@ -261,6 +281,7 @@ def parse_answer(raw):
             "named_outright": (
                 "" if truncated and "named_outright" not in body else bool(named)
             ),
+            "definition_match": _match(body.get("definition_match")),
             "truncated": truncated,
         }, structured=True, phrase_reached=not truncated or "certainty_phrase" in body)
 
@@ -277,9 +298,44 @@ def parse_answer(raw):
                 "severity_phrase": "",
                 "attribution": "unknown",
                 "named_outright": False,
+                "definition_match": "",
                 "truncated": False,
             }, structured=False)
     return None
+
+
+def _match(value):
+    """Read the graded definition match, or leave it empty.
+
+    Empty rather than 0.0 wherever the model did not answer it, and that is
+    every row of every run with `graded_match: false`. A 0.0 would read as a
+    claim that the report describes nothing of this finding, which would put
+    1.4M fabricated zeros into the distribution the arm exists to measure.
+
+    A figure outside 0 to 1 is dropped rather than clamped. The field is
+    prose-prompted rather than grammar-constrained, since A41 settled that
+    thinking and the answer schema cannot both be on, so an out-of-range value
+    means the model answered something other than the scale it was asked for.
+
+    Parameters
+    ----------
+    value : object
+        The field as the model wrote it, or None where it is absent.
+
+    Returns
+    -------
+    float or str
+        The figure, or `""` where there is none to read.
+    """
+    if value is None or isinstance(value, bool):
+        return ""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return ""
+    if number != number or not 0.0 <= number <= 1.0:
+        return ""
+    return number
 
 
 def _load_object(text):

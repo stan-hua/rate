@@ -395,6 +395,76 @@ class TestTheGuidanceBlock:
         assert "the patient does not have the organ the question names" in described
 
 
+class TestTheGradedDefinitionMatch:
+    """A50's arm: how far the description meets the definition, 0 to 1.
+
+    The axes record the report's hedge and whether the report named the
+    finding, and neither records the extraction's own call where a report
+    describes the picture and never names it. `named_outright` is binary, so
+    "the median lobe of the prostate projects into the bladder" and "a 6 mm
+    hypodensity, too small to characterize" both read false, though one is
+    unambiguous by description and the other is a coin flip.
+    """
+
+    def test_a_figure_on_the_scale_is_kept(self):
+        got = parse_answer(
+            json.dumps(
+                {
+                    "answer": "yes",
+                    "evidence": "Nodular hepatic contour with caudate hypertrophy.",
+                    "named_outright": False,
+                    "definition_match": 0.75,
+                }
+            )
+        )
+        assert got["definition_match"] == 0.75
+        assert got["named_outright"] is False
+
+    def test_a_string_figure_is_read(self):
+        """The field is prose-prompted, so the model may quote it."""
+        got = parse_answer(
+            json.dumps({"answer": "no", "evidence": "x", "definition_match": "0.3"})
+        )
+        assert got["definition_match"] == 0.3
+
+    def test_an_absent_field_is_empty_rather_than_zero(self):
+        """Which is every row of every run with the arm off.
+
+        A 0.0 would claim the report describes nothing of this finding, and
+        1.4M fabricated zeros would be the distribution the arm measures.
+        """
+        got = parse_answer(json.dumps({"answer": "yes", "evidence": "x"}))
+        assert got["definition_match"] == ""
+
+    def test_a_legacy_answer_has_none(self):
+        assert parse_answer("Yes")["definition_match"] == ""
+
+    def test_a_figure_off_the_scale_is_dropped(self):
+        """Dropped rather than clamped: the model answered something else.
+
+        A41 settled that thinking and the answer schema cannot both be on, so
+        nothing constrains this field to 0 to 1 at generation time. A 7 or a
+        -1 means the model used a scale it was not asked for, and clamping it
+        to 1 or 0 would record a confident answer it never gave.
+        """
+        for value in (7, -1, 1.5, "high", "", None, True, False):
+            got = parse_answer(
+                json.dumps({"answer": "yes", "evidence": "x", "definition_match": value})
+            )
+            assert got["definition_match"] == "", value
+
+    def test_the_field_is_last_so_truncation_loses_it_first(self):
+        """`named_outright` was the field truncation lost, and B7 fixed that.
+
+        Putting this one after it keeps that repair: a generation that dies
+        late loses the graded figure rather than the directness axis, and both
+        then read empty rather than false.
+        """
+        properties = list(RESPONSE_SCHEMA["properties"])
+        assert properties[-1] == "definition_match"
+        assert properties[-2] == "named_outright"
+
+
 class TestTheGradedColumns:
     """The level beside each quoted phrase, which the lexicon computes."""
 
@@ -1424,10 +1494,21 @@ class TestTheFieldsNobodyReadAreGone:
         assert "section" not in got
         assert "chronicity" not in got
 
-    def test_named_outright_is_the_last_property(self):
-        """Which leaves a boolean at the end of the object rather than a free
-        string, where a run wrote the closing characters inside the value."""
-        assert list(RESPONSE_SCHEMA["properties"])[-1] == "named_outright"
+    def test_the_last_property_is_not_a_free_string(self):
+        """A run wrote the object's closing characters inside a string value.
+
+        `severity_phrase` came back `small volume\'}`, which parsed, so
+        `truncated` was correctly False and only the value was wrong. A
+        boolean or a number at the end of the object cannot absorb them, which
+        is why `named_outright` took the slot and why A50's `definition_match`
+        may take it now: it is a number, and B7's repair holds either way
+        because a late truncation loses the last field first and both read
+        empty rather than false.
+        """
+        properties = RESPONSE_SCHEMA["properties"]
+        last = list(properties)[-1]
+        assert properties[last]["type"] in ("boolean", "number")
+        assert last == "definition_match"
 
 
 class TestAttributionIsDefinedForTheModelNow:
