@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "1d9dab2463c20e55",
-    "question_set": "d7109acebac015d3"
+    "file": "8ec3349eb1d24bcd",
+    "question_set": "eb0fb1be684fbd01"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -17,12 +17,6 @@
           "md5": "b204fe7e",
           "question": "Is there an abdominal aortic aneurysm?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b0734f4d",
-          "question": "According to the report, is there an abdominal aortic aneurysm?",
-          "role": "sourced"
         }
       ],
       "window": "cardiac"
@@ -38,18 +32,6 @@
           "md5": "d711c673",
           "question": "Are there any accessory spleens?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "52fd6d3e",
-          "question": "Is there a splenule?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "828845d5",
-          "question": "According to the report, are there any accessory spleens?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -65,12 +47,6 @@
           "md5": "ff9928d2",
           "question": "Are there any sites of active extravasation in the kidney?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "3b61665d",
-          "question": "According to the report, are there any sites of active extravasation in the kidney?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -85,18 +61,6 @@
           "md5": "67a19c0b",
           "question": "Are there any sites of active extravasation in the liver?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b85a5722",
-          "question": "Is there active hemorrhage or a contrast blush in the liver?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "b933acb2",
-          "question": "According to the report, are there any sites of active extravasation in the liver?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -112,12 +76,6 @@
           "md5": "82ef70fd",
           "question": "Are there any sites of active extravasation in the spleen?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "08ccd7d7",
-          "question": "According to the report, are there any sites of active extravasation in the spleen?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -133,12 +91,6 @@
           "md5": "78df7673",
           "question": "Is there acute cholecystitis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "1542c6da",
-          "question": "According to the report, is there acute cholecystitis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -154,12 +106,6 @@
           "md5": "32315c35",
           "question": "Is there acute pancreatitis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "691019c0",
-          "question": "According to the report, is there acute pancreatitis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -174,12 +120,6 @@
           "md5": "19fd1e72",
           "question": "Are there any adrenal myelolipomas?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "fa33b40e",
-          "question": "According to the report, are there any adrenal myelolipomas?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -197,12 +137,6 @@
           "md5": "d959a0a2",
           "question": "Is there anasarca?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "456f0b5e",
-          "question": "According to the report, is there anasarca?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -217,12 +151,6 @@
           "md5": "b1a768cb",
           "question": "Are there any angiomyolipomas?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "7a042096",
-          "question": "According to the report, are there any angiomyolipomas?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -239,12 +167,6 @@
           "md5": "495e09e0",
           "question": "Is there any abnormality of the adrenal glands?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "654a4dc4",
-          "question": "According to the report, is there any abnormality of the adrenal glands?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -261,12 +183,6 @@
           "md5": "7effe5ab",
           "question": "Is there any abnormality of the bile ducts?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "7ccf0f5e",
-          "question": "According to the report, is there any abnormality of the bile ducts?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -283,12 +199,6 @@
           "md5": "1bac3d7b",
           "question": "Is there any abnormality of the stomach or bowel?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "a82c52fb",
-          "question": "According to the report, is there any abnormality of the stomach or bowel?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -305,12 +215,6 @@
           "md5": "4cb37797",
           "question": "Is there any abnormality of the uterus, ovaries or adnexa?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "65a82a1c",
-          "question": "According to the report, is there any abnormality of the uterus, ovaries or adnexa?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -327,12 +231,6 @@
           "md5": "b4c1eafc",
           "question": "Is there any abnormality of the gallbladder?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "394ec917",
-          "question": "According to the report, is there any abnormality of the gallbladder?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -349,12 +247,6 @@
           "md5": "b6d5db42",
           "question": "Is there any abnormality of the aorta or its branches?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "a16f7367",
-          "question": "According to the report, is there any abnormality of the aorta or its branches?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -371,12 +263,6 @@
           "md5": "2f78288d",
           "question": "Is there any abnormality of the kidneys?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "85cb9475",
-          "question": "According to the report, is there any abnormality of the kidneys?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -393,12 +279,6 @@
           "md5": "813cfea0",
           "question": "Is there any abnormality of the liver?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "3f55374a",
-          "question": "According to the report, is there any abnormality of the liver?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -406,21 +286,16 @@
     "any_male_pelvis": {
       "added": true,
       "category": "Male Pelvis",
+      "change": "scope_change",
       "compartment_question": true,
       "covariate": false,
       "tier": "C",
       "variants": [
         {
           "index": 0,
-          "md5": "5eda4f89",
-          "question": "Is there any abnormality of the prostate or scrotum?",
+          "md5": "c36a5deb",
+          "question": "Is there any abnormality of the prostate?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "aead7044",
-          "question": "According to the report, is there any abnormality of the prostate or scrotum?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -437,12 +312,6 @@
           "md5": "504554de",
           "question": "Is there any abnormality of the bones or body wall?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "c9740120",
-          "question": "According to the report, is there any abnormality of the bones or body wall?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -459,12 +328,6 @@
           "md5": "35cd423e",
           "question": "Is there any abnormality of the pancreas?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "a46d5b00",
-          "question": "According to the report, is there any abnormality of the pancreas?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -481,12 +344,6 @@
           "md5": "386caa7d",
           "question": "Is there any abnormality of the peritoneal cavity?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "90d83f01",
-          "question": "According to the report, is there any abnormality of the peritoneal cavity?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -503,12 +360,6 @@
           "md5": "b6e586e5",
           "question": "Is there any abnormality of the pleural spaces or lung bases?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "f866961e",
-          "question": "According to the report, is there any abnormality of the pleural spaces or lung bases?",
-          "role": "sourced"
         }
       ],
       "window": "thoracic"
@@ -525,12 +376,6 @@
           "md5": "3c38049b",
           "question": "Is there any abnormality of the spleen?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "8c1f2a51",
-          "question": "According to the report, is there any abnormality of the spleen?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -547,12 +392,6 @@
           "md5": "54fef98a",
           "question": "Is there any abnormality of the ureters or bladder?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "c2578bb2",
-          "question": "According to the report, is there any abnormality of the ureters or bladder?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -570,12 +409,6 @@
           "md5": "24b3a3d7",
           "question": "Is there aortic atherosclerosis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "a3bbd633",
-          "question": "According to the report, is there aortic atherosclerosis?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -593,12 +426,6 @@
           "md5": "4c6781b3",
           "question": "Is there appendicitis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "571cd01a",
-          "question": "According to the report, is there appendicitis?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -614,12 +441,6 @@
           "md5": "b7881e53",
           "question": "Is there any ascites?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "1953a52f",
-          "question": "According to the report, is there any ascites?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -634,18 +455,6 @@
           "md5": "5188cec7",
           "question": "Is there bladder rupture?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b91de913",
-          "question": "Is there bladder perforation?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "db9c6aad",
-          "question": "According to the report, is there bladder rupture?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -660,18 +469,6 @@
           "md5": "06b82428",
           "question": "Are there any bladder stones?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "090bd704",
-          "question": "Is there a bladder calculus or a vesical calculus?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "9031ea5b",
-          "question": "According to the report, are there any bladder stones?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -689,12 +486,6 @@
           "md5": "8a671fa1",
           "question": "Are there any urothelial carcinomas of the bladder?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "be8d0c36",
-          "question": "According to the report, are there any urothelial carcinomas of the bladder?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -710,12 +501,6 @@
           "md5": "4a90833b",
           "question": "Is bowel obstruction present?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b855a9b6",
-          "question": "According to the report, is bowel obstruction present?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ/suprapubic"
@@ -730,18 +515,6 @@
           "md5": "47e91cce",
           "question": "Is there acute cholecystitis with rupture?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "3e419e49",
-          "question": "Is there acute cholecystitis with gallbladder perforation?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "3f5140d7",
-          "question": "According to the report, is there acute cholecystitis with rupture?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -757,12 +530,6 @@
           "md5": "20d63122",
           "question": "Are there any choledochal cysts?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "8aa8df1e",
-          "question": "According to the report, are there any choledochal cysts?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -778,12 +545,6 @@
           "md5": "ef2501cd",
           "question": "Is there cirrhosis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "97237fc1",
-          "question": "According to the report, is there cirrhosis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -801,12 +562,6 @@
           "md5": "1c6a52e6",
           "question": "Is there portal hypertension?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "3b3866fa",
-          "question": "According to the report, is there portal hypertension?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -821,12 +576,6 @@
           "md5": "d63e0191",
           "question": "Are there any complex renal cysts?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "4fd79573",
-          "question": "According to the report, are there any complex renal cysts?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -841,12 +590,6 @@
           "md5": "73ab74fc",
           "question": "Is there emphysematous cholecystitis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "5c2a3e69",
-          "question": "According to the report, is there emphysematous cholecystitis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -864,12 +607,6 @@
           "md5": "81884f55",
           "question": "Are there any epithelial splenic cysts?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "6fdf8825",
-          "question": "According to the report, are there any epithelial splenic cysts?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -887,12 +624,6 @@
           "md5": "e5baadee",
           "question": "Is there any extrahepatic biliary ductal dilation?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b92995a7",
-          "question": "According to the report, is there any extrahepatic biliary ductal dilation?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -910,12 +641,6 @@
           "md5": "ddea9c72",
           "question": "Are there any fractures?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "ea033e30",
-          "question": "According to the report, are there any fractures?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -930,12 +655,6 @@
           "md5": "b6ed3a95",
           "question": "Is there any free air or pneumoperitoneum?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "95d1b7c2",
-          "question": "According to the report, is there any free air or pneumoperitoneum?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -951,12 +670,6 @@
           "md5": "1371cd20",
           "question": "Is there any free intraperitoneal fluid?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "ce48611d",
-          "question": "According to the report, is there any free intraperitoneal fluid?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -971,12 +684,6 @@
           "md5": "c82d4475",
           "question": "Is there gallbladder adenomyomatosis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "1b374eef",
-          "question": "According to the report, is there gallbladder adenomyomatosis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -991,18 +698,6 @@
           "md5": "61272100",
           "question": "Is there gallbladder cancer?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "4db0c61a",
-          "question": "Is there gallbladder carcinoma?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "b049aeb5",
-          "question": "According to the report, is there gallbladder cancer?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1018,18 +713,6 @@
           "md5": "ec986e46",
           "question": "Are there any gallbladder stones or cholelithiasis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "580f21a9",
-          "question": "Are there any gallstones?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "16d0f66c",
-          "question": "According to the report, are there any gallbladder stones or cholelithiasis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1045,18 +728,6 @@
           "md5": "71831878",
           "question": "Is the gallbladder surgically absent?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "ac22bd60",
-          "question": "Is there a prior cholecystectomy?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "2bfecf0a",
-          "question": "According to the report, is the gallbladder surgically absent?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1074,12 +745,6 @@
           "md5": "698296ca",
           "question": "Is there diffuse gallbladder wall thickening?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "875c4a3f",
-          "question": "According to the report, is there diffuse gallbladder wall thickening?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1095,12 +760,6 @@
           "md5": "7f07c142",
           "question": "Are there any esophageal or gastric varices?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "ad553926",
-          "question": "According to the report, are there any esophageal or gastric varices?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1116,12 +775,6 @@
           "md5": "106f1262",
           "question": "Is there hemoperitoneum or free intraperitoneal blood?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "17e2ff5d",
-          "question": "According to the report, is there hemoperitoneum or free intraperitoneal blood?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -1136,18 +789,6 @@
           "md5": "1bfa47d6",
           "question": "Are there any hepatic abscesses?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "1e593805",
-          "question": "Are there any liver abscesses?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "2fdfaeb4",
-          "question": "According to the report, are there any hepatic abscesses?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1162,18 +803,6 @@
           "md5": "375d9900",
           "question": "Are there any hepatic adenomas?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "e4c87db6",
-          "question": "Is there a hepatocellular adenoma?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "be836e2e",
-          "question": "According to the report, are there any hepatic adenomas?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1189,18 +818,6 @@
           "md5": "67290004",
           "question": "Are there any hepatic cysts?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "0b61a42b",
-          "question": "Are there any liver cysts?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "3ff166e8",
-          "question": "According to the report, are there any hepatic cysts?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1215,18 +832,6 @@
           "md5": "ab943a30",
           "question": "Are there any hepatic hemangiomas?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "5bfb7669",
-          "question": "Is there a liver hemangioma?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "ab7b7e81",
-          "question": "According to the report, are there any hepatic hemangiomas?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1242,12 +847,6 @@
           "md5": "98147c18",
           "question": "Are there any hepatic hypodensities?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "fa1c2b38",
-          "question": "According to the report, are there any hepatic hypodensities?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1265,18 +864,6 @@
           "md5": "acb519c0",
           "question": "Are there any indeterminate hepatic masses?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "e2997eab",
-          "question": "Are there any indeterminate liver masses?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "3a91cc70",
-          "question": "According to the report, are there any indeterminate hepatic masses?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -1291,18 +878,6 @@
           "md5": "546a5680",
           "question": "Are there any hepatic metastases?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "96f42b7c",
-          "question": "Are there any liver metastases?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "e812c183",
-          "question": "According to the report, are there any hepatic metastases?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1320,18 +895,6 @@
           "md5": "7bca90a2",
           "question": "Is there hepatic steatosis, fatty liver or focal fatty infiltration?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "79bd3eb7",
-          "question": "Is the liver fatty or steatotic?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "7f20f115",
-          "question": "According to the report, is there hepatic steatosis, fatty liver or focal fatty infiltration?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1347,12 +910,6 @@
           "md5": "2a0db38e",
           "question": "Are there any hepatic subcapsular hematomas or hemorrhages?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "e6814803",
-          "question": "According to the report, are there any hepatic subcapsular hematomas or hemorrhages?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1367,18 +924,6 @@
           "md5": "af006ec0",
           "question": "Is there hepatocellular carcinoma?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "a0ccc53f",
-          "question": "Is there a hepatoma?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "2c1a32e6",
-          "question": "According to the report, is there hepatocellular carcinoma?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1393,12 +938,6 @@
           "md5": "2c75a192",
           "question": "Is there hepatomegaly?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b43b3aab",
-          "question": "According to the report, is there hepatomegaly?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1413,12 +952,6 @@
           "md5": "37e09710",
           "question": "Is hiatal hernia present?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "4d285d70",
-          "question": "According to the report, is hiatal hernia present?",
-          "role": "sourced"
         }
       ],
       "window": "cardiac"
@@ -1433,12 +966,6 @@
           "md5": "fe093963",
           "question": "Is there horseshoe kidney?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "3e0371c8",
-          "question": "According to the report, is there horseshoe kidney?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -1453,12 +980,6 @@
           "md5": "696f48d2",
           "question": "Is there hydronephrosis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "085e7ac6",
-          "question": "According to the report, is there hydronephrosis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -1474,12 +995,6 @@
           "md5": "bfc9aa65",
           "question": "Is there ileus?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "aa106e25",
-          "question": "According to the report, is there ileus?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ/suprapubic"
@@ -1494,12 +1009,6 @@
           "md5": "555e3747",
           "question": "Are there any inguinal hernias?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "4f9bd80a",
-          "question": "According to the report, are there any inguinal hernias?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -1514,12 +1023,6 @@
           "md5": "6fd7c921",
           "question": "Are there any intra-uterine devices?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "e6053c9d",
-          "question": "According to the report, are there any intra-uterine devices?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -1534,12 +1037,6 @@
           "md5": "8a92c600",
           "question": "Is there any intrahepatic biliary ductal dilation?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "0000ffcb",
-          "question": "According to the report, is there any intrahepatic biliary ductal dilation?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1555,12 +1052,6 @@
           "md5": "53473b1d",
           "question": "Is either kidney absent?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "16f22e02",
-          "question": "According to the report, is either kidney absent?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -1575,18 +1066,6 @@
           "md5": "0fff66c4",
           "question": "Are there any liver lacerations?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "eff077a9",
-          "question": "Is there a hepatic laceration?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "3fd47fc5",
-          "question": "According to the report, are there any liver lacerations?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1601,15 +1080,9 @@
       "variants": [
         {
           "index": 0,
-          "md5": "69eef3fd",
-          "question": "Are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?",
+          "md5": "23d6268e",
+          "question": "Are there enlarged lymph nodes in the retroperitoneum, the mesentery or the pelvis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "cdcd2bf6",
-          "question": "According to the report, are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -1627,12 +1100,6 @@
           "md5": "64033871",
           "question": "Is there metastatic disease?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "8b10eaa5",
-          "question": "According to the report, is there metastatic disease?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -1648,12 +1115,6 @@
           "md5": "d1a83706",
           "question": "Is there nephrocalcinosis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "6a19af6c",
-          "question": "According to the report, is there nephrocalcinosis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -1669,12 +1130,6 @@
           "md5": "0f8d768a",
           "question": "Is there omental caking?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "27cba97f",
-          "question": "According to the report, is there omental caking?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -1692,12 +1147,6 @@
           "md5": "6b2fab62",
           "question": "Is there peritoneal carcinomatosis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "e6d42cd7",
-          "question": "According to the report, is there peritoneal carcinomatosis?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -1713,18 +1162,6 @@
           "md5": "626e43b7",
           "question": "Is there any pleural effusion?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "7102539a",
-          "question": "Is there pleural fluid?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "c85b01f0",
-          "question": "According to the report, is there any pleural effusion?",
-          "role": "sourced"
         }
       ],
       "window": "thoracic"
@@ -1739,18 +1176,6 @@
           "md5": "77ab2ec5",
           "question": "Is there pneumobilia?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "063003ad",
-          "question": "Is there aerobilia?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "b8d1bf06",
-          "question": "According to the report, is there pneumobilia?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1765,12 +1190,6 @@
           "md5": "e48018b8",
           "question": "Is there polycystic kidney disease?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "fc9dfa9b",
-          "question": "According to the report, is there polycystic kidney disease?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -1785,12 +1204,6 @@
           "md5": "47e1a377",
           "question": "Is polycystic liver disease present?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "eceec3c8",
-          "question": "According to the report, is polycystic liver disease present?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1806,12 +1219,6 @@
           "md5": "ecc139e8",
           "question": "Is there porcelain gallbladder?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "c449a6f1",
-          "question": "According to the report, is there porcelain gallbladder?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1826,18 +1233,6 @@
           "md5": "dfbefa46",
           "question": "Is there any portal venous gas?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "71c6b974",
-          "question": "Is there portal venous air?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "edbdfc52",
-          "question": "According to the report, is there any portal venous gas?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1855,18 +1250,6 @@
           "md5": "9c1aad09",
           "question": "Is there portal venous thrombosis or occlusion?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b6e86596",
-          "question": "Is the portal vein thrombosed or occluded?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "0987582d",
-          "question": "According to the report, is there portal venous thrombosis or occlusion?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1884,12 +1267,6 @@
           "md5": "75f37520",
           "question": "Is there a prior hysterectomy?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "bce1ffdf",
-          "question": "According to the report, is there a prior hysterectomy?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -1904,18 +1281,6 @@
           "md5": "db4bcfb4",
           "question": "Are there any hepatic changes post-transplantation?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "147f80c1",
-          "question": "Is there a hepatic allograft?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "a29fd1a5",
-          "question": "According to the report, are there any hepatic changes post-transplantation?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -1933,12 +1298,6 @@
           "md5": "1980d888",
           "question": "Are there any post-nephrectomy changes in the renal fossa?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "3b957f96",
-          "question": "According to the report, are there any post-nephrectomy changes in the renal fossa?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -1953,18 +1312,6 @@
           "md5": "5141b6b8",
           "question": "Are there any post-renal transplantation changes?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "de2e0731",
-          "question": "Is there a renal allograft?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "72bead88",
-          "question": "According to the report, are there any post-renal transplantation changes?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -1980,12 +1327,6 @@
           "md5": "2137f399",
           "question": "Are there any post-splenectomy changes in the splenic bed?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "a0e7f29e",
-          "question": "According to the report, are there any post-splenectomy changes in the splenic bed?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -2004,18 +1345,6 @@
           "md5": "e8b96714",
           "question": "Is there a prior liver resection?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "709df764",
-          "question": "Is there a prior hepatectomy?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "07bc5274",
-          "question": "According to the report, is there a prior liver resection?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ"
@@ -2031,18 +1360,6 @@
           "md5": "6d6e7047",
           "question": "Is there prostatomegaly or prostatic hyperplasia?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b00285bf",
-          "question": "Is the prostate enlarged, or is there benign prostatic hyperplasia?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "8ff6c561",
-          "question": "According to the report, is there prostatomegaly or prostatic hyperplasia?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -2057,12 +1374,6 @@
           "md5": "1475c0a0",
           "question": "Is there pseudomyxoma peritonei?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "b13e79df",
-          "question": "According to the report, is there pseudomyxoma peritonei?",
-          "role": "sourced"
         }
       ],
       "window": "all windows"
@@ -2077,12 +1388,6 @@
           "md5": "4b037146",
           "question": "Are there any renal abscesses?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "576c2612",
-          "question": "According to the report, are there any renal abscesses?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -2098,12 +1403,6 @@
           "md5": "c6eedbec",
           "question": "Are there any renal cell carcinomas?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "c0bce68a",
-          "question": "According to the report, are there any renal cell carcinomas?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -2119,12 +1418,6 @@
           "md5": "c95af380",
           "question": "Are there any renal hypodensities?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "a684a0e0",
-          "question": "According to the report, are there any renal hypodensities?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -2139,12 +1432,6 @@
           "md5": "d85a92fb",
           "question": "Are there any renal lacerations?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "f039109d",
-          "question": "According to the report, are there any renal lacerations?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -2162,18 +1449,6 @@
           "md5": "096cdfdc",
           "question": "Is there renal lymphoma?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "9b887fb2",
-          "question": "Is there lymphomatous involvement of a kidney?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "8dab800a",
-          "question": "According to the report, is there renal lymphoma?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -2191,12 +1466,6 @@
           "md5": "1de86968",
           "question": "Are there any renal stones or nephrolithiasis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "9804eebd",
-          "question": "According to the report, are there any renal stones or nephrolithiasis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -2214,12 +1483,6 @@
           "md5": "1d49c461",
           "question": "Are there any renal subcapsular hemorrhages?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "f57e7d12",
-          "question": "According to the report, are there any renal subcapsular hemorrhages?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -2234,12 +1497,6 @@
           "md5": "472ea512",
           "question": "Is there retroperitoneal hemorrhage or retroperitoneal hematomas?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "0e6eee34",
-          "question": "According to the report, is there retroperitoneal hemorrhage or retroperitoneal hematomas?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -2255,12 +1512,6 @@
           "md5": "deb1af16",
           "question": "Are there any rib fractures?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "eb5a9e4b",
-          "question": "According to the report, are there any rib fractures?",
-          "role": "sourced"
         }
       ],
       "window": "-"
@@ -2276,12 +1527,6 @@
           "md5": "17fe9b83",
           "question": "Are there any simple renal cysts?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "ebc1ef47",
-          "question": "According to the report, are there any simple renal cysts?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -2299,12 +1544,6 @@
           "md5": "59557a78",
           "question": "Is the spleen absent?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "cbff597b",
-          "question": "According to the report, is the spleen absent?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -2319,12 +1558,6 @@
           "md5": "384f3508",
           "question": "Are there any splenic infarcts?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "aea091c3",
-          "question": "According to the report, are there any splenic infarcts?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -2339,12 +1572,6 @@
           "md5": "f561f0c1",
           "question": "Are there any splenic lacerations?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "00f53c0a",
-          "question": "According to the report, are there any splenic lacerations?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -2359,18 +1586,6 @@
           "md5": "804a3391",
           "question": "Is splenic lymphoma present?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "70501257",
-          "question": "Is there lymphomatous involvement of the spleen?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "7f4b521a",
-          "question": "According to the report, is splenic lymphoma present?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -2386,12 +1601,6 @@
           "md5": "b413e897",
           "question": "Are there any splenic pseudocysts?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "272e6eac",
-          "question": "According to the report, are there any splenic pseudocysts?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -2407,12 +1616,6 @@
           "md5": "d646207a",
           "question": "Are there any splenic subcapsular hematomas or hemorrhages?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "c6d5378b",
-          "question": "According to the report, are there any splenic subcapsular hematomas or hemorrhages?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -2427,18 +1630,6 @@
           "md5": "42e8ffb8",
           "question": "Is there splenomegaly?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "42e43ae0",
-          "question": "Is the spleen enlarged?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "33823b43",
-          "question": "According to the report, is there splenomegaly?",
-          "role": "sourced"
         }
       ],
       "window": "LUQ"
@@ -2453,18 +1644,6 @@
           "md5": "f4af352d",
           "question": "Are there any ureteral stones?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "280319f2",
-          "question": "Is there ureterolithiasis or a ureteric calculus?",
-          "role": "synonym"
-        },
-        {
-          "index": 2,
-          "md5": "586de112",
-          "question": "According to the report, are there any ureteral stones?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -2479,12 +1658,6 @@
           "md5": "edac0f65",
           "question": "Are there any ureteroceles?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "f864b534",
-          "question": "According to the report, are there any ureteroceles?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -2502,12 +1675,6 @@
           "md5": "1338ac71",
           "question": "Are there any uterine fibroids?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "806364fc",
-          "question": "According to the report, are there any uterine fibroids?",
-          "role": "sourced"
         }
       ],
       "window": "suprapubic"
@@ -2522,12 +1689,6 @@
           "md5": "0c4417f5",
           "question": "Is there xanthogranulomatous pyelonephritis?",
           "role": "canonical"
-        },
-        {
-          "index": 1,
-          "md5": "7ba47c99",
-          "question": "According to the report, is there xanthogranulomatous pyelonephritis?",
-          "role": "sourced"
         }
       ],
       "window": "RUQ/LUQ"
@@ -3144,7 +2305,7 @@
       "id": "lymphadenopathy",
       "md5": "14e8d016",
       "question": "Is there any lymphadenopathy in retroperitoneum, peritoneum or pelvis?",
-      "replaced_by": "69eef3fd"
+      "replaced_by": "23d6268e"
     },
     {
       "category": "Retroperitoneum",
@@ -3416,11 +2577,39 @@
       "question": "Does the report describe an abdominal aortic aneurysm?"
     },
     {
+      "category": "Great Vessel",
+      "dropped_role": "sourced",
+      "id": "abdominal_aortic_aneurysm_aaa",
+      "md5": "b0734f4d",
+      "question": "According to the report, is there an abdominal aortic aneurysm?"
+    },
+    {
       "category": "Spleen",
       "dropped_role": "reframe",
       "id": "accessory_spleen",
       "md5": "2dda65ab",
       "question": "Does the report describe an accessory spleen?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "synonym",
+      "id": "accessory_spleen",
+      "md5": "52fd6d3e",
+      "question": "Is there a splenule?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "accessory_spleen",
+      "md5": "828845d5",
+      "question": "According to the report, are there any accessory spleens?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "active_extravasation_kidney",
+      "md5": "3b61665d",
+      "question": "According to the report, are there any sites of active extravasation in the kidney?"
     },
     {
       "category": "Liver",
@@ -3430,11 +2619,46 @@
       "question": "Does the report describe sites of active extravasation in the liver?"
     },
     {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "active_extravasation_liver",
+      "md5": "b85a5722",
+      "question": "Is there active hemorrhage or a contrast blush in the liver?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "active_extravasation_liver",
+      "md5": "b933acb2",
+      "question": "According to the report, are there any sites of active extravasation in the liver?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "active_extravasation_spleen",
+      "md5": "08ccd7d7",
+      "question": "According to the report, are there any sites of active extravasation in the spleen?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "acute_cholecystitis",
+      "md5": "1542c6da",
+      "question": "According to the report, is there acute cholecystitis?"
+    },
+    {
       "category": "Gallbladder",
       "dropped_role": "reframe",
       "id": "acute_cholecystitis",
       "md5": "3a1189e7",
       "question": "Does the report describe acute cholecystitis?"
+    },
+    {
+      "category": "Pancreas",
+      "dropped_role": "sourced",
+      "id": "acute_pancreatitis",
+      "md5": "691019c0",
+      "question": "According to the report, is there acute pancreatitis?"
     },
     {
       "category": "Pancreas",
@@ -3451,6 +2675,20 @@
       "question": "Does the report describe an adrenal myelolipoma?"
     },
     {
+      "category": "Adrenal gland",
+      "dropped_role": "sourced",
+      "id": "adrenal_myelolipoma",
+      "md5": "fa33b40e",
+      "question": "According to the report, are there any adrenal myelolipomas?"
+    },
+    {
+      "category": "Multi Organs",
+      "dropped_role": "sourced",
+      "id": "anasarca",
+      "md5": "456f0b5e",
+      "question": "According to the report, is there anasarca?"
+    },
+    {
       "category": "Multi Organs",
       "dropped_role": "reframe",
       "id": "anasarca",
@@ -3465,6 +2703,13 @@
       "question": "Does the report describe an angiomyolipoma?"
     },
     {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "angiomyolipoma_aml",
+      "md5": "7a042096",
+      "question": "According to the report, are there any angiomyolipomas?"
+    },
+    {
       "category": "Adrenal gland",
       "dropped_role": "reframe",
       "id": "any_adrenals",
@@ -3472,11 +2717,32 @@
       "question": "Does the report describe any abnormality of the adrenal glands?"
     },
     {
+      "category": "Adrenal gland",
+      "dropped_role": "sourced",
+      "id": "any_adrenals",
+      "md5": "654a4dc4",
+      "question": "According to the report, is there any abnormality of the adrenal glands?"
+    },
+    {
+      "category": "Biliary Tree",
+      "dropped_role": "sourced",
+      "id": "any_biliary",
+      "md5": "7ccf0f5e",
+      "question": "According to the report, is there any abnormality of the bile ducts?"
+    },
+    {
       "category": "Biliary Tree",
       "dropped_role": "reframe",
       "id": "any_biliary",
       "md5": "acaf0742",
       "question": "Does the report describe any abnormality of the bile ducts?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "dropped_role": "sourced",
+      "id": "any_bowel",
+      "md5": "a82c52fb",
+      "question": "According to the report, is there any abnormality of the stomach or bowel?"
     },
     {
       "category": "Gastrointestinal",
@@ -3493,6 +2759,20 @@
       "question": "Does the report describe any abnormality of the uterus, ovaries or adnexa?"
     },
     {
+      "category": "Female pelvis",
+      "dropped_role": "sourced",
+      "id": "any_female_pelvis",
+      "md5": "65a82a1c",
+      "question": "According to the report, is there any abnormality of the uterus, ovaries or adnexa?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "any_gallbladder",
+      "md5": "394ec917",
+      "question": "According to the report, is there any abnormality of the gallbladder?"
+    },
+    {
       "category": "Gallbladder",
       "dropped_role": "reframe",
       "id": "any_gallbladder",
@@ -3507,11 +2787,32 @@
       "question": "Does the report describe any abnormality of the aorta or its branches?"
     },
     {
+      "category": "Great Vessel",
+      "dropped_role": "sourced",
+      "id": "any_great_vessels",
+      "md5": "a16f7367",
+      "question": "According to the report, is there any abnormality of the aorta or its branches?"
+    },
+    {
       "category": "Kidney",
       "dropped_role": "reframe",
       "id": "any_kidneys",
       "md5": "27681d48",
       "question": "Does the report describe any abnormality of the kidneys?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "any_kidneys",
+      "md5": "85cb9475",
+      "question": "According to the report, is there any abnormality of the kidneys?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "any_liver",
+      "md5": "3f55374a",
+      "question": "According to the report, is there any abnormality of the liver?"
     },
     {
       "category": "Liver",
@@ -3522,10 +2823,31 @@
     },
     {
       "category": "Male Pelvis",
+      "dropped_role": "canonical",
+      "id": "any_male_pelvis",
+      "md5": "5eda4f89",
+      "question": "Is there any abnormality of the prostate or scrotum?"
+    },
+    {
+      "category": "Male Pelvis",
+      "dropped_role": "sourced",
+      "id": "any_male_pelvis",
+      "md5": "aead7044",
+      "question": "According to the report, is there any abnormality of the prostate or scrotum?"
+    },
+    {
+      "category": "Male Pelvis",
       "dropped_role": "reframe",
       "id": "any_male_pelvis",
       "md5": "c875f1d7",
       "question": "Does the report describe any abnormality of the prostate or scrotum?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "dropped_role": "sourced",
+      "id": "any_musculoskeletal",
+      "md5": "c9740120",
+      "question": "According to the report, is there any abnormality of the bones or body wall?"
     },
     {
       "category": "Musculoskeletal",
@@ -3542,6 +2864,20 @@
       "question": "Does the report describe any abnormality of the pancreas?"
     },
     {
+      "category": "Pancreas",
+      "dropped_role": "sourced",
+      "id": "any_pancreas",
+      "md5": "a46d5b00",
+      "question": "According to the report, is there any abnormality of the pancreas?"
+    },
+    {
+      "category": "Peritoneum",
+      "dropped_role": "sourced",
+      "id": "any_peritoneum",
+      "md5": "90d83f01",
+      "question": "According to the report, is there any abnormality of the peritoneal cavity?"
+    },
+    {
       "category": "Peritoneum",
       "dropped_role": "reframe",
       "id": "any_peritoneum",
@@ -3554,6 +2890,13 @@
       "id": "any_pleura",
       "md5": "bf342171",
       "question": "Does the report describe any abnormality of the pleural spaces or lung bases?"
+    },
+    {
+      "category": "Pleura and lung bases",
+      "dropped_role": "sourced",
+      "id": "any_pleura",
+      "md5": "f866961e",
+      "question": "According to the report, is there any abnormality of the pleural spaces or lung bases?"
     },
     {
       "category": "Retroperitoneum",
@@ -3584,11 +2927,32 @@
       "question": "Does the report describe any abnormality of the spleen?"
     },
     {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "any_spleen",
+      "md5": "8c1f2a51",
+      "question": "According to the report, is there any abnormality of the spleen?"
+    },
+    {
       "category": "Urinary tract",
       "dropped_role": "reframe",
       "id": "any_urinary_tract",
       "md5": "9efbc101",
       "question": "Does the report describe any abnormality of the ureters or bladder?"
+    },
+    {
+      "category": "Urinary tract",
+      "dropped_role": "sourced",
+      "id": "any_urinary_tract",
+      "md5": "c2578bb2",
+      "question": "According to the report, is there any abnormality of the ureters or bladder?"
+    },
+    {
+      "category": "Great Vessel",
+      "dropped_role": "sourced",
+      "id": "aortic_atherosclerosis",
+      "md5": "a3bbd633",
+      "question": "According to the report, is there aortic atherosclerosis?"
     },
     {
       "category": "Great Vessel",
@@ -3599,10 +2963,24 @@
     },
     {
       "category": "Gastrointestinal",
+      "dropped_role": "sourced",
+      "id": "appendicitis",
+      "md5": "571cd01a",
+      "question": "According to the report, is there appendicitis?"
+    },
+    {
+      "category": "Gastrointestinal",
       "dropped_role": "reframe",
       "id": "appendicitis",
       "md5": "69d36bc3",
       "question": "Does the report describe appendicitis?"
+    },
+    {
+      "category": "Peritoneum",
+      "dropped_role": "sourced",
+      "id": "ascites",
+      "md5": "1953a52f",
+      "question": "According to the report, is there any ascites?"
     },
     {
       "category": "Peritoneum",
@@ -3613,6 +2991,13 @@
     },
     {
       "category": "Urinary tract",
+      "dropped_role": "synonym",
+      "id": "bladder_rupture",
+      "md5": "b91de913",
+      "question": "Is there bladder perforation?"
+    },
+    {
+      "category": "Urinary tract",
       "dropped_role": "reframe",
       "id": "bladder_rupture",
       "md5": "da155731",
@@ -3620,10 +3005,38 @@
     },
     {
       "category": "Urinary tract",
+      "dropped_role": "sourced",
+      "id": "bladder_rupture",
+      "md5": "db9c6aad",
+      "question": "According to the report, is there bladder rupture?"
+    },
+    {
+      "category": "Urinary tract",
+      "dropped_role": "synonym",
+      "id": "bladder_stones",
+      "md5": "090bd704",
+      "question": "Is there a bladder calculus or a vesical calculus?"
+    },
+    {
+      "category": "Urinary tract",
+      "dropped_role": "sourced",
+      "id": "bladder_stones",
+      "md5": "9031ea5b",
+      "question": "According to the report, are there any bladder stones?"
+    },
+    {
+      "category": "Urinary tract",
       "dropped_role": "reframe",
       "id": "bladder_stones",
       "md5": "a0d00c7f",
       "question": "Does the report describe bladder stones?"
+    },
+    {
+      "category": "Urinary tract",
+      "dropped_role": "sourced",
+      "id": "bladder_tcc",
+      "md5": "be8d0c36",
+      "question": "According to the report, are there any urothelial carcinomas of the bladder?"
     },
     {
       "category": "Urinary tract",
@@ -3640,11 +3053,39 @@
       "question": "Does the report describe bowel obstruction?"
     },
     {
+      "category": "Gastrointestinal",
+      "dropped_role": "sourced",
+      "id": "bowel_obstruction",
+      "md5": "b855a9b6",
+      "question": "According to the report, is bowel obstruction present?"
+    },
+    {
       "category": "Gallbladder",
       "dropped_role": "reframe",
       "id": "cholecystitis_with_rupture",
       "md5": "0168906a",
       "question": "Does the report describe acute cholecystitis with rupture?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "synonym",
+      "id": "cholecystitis_with_rupture",
+      "md5": "3e419e49",
+      "question": "Is there acute cholecystitis with gallbladder perforation?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "cholecystitis_with_rupture",
+      "md5": "3f5140d7",
+      "question": "According to the report, is there acute cholecystitis with rupture?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "choledochal_cysts",
+      "md5": "8aa8df1e",
+      "question": "According to the report, are there any choledochal cysts?"
     },
     {
       "category": "Gallbladder",
@@ -3662,6 +3103,20 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "cirrhosis",
+      "md5": "97237fc1",
+      "question": "According to the report, is there cirrhosis?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "cirrhosis_portal_hypertension",
+      "md5": "3b3866fa",
+      "question": "According to the report, is there portal hypertension?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "reframe",
       "id": "cirrhosis_portal_hypertension",
       "md5": "46561a92",
@@ -3675,11 +3130,32 @@
       "question": "Does the report describe a complex renal cyst?"
     },
     {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "complex_renal_cyst",
+      "md5": "4fd79573",
+      "question": "According to the report, are there any complex renal cysts?"
+    },
+    {
       "category": "Gallbladder",
       "dropped_role": "reframe",
       "id": "emphysematous_cholecystitis",
       "md5": "4c0cfd05",
       "question": "Does the report describe emphysematous cholecystitis?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "emphysematous_cholecystitis",
+      "md5": "5c2a3e69",
+      "question": "According to the report, is there emphysematous cholecystitis?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "epithelial_splenic_cysts",
+      "md5": "6fdf8825",
+      "question": "According to the report, are there any epithelial splenic cysts?"
     },
     {
       "category": "Spleen",
@@ -3696,11 +3172,25 @@
       "question": "Does the report describe extrahepatic biliary ductal dilation?"
     },
     {
+      "category": "Biliary Tree",
+      "dropped_role": "sourced",
+      "id": "extrahepatic_duct_dilation",
+      "md5": "b92995a7",
+      "question": "According to the report, is there any extrahepatic biliary ductal dilation?"
+    },
+    {
       "category": "Musculoskeletal",
       "dropped_role": "reframe",
       "id": "fractures_general",
       "md5": "cf609a65",
       "question": "Does the report describe any fracture?"
+    },
+    {
+      "category": "Musculoskeletal",
+      "dropped_role": "sourced",
+      "id": "fractures_general",
+      "md5": "ea033e30",
+      "question": "According to the report, are there any fractures?"
     },
     {
       "category": "Peritoneum",
@@ -3711,10 +3201,31 @@
     },
     {
       "category": "Peritoneum",
+      "dropped_role": "sourced",
+      "id": "free_air_pneumoperitoneum",
+      "md5": "95d1b7c2",
+      "question": "According to the report, is there any free air or pneumoperitoneum?"
+    },
+    {
+      "category": "Peritoneum",
       "dropped_role": "reframe",
       "id": "free_intraperitoneal_fluid",
       "md5": "80929629",
       "question": "Does the report describe free intraperitoneal fluid?"
+    },
+    {
+      "category": "Peritoneum",
+      "dropped_role": "sourced",
+      "id": "free_intraperitoneal_fluid",
+      "md5": "ce48611d",
+      "question": "According to the report, is there any free intraperitoneal fluid?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "gallbladder_adenomyomatosis",
+      "md5": "1b374eef",
+      "question": "According to the report, is there gallbladder adenomyomatosis?"
     },
     {
       "category": "Gallbladder",
@@ -3732,6 +3243,34 @@
     },
     {
       "category": "Gallbladder",
+      "dropped_role": "synonym",
+      "id": "gallbladder_cancer",
+      "md5": "4db0c61a",
+      "question": "Is there gallbladder carcinoma?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "gallbladder_cancer",
+      "md5": "b049aeb5",
+      "question": "According to the report, is there gallbladder cancer?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "gallbladder_stones",
+      "md5": "16d0f66c",
+      "question": "According to the report, are there any gallbladder stones or cholelithiasis?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "synonym",
+      "id": "gallbladder_stones",
+      "md5": "580f21a9",
+      "question": "Are there any gallstones?"
+    },
+    {
+      "category": "Gallbladder",
       "dropped_role": "reframe",
       "id": "gallbladder_stones",
       "md5": "7a88ba18",
@@ -3739,10 +3278,31 @@
     },
     {
       "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "gallbladder_surgically_absent",
+      "md5": "2bfecf0a",
+      "question": "According to the report, is the gallbladder surgically absent?"
+    },
+    {
+      "category": "Gallbladder",
       "dropped_role": "reframe",
       "id": "gallbladder_surgically_absent",
       "md5": "71d158dd",
       "question": "Does the report describe a surgically absent gallbladder?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "synonym",
+      "id": "gallbladder_surgically_absent",
+      "md5": "ac22bd60",
+      "question": "Is there a prior cholecystectomy?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "gallbladder_wall_thickening",
+      "md5": "875c4a3f",
+      "question": "According to the report, is there diffuse gallbladder wall thickening?"
     },
     {
       "category": "Gallbladder",
@@ -3760,6 +3320,13 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "gastroesophageal_varices",
+      "md5": "ad553926",
+      "question": "According to the report, are there any esophageal or gastric varices?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "synonym",
       "id": "gastroesophageal_varices",
       "md5": "bd77290e",
@@ -3767,10 +3334,31 @@
     },
     {
       "category": "Peritoneum",
+      "dropped_role": "sourced",
+      "id": "hemoperitoneum",
+      "md5": "17e2ff5d",
+      "question": "According to the report, is there hemoperitoneum or free intraperitoneal blood?"
+    },
+    {
+      "category": "Peritoneum",
       "dropped_role": "reframe",
       "id": "hemoperitoneum",
       "md5": "c43dd6cb",
       "question": "Does the report describe hemoperitoneum or free intraperitoneal blood?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatic_abscess",
+      "md5": "1e593805",
+      "question": "Are there any liver abscesses?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_abscess",
+      "md5": "2fdfaeb4",
+      "question": "According to the report, are there any hepatic abscesses?"
     },
     {
       "category": "Liver",
@@ -3788,6 +3376,20 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_adenoma",
+      "md5": "be836e2e",
+      "question": "According to the report, are there any hepatic adenomas?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatic_adenoma",
+      "md5": "e4c87db6",
+      "question": "Is there a hepatocellular adenoma?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "synonym",
       "id": "hepatic_changes_post_resection",
       "md5": "52161763",
@@ -3802,10 +3404,38 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatic_cysts_simple",
+      "md5": "0b61a42b",
+      "question": "Are there any liver cysts?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "reframe",
       "id": "hepatic_cysts_simple",
       "md5": "3980e8f5",
       "question": "Does the report describe hepatic cysts?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_cysts_simple",
+      "md5": "3ff166e8",
+      "question": "According to the report, are there any hepatic cysts?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatic_hemangioma",
+      "md5": "5bfb7669",
+      "question": "Is there a liver hemangioma?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_hemangioma",
+      "md5": "ab7b7e81",
+      "question": "According to the report, are there any hepatic hemangiomas?"
     },
     {
       "category": "Liver",
@@ -3816,10 +3446,31 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_hypodensities",
+      "md5": "fa1c2b38",
+      "question": "According to the report, are there any hepatic hypodensities?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "reframe",
       "id": "hepatic_mass_indeterminate",
       "md5": "1456cea2",
       "question": "Does the report describe any indeterminate hepatic masses?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_mass_indeterminate",
+      "md5": "3a91cc70",
+      "question": "According to the report, are there any indeterminate hepatic masses?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatic_mass_indeterminate",
+      "md5": "e2997eab",
+      "question": "Are there any indeterminate liver masses?"
     },
     {
       "category": "Liver",
@@ -3830,10 +3481,59 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatic_metastases",
+      "md5": "96f42b7c",
+      "question": "Are there any liver metastases?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_metastases",
+      "md5": "e812c183",
+      "question": "According to the report, are there any hepatic metastases?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "reframe",
       "id": "hepatic_steatosis",
       "md5": "72989745",
       "question": "Does the report describe hepatic steatosis, fatty liver or focal fatty infiltration?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatic_steatosis",
+      "md5": "79bd3eb7",
+      "question": "Is the liver fatty or steatotic?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_steatosis",
+      "md5": "7f20f115",
+      "question": "According to the report, is there hepatic steatosis, fatty liver or focal fatty infiltration?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatic_subcapsular_hemorrhage",
+      "md5": "e6814803",
+      "question": "According to the report, are there any hepatic subcapsular hematomas or hemorrhages?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatocellular_carcinoma_hcc",
+      "md5": "2c1a32e6",
+      "question": "According to the report, is there hepatocellular carcinoma?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "hepatocellular_carcinoma_hcc",
+      "md5": "a0ccc53f",
+      "question": "Is there a hepatoma?"
     },
     {
       "category": "Liver",
@@ -3857,11 +3557,32 @@
       "question": "Does the report describe hepatomegaly?"
     },
     {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "hepatomegaly",
+      "md5": "b43b3aab",
+      "question": "According to the report, is there hepatomegaly?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "dropped_role": "sourced",
+      "id": "hiatal_hernia",
+      "md5": "4d285d70",
+      "question": "According to the report, is hiatal hernia present?"
+    },
+    {
       "category": "Gastrointestinal",
       "dropped_role": "reframe",
       "id": "hiatal_hernia",
       "md5": "561a7533",
       "question": "Does the report describe a hiatal hernia?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "horseshoe_kidney",
+      "md5": "3e0371c8",
+      "question": "According to the report, is there horseshoe kidney?"
     },
     {
       "category": "Kidney",
@@ -3872,6 +3593,13 @@
     },
     {
       "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "hydronephrosis",
+      "md5": "085e7ac6",
+      "question": "According to the report, is there hydronephrosis?"
+    },
+    {
+      "category": "Kidney",
       "dropped_role": "reframe",
       "id": "hydronephrosis",
       "md5": "e2b7e8fa",
@@ -3879,10 +3607,24 @@
     },
     {
       "category": "Gastrointestinal",
+      "dropped_role": "sourced",
+      "id": "ileus",
+      "md5": "aa106e25",
+      "question": "According to the report, is there ileus?"
+    },
+    {
+      "category": "Gastrointestinal",
       "dropped_role": "reframe",
       "id": "ileus",
       "md5": "fb4e2d26",
       "question": "Does the report describe ileus?"
+    },
+    {
+      "category": "Gastrointestinal",
+      "dropped_role": "sourced",
+      "id": "inguinal_hernias",
+      "md5": "4f9bd80a",
+      "question": "According to the report, are there any inguinal hernias?"
     },
     {
       "category": "Gastrointestinal",
@@ -3899,6 +3641,20 @@
       "question": "Does the report describe an intra-uterine device?"
     },
     {
+      "category": "Device",
+      "dropped_role": "sourced",
+      "id": "intra_uterine_devices",
+      "md5": "e6053c9d",
+      "question": "According to the report, are there any intra-uterine devices?"
+    },
+    {
+      "category": "Biliary Tree",
+      "dropped_role": "sourced",
+      "id": "intrahepatic_duct_dilation",
+      "md5": "0000ffcb",
+      "question": "According to the report, is there any intrahepatic biliary ductal dilation?"
+    },
+    {
       "category": "Biliary Tree",
       "dropped_role": "reframe",
       "id": "intrahepatic_duct_dilation",
@@ -3906,11 +3662,39 @@
       "question": "Does the report describe intrahepatic biliary ductal dilation?"
     },
     {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "kidney_absent",
+      "md5": "16f22e02",
+      "question": "According to the report, is either kidney absent?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "liver_laceration",
+      "md5": "3fd47fc5",
+      "question": "According to the report, are there any liver lacerations?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "liver_laceration",
+      "md5": "eff077a9",
+      "question": "Is there a hepatic laceration?"
+    },
+    {
       "category": "Liver",
       "dropped_role": "reframe",
       "id": "liver_laceration",
       "md5": "f33de318",
       "question": "Does the report describe liver lacerations?"
+    },
+    {
+      "category": "Retroperitoneum",
+      "dropped_role": "canonical",
+      "id": "lymphadenopathy",
+      "md5": "69eef3fd",
+      "question": "Are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?"
     },
     {
       "category": "Retroperitoneum",
@@ -3927,11 +3711,25 @@
       "question": "Does the report describe any lymphadenopathy in the retroperitoneum, peritoneum or pelvis?"
     },
     {
+      "category": "Retroperitoneum",
+      "dropped_role": "sourced",
+      "id": "lymphadenopathy",
+      "md5": "cdcd2bf6",
+      "question": "According to the report, are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?"
+    },
+    {
       "category": "Multi Organs",
       "dropped_role": "reframe",
       "id": "metastatic_disease_general",
       "md5": "34f029e6",
       "question": "Does the report describe metastatic disease?"
+    },
+    {
+      "category": "Multi Organs",
+      "dropped_role": "sourced",
+      "id": "metastatic_disease_general",
+      "md5": "8b10eaa5",
+      "question": "According to the report, is there metastatic disease?"
     },
     {
       "category": "Multi Organs",
@@ -3942,10 +3740,24 @@
     },
     {
       "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "nephrocalcinosis",
+      "md5": "6a19af6c",
+      "question": "According to the report, is there nephrocalcinosis?"
+    },
+    {
+      "category": "Kidney",
       "dropped_role": "reframe",
       "id": "nephrocalcinosis",
       "md5": "f0fda7ee",
       "question": "Does the report describe nephrocalcinosis?"
+    },
+    {
+      "category": "Peritoneum",
+      "dropped_role": "sourced",
+      "id": "omental_caking",
+      "md5": "27cba97f",
+      "question": "According to the report, is there omental caking?"
     },
     {
       "category": "Peritoneum",
@@ -3962,11 +3774,32 @@
       "question": "Does the report describe peritoneal carcinomatosis?"
     },
     {
+      "category": "Peritoneum",
+      "dropped_role": "sourced",
+      "id": "peritoneal_carcinomatosis",
+      "md5": "e6d42cd7",
+      "question": "According to the report, is there peritoneal carcinomatosis?"
+    },
+    {
+      "category": "Pleura and lung bases",
+      "dropped_role": "synonym",
+      "id": "pleural_effusion",
+      "md5": "7102539a",
+      "question": "Is there pleural fluid?"
+    },
+    {
       "category": "Pleura and lung bases",
       "dropped_role": "reframe",
       "id": "pleural_effusion",
       "md5": "8d54ade3",
       "question": "Does the report describe a pleural effusion?"
+    },
+    {
+      "category": "Pleura and lung bases",
+      "dropped_role": "sourced",
+      "id": "pleural_effusion",
+      "md5": "c85b01f0",
+      "question": "According to the report, is there any pleural effusion?"
     },
     {
       "category": "Gallbladder",
@@ -3976,6 +3809,20 @@
       "question": "Does the report describe pneumobilia?"
     },
     {
+      "category": "Gallbladder",
+      "dropped_role": "synonym",
+      "id": "pneumobilia",
+      "md5": "063003ad",
+      "question": "Is there aerobilia?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "pneumobilia",
+      "md5": "b8d1bf06",
+      "question": "According to the report, is there pneumobilia?"
+    },
+    {
       "category": "Kidney",
       "dropped_role": "reframe",
       "id": "polycystic_kidney_disease",
@@ -3983,11 +3830,32 @@
       "question": "Does the report describe polycystic kidney disease?"
     },
     {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "polycystic_kidney_disease",
+      "md5": "fc9dfa9b",
+      "question": "According to the report, is there polycystic kidney disease?"
+    },
+    {
       "category": "Liver",
       "dropped_role": "reframe",
       "id": "polycystic_liver_disease",
       "md5": "52eaff4b",
       "question": "Does the report describe polycystic liver disease?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "polycystic_liver_disease",
+      "md5": "eceec3c8",
+      "question": "According to the report, is polycystic liver disease present?"
+    },
+    {
+      "category": "Gallbladder",
+      "dropped_role": "sourced",
+      "id": "porcelain_gallbladder",
+      "md5": "c449a6f1",
+      "question": "According to the report, is there porcelain gallbladder?"
     },
     {
       "category": "Gallbladder",
@@ -3998,10 +3866,31 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "portal_venous_gas",
+      "md5": "71c6b974",
+      "question": "Is there portal venous air?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "reframe",
       "id": "portal_venous_gas",
       "md5": "ec8f22a8",
       "question": "Does the report describe portal venous gas?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "portal_venous_gas",
+      "md5": "edbdfc52",
+      "question": "According to the report, is there any portal venous gas?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "portal_venous_occlusion_thrombosis",
+      "md5": "0987582d",
+      "question": "According to the report, is there portal venous thrombosis or occlusion?"
     },
     {
       "category": "Liver",
@@ -4012,10 +3901,24 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "portal_venous_occlusion_thrombosis",
+      "md5": "b6e86596",
+      "question": "Is the portal vein thrombosed or occluded?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "sourced",
       "id": "portal_venous_occlusion_thrombosis",
       "md5": "cd2a9dc3",
       "question": "According to the report, is there portal venous occlusion?"
+    },
+    {
+      "category": "Female pelvis",
+      "dropped_role": "sourced",
+      "id": "post_hysterectomy",
+      "md5": "bce1ffdf",
+      "question": "According to the report, is there a prior hysterectomy?"
     },
     {
       "category": "Female pelvis",
@@ -4026,10 +3929,31 @@
     },
     {
       "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "post_liver_transplant",
+      "md5": "147f80c1",
+      "question": "Is there a hepatic allograft?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "post_liver_transplant",
+      "md5": "a29fd1a5",
+      "question": "According to the report, are there any hepatic changes post-transplantation?"
+    },
+    {
+      "category": "Liver",
       "dropped_role": "reframe",
       "id": "post_liver_transplant",
       "md5": "e50cbab6",
       "question": "Does the report describe hepatic changes post-transplantation?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "post_nephrectomy",
+      "md5": "3b957f96",
+      "question": "According to the report, are there any post-nephrectomy changes in the renal fossa?"
     },
     {
       "category": "Kidney",
@@ -4047,10 +3971,24 @@
     },
     {
       "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "post_renal_transplant",
+      "md5": "72bead88",
+      "question": "According to the report, are there any post-renal transplantation changes?"
+    },
+    {
+      "category": "Kidney",
       "dropped_role": "reframe",
       "id": "post_renal_transplant",
       "md5": "cfe9e221",
       "question": "Does the report describe post-renal-transplantation changes?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "synonym",
+      "id": "post_renal_transplant",
+      "md5": "de2e0731",
+      "question": "Is there a renal allograft?"
     },
     {
       "category": "Spleen",
@@ -4058,6 +3996,27 @@
       "id": "post_splenectomy_changes",
       "md5": "6e25a66c",
       "question": "Does the report describe post-splenectomy changes in the splenic bed?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "post_splenectomy_changes",
+      "md5": "a0e7f29e",
+      "question": "According to the report, are there any post-splenectomy changes in the splenic bed?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "sourced",
+      "id": "prior_liver_resection",
+      "md5": "07bc5274",
+      "question": "According to the report, is there a prior liver resection?"
+    },
+    {
+      "category": "Liver",
+      "dropped_role": "synonym",
+      "id": "prior_liver_resection",
+      "md5": "709df764",
+      "question": "Is there a prior hepatectomy?"
     },
     {
       "category": "Liver",
@@ -4074,11 +4033,39 @@
       "question": "Does the report describe prostatomegaly or prostatic hyperplasia?"
     },
     {
+      "category": "Male Pelvis",
+      "dropped_role": "sourced",
+      "id": "prostatomegaly_bph",
+      "md5": "8ff6c561",
+      "question": "According to the report, is there prostatomegaly or prostatic hyperplasia?"
+    },
+    {
+      "category": "Male Pelvis",
+      "dropped_role": "synonym",
+      "id": "prostatomegaly_bph",
+      "md5": "b00285bf",
+      "question": "Is the prostate enlarged, or is there benign prostatic hyperplasia?"
+    },
+    {
       "category": "Peritoneum",
       "dropped_role": "reframe",
       "id": "pseudomyxoma_peritonei",
       "md5": "1ea46421",
       "question": "Does the report describe pseudomyxoma peritonei?"
+    },
+    {
+      "category": "Peritoneum",
+      "dropped_role": "sourced",
+      "id": "pseudomyxoma_peritonei",
+      "md5": "b13e79df",
+      "question": "According to the report, is there pseudomyxoma peritonei?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "renal_abscess",
+      "md5": "576c2612",
+      "question": "According to the report, are there any renal abscesses?"
     },
     {
       "category": "Kidney",
@@ -4089,10 +4076,24 @@
     },
     {
       "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "renal_cell_carcinoma_rcc",
+      "md5": "c0bce68a",
+      "question": "According to the report, are there any renal cell carcinomas?"
+    },
+    {
+      "category": "Kidney",
       "dropped_role": "reframe",
       "id": "renal_cell_carcinoma_rcc",
       "md5": "c3341ce6",
       "question": "Does the report describe renal cell carcinoma?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "renal_hypodensities",
+      "md5": "a684a0e0",
+      "question": "According to the report, are there any renal hypodensities?"
     },
     {
       "category": "Kidney",
@@ -4107,6 +4108,27 @@
       "id": "renal_laceration",
       "md5": "04203401",
       "question": "Does the report describe renal lacerations?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "renal_laceration",
+      "md5": "f039109d",
+      "question": "According to the report, are there any renal lacerations?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "renal_lymphoma",
+      "md5": "8dab800a",
+      "question": "According to the report, is there renal lymphoma?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "synonym",
+      "id": "renal_lymphoma",
+      "md5": "9b887fb2",
+      "question": "Is there lymphomatous involvement of a kidney?"
     },
     {
       "category": "Kidney",
@@ -4138,10 +4160,31 @@
     },
     {
       "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "renal_stones_nephrolithiasis",
+      "md5": "9804eebd",
+      "question": "According to the report, are there any renal stones or nephrolithiasis?"
+    },
+    {
+      "category": "Kidney",
       "dropped_role": "reframe",
       "id": "renal_subcapsular_hemorrhage",
       "md5": "7002c20c",
       "question": "Does the report describe renal subcapsular hemorrhage?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "renal_subcapsular_hemorrhage",
+      "md5": "f57e7d12",
+      "question": "According to the report, are there any renal subcapsular hemorrhages?"
+    },
+    {
+      "category": "Retroperitoneum",
+      "dropped_role": "sourced",
+      "id": "retroperitoneal_hemorrhage",
+      "md5": "0e6eee34",
+      "question": "According to the report, is there retroperitoneal hemorrhage or retroperitoneal hematomas?"
     },
     {
       "category": "Retroperitoneum",
@@ -4158,11 +4201,25 @@
       "question": "Does the report describe rib fractures?"
     },
     {
+      "category": "Musculoskeletal",
+      "dropped_role": "sourced",
+      "id": "rib_fractures",
+      "md5": "eb5a9e4b",
+      "question": "According to the report, are there any rib fractures?"
+    },
+    {
       "category": "Kidney",
       "dropped_role": "reframe",
       "id": "simple_renal_cysts",
       "md5": "3584fe8c",
       "question": "Does the report describe simple renal cysts?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "simple_renal_cysts",
+      "md5": "ebc1ef47",
+      "question": "According to the report, are there any simple renal cysts?"
     },
     {
       "category": "Spleen",
@@ -4180,10 +4237,31 @@
     },
     {
       "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "spleen_absent",
+      "md5": "cbff597b",
+      "question": "According to the report, is the spleen absent?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "splenic_infarct",
+      "md5": "aea091c3",
+      "question": "According to the report, are there any splenic infarcts?"
+    },
+    {
+      "category": "Spleen",
       "dropped_role": "reframe",
       "id": "splenic_infarct",
       "md5": "f4b6e8c9",
       "question": "Does the report describe splenic infarcts?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "splenic_laceration",
+      "md5": "00f53c0a",
+      "question": "According to the report, are there any splenic lacerations?"
     },
     {
       "category": "Spleen",
@@ -4201,6 +4279,27 @@
     },
     {
       "category": "Spleen",
+      "dropped_role": "synonym",
+      "id": "splenic_lymphoma",
+      "md5": "70501257",
+      "question": "Is there lymphomatous involvement of the spleen?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "splenic_lymphoma",
+      "md5": "7f4b521a",
+      "question": "According to the report, is splenic lymphoma present?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "splenic_pseudocyst",
+      "md5": "272e6eac",
+      "question": "According to the report, are there any splenic pseudocysts?"
+    },
+    {
+      "category": "Spleen",
       "dropped_role": "reframe",
       "id": "splenic_pseudocyst",
       "md5": "cdc53af8",
@@ -4208,10 +4307,45 @@
     },
     {
       "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "splenic_subcapsular_hemorrhage",
+      "md5": "c6d5378b",
+      "question": "According to the report, are there any splenic subcapsular hematomas or hemorrhages?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "sourced",
+      "id": "splenomegaly",
+      "md5": "33823b43",
+      "question": "According to the report, is there splenomegaly?"
+    },
+    {
+      "category": "Spleen",
+      "dropped_role": "synonym",
+      "id": "splenomegaly",
+      "md5": "42e43ae0",
+      "question": "Is the spleen enlarged?"
+    },
+    {
+      "category": "Spleen",
       "dropped_role": "reframe",
       "id": "splenomegaly",
       "md5": "d550ab25",
       "question": "Does the report describe splenomegaly?"
+    },
+    {
+      "category": "Urinary tract",
+      "dropped_role": "synonym",
+      "id": "ureteral_stones",
+      "md5": "280319f2",
+      "question": "Is there ureterolithiasis or a ureteric calculus?"
+    },
+    {
+      "category": "Urinary tract",
+      "dropped_role": "sourced",
+      "id": "ureteral_stones",
+      "md5": "586de112",
+      "question": "According to the report, are there any ureteral stones?"
     },
     {
       "category": "Urinary tract",
@@ -4228,11 +4362,32 @@
       "question": "Does the report describe ureteroceles?"
     },
     {
+      "category": "Urinary tract",
+      "dropped_role": "sourced",
+      "id": "ureteroceles",
+      "md5": "f864b534",
+      "question": "According to the report, are there any ureteroceles?"
+    },
+    {
+      "category": "Female pelvis",
+      "dropped_role": "sourced",
+      "id": "uterine_leiomyomas_fibroids",
+      "md5": "806364fc",
+      "question": "According to the report, are there any uterine fibroids?"
+    },
+    {
       "category": "Female pelvis",
       "dropped_role": "reframe",
       "id": "uterine_leiomyomas_fibroids",
       "md5": "ad0ad40a",
       "question": "Does the report describe a uterine fibroid?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "xgp",
+      "md5": "7ba47c99",
+      "question": "According to the report, is there xanthogranulomatous pyelonephritis?"
     },
     {
       "category": "Kidney",

@@ -14,6 +14,7 @@ move by accident.
 import hashlib
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 # Non-standard libraries
@@ -328,28 +329,24 @@ class TestTheFastConfigAndItsLock:
         expected = hashlib.sha256(str(pairs).encode()).hexdigest()[:16]
         assert LOCK["digest"]["question_set"] == expected
 
-    def test_every_finding_is_asked_under_two_or_three_wordings(self):
-        """The canonical, an exact synonym where one exists, and the frame.
+    def test_every_finding_is_asked_under_its_canonical_alone(self):
+        """One wording per finding, settled 2026-11-17 as A50.
 
-        A finding asked under one wording measures nothing about how far its
-        answer depends on the question, which is what the variants are for.
-        Where the reports dictate no exact synonym the finding is asked under
-        the canonical and its sourced frame alone, so its figure is frame
-        invariance rather than frame plus synonym invariance. Each variant
-        names its role, and the two measurements are reported apart.
+        The set had asked a synonym where one existed and the canonical under
+        the sourced frame, so the audit measured synonym invariance and frame
+        invariance apart. Both slots are withdrawn. A42 had measured that in
+        65 of 126 reviewed frame cells the two wordings quote one identical
+        sentence and disagree anyway, which no rewording reaches, and the
+        definitions now carry the scope those wordings had been probing.
+        Wording sensitivity moves to an ablation that varies the definition
+        alongside the wording, so it can say whether the definitions are what
+        hold the answer steady -- the question A19 left open and the cohort
+        run could not answer.
         """
         for identifier, body in LOCK["findings"].items():
             roles = [variant["role"] for variant in body["variants"]]
-            assert roles in (
-                ["canonical", "sourced"],
-                ["canonical", "synonym", "sourced"],
-            ), identifier
-        with_synonym = sum(
-            1
-            for b in LOCK["findings"].values()
-            if any(v["role"] == "synonym" for v in b["variants"])
-        )
-        assert with_synonym == 29
+            assert roles == ["canonical"], identifier
+            assert [v["index"] for v in body["variants"]] == [0], identifier
 
     def test_no_wording_is_asked_under_two_findings(self):
         """The md5 is the resume key, so one of the two would never be asked."""
@@ -401,8 +398,22 @@ class TestTheFastConfigAndItsLock:
             assert question not in asked
             assert [v["role"] for v in LOCK["findings"][identifier]["variants"]] == [
                 "canonical",
-                "sourced",
             ]
+
+    def test_a50_registered_every_wording_it_withdrew(self):
+        """140 of them, and each md5 still joins the pilots' answers.
+
+        A variant never was a source line, so nothing but this register
+        records its departure, and withdrawing a whole slot at once is the
+        case that would quietly drop every one.
+        """
+        dropped = [e for e in LOCK["retired"] if e.get("dropped_role")]
+        roles = Counter(e["dropped_role"] for e in dropped)
+        assert roles["sourced"] == 116
+        assert roles["synonym"] == 35
+        assert all(e.get("md5") and e.get("question") for e in dropped)
+        registered = {e["id"] for e in dropped if e["dropped_role"] == "sourced"}
+        assert set(LOCK["findings"]) <= registered
 
     def test_a_renamed_finding_records_the_id_it_had(self):
         """An id names a column in the label table and joins every annotation.
@@ -483,7 +494,7 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 9
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """111 findings over 251 wordings, so 251 requests per report.
+        """111 findings over 111 wordings, so 111 requests per report.
 
         82 visible findings with a positive in the cohort, 9 tier C questions
         kept as covariates, 5 findings the source never asked about, and one
@@ -540,12 +551,21 @@ class TestTheFastConfigAndItsLock:
         uterus already had -- `post_nephrectomy` asks for the operative change
         and excludes a bare absence, so an unexplained absent kidney had
         answered only its compartment question.
+
+        **2026-11-17 withdrew every variant (A50), taking a cohort run from
+        3,182,931 requests to 1,407,591, or 11.37 days to 5.03 at the measured
+        3.24 requests per second.** 140 wordings left, 111 sourced and 29
+        synonyms, each registered with its md5. The same day moved two
+        canonicals: `lymphadenopathy` names the mesentery rather than the
+        peritoneum, where nodes are not, and `any_male_pelvis` asks about the
+        prostate alone, since the reports seldom describe the scrotum and the
+        definition now excludes a scrotal finding. Neither has an annotation.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
         assert len(findings) == 111
-        assert wordings == 251
+        assert wordings == 111
         assert len(added) == 25
 
     def test_a_rescoped_finding_records_the_change(self):
