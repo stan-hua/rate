@@ -16,7 +16,7 @@ categories:
         question: "Is there any abnormality of the pancreas?"
         variants:
           - "According to the report, is there any abnormality of the pancreas?"
-        definition: "An abnormality of the pancreas is defined as any abnormal finding in the pancreas. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the pancreas is defined as any abnormal finding in the pancreas. This definition includes operative change, a resected part of the pancreas, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
         include_terms:
           - "pancreatitis or peripancreatic inflammation"
           - "a pancreatic mass, cyst or pseudocyst"
@@ -95,7 +95,7 @@ categories:
         question: "Is there any abnormality of the spleen?"
         variants:
           - "According to the report, is there any abnormality of the spleen?"
-        definition: "An abnormality of the spleen is defined as any abnormal finding in the spleen. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the spleen is defined as any abnormal finding in the spleen. This definition includes operative change, a surgically absent spleen, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
         include_terms:
           - "splenomegaly"
           - "a splenic lesion, cyst or mass"
@@ -120,14 +120,14 @@ categories:
         question: "Is there any abnormality of the bile ducts?"
         variants:
           - "According to the report, is there any abnormality of the bile ducts?"
-        definition: "An abnormality of the bile ducts is defined as any abnormal finding in the bile ducts. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal, and it excludes the gallbladder."
+        definition: "An abnormality of the bile ducts is defined as any abnormal finding in the bile ducts. This definition includes operative change and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the gallbladder."
         include_terms:
           - "intrahepatic or extrahepatic ductal dilation"
           - "a duct stone or choledocholithiasis"
           - "pneumobilia"
           - "a biliary stricture"
         exclude_terms:
-          - "a catheter, stent, drain, graft or other device, where the organ is otherwise normal"
+          - "a catheter, stent, drain, graft or other device, where nothing else is abnormal"
   Liver:
     description: "Liver-related findings"
     questions:
@@ -281,7 +281,7 @@ categories:
         question: "Is there any abnormality of the liver?"
         variants:
           - "According to the report, is there any abnormality of the liver?"
-        definition: "An abnormality of the liver is defined as any abnormal finding in the liver. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal, and it excludes the bile ducts and the gallbladder."
+        definition: "An abnormality of the liver is defined as any abnormal finding in the liver. This definition includes operative change, a resected part of the liver, a transplanted liver, and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the bile ducts and the gallbladder."
         include_terms:
           - "hepatic steatosis or a fatty liver"
           - "a hepatic lesion, cyst or mass"
@@ -372,7 +372,7 @@ categories:
         question: "Is there any abnormality of the gallbladder?"
         variants:
           - "According to the report, is there any abnormality of the gallbladder?"
-        definition: "An abnormality of the gallbladder is defined as any abnormal finding in the gallbladder. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal, and it excludes the bile ducts."
+        definition: "An abnormality of the gallbladder is defined as any abnormal finding in the gallbladder. This definition includes operative change, a surgically absent gallbladder, and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the bile ducts."
         include_terms:
           - "gallstones or cholelithiasis"
           - "gallbladder wall thickening"
@@ -517,7 +517,7 @@ categories:
         question: "Is there any abnormality of the kidneys?"
         variants:
           - "According to the report, is there any abnormality of the kidneys?"
-        definition: "An abnormality of a kidney is defined as any abnormal finding in a kidney. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal, and it excludes the ureters and the bladder."
+        definition: "An abnormality of a kidney is defined as any abnormal finding in a kidney. This definition includes operative change, a surgically absent or transplanted kidney, and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the ureters and the bladder."
         include_terms:
           - "a renal cyst, hypodensity, mass or angiomyolipoma"
           - "a renal or collecting-system stone"
@@ -544,7 +544,7 @@ categories:
         question: "Is there any abnormality of the adrenal glands?"
         variants:
           - "According to the report, is there any abnormality of the adrenal glands?"
-        definition: "An abnormality of an adrenal gland is defined as any abnormal finding in an adrenal gland. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of an adrenal gland is defined as any abnormal finding in an adrenal gland. This definition includes operative change, a surgically absent adrenal gland, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
         include_terms:
           - "an adrenal nodule, adenoma or myelolipoma"
           - "an adrenal mass"
@@ -596,7 +596,7 @@ categories:
         question: "Is there any abnormality of the stomach or bowel?"
         variants:
           - "According to the report, is there any abnormality of the stomach or bowel?"
-        definition: "An abnormality of the stomach or the bowel is defined as any abnormal finding in the stomach or the bowel. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the stomach or the bowel is defined as any abnormal finding in the stomach or the bowel. This definition includes operative change, a resected segment of stomach or bowel, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
         include_terms:
           - "bowel wall thickening"
           - "bowel obstruction or dilated loops"
@@ -712,7 +712,7 @@ categories:
         question: "Is there any abnormality of the peritoneal cavity?"
         variants:
           - "According to the report, is there any abnormality of the peritoneal cavity?"
-        definition: "An abnormality of the peritoneal cavity is defined as any abnormal finding in the peritoneal cavity. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal, and it excludes retroperitoneal fluid or blood."
+        definition: "An abnormality of the peritoneal cavity is defined as any abnormal finding in the peritoneal cavity. This definition includes operative change and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes retroperitoneal fluid or blood."
         include_terms:
           - "free intraperitoneal fluid, ascites or hemoperitoneum"
           - "free intraperitoneal air"
@@ -762,7 +762,7 @@ categories:
         question: "Is there any abnormality of the aorta or its branches?"
         variants:
           - "According to the report, is there any abnormality of the aorta or its branches?"
-        definition: "An abnormality of the aorta or its branches is defined as any abnormal finding in the aorta or its branches. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the aorta or its branches is defined as any abnormal finding in the aorta or its branches. This definition includes operative change and a normal anatomical variant. It excludes a device where nothing else is abnormal."
         include_terms:
           - "aortic aneurysm or dilation"
           - "aortic atherosclerosis or calcification"
@@ -770,7 +770,7 @@ categories:
           - "arterial or venous thrombus"
           - "arterial stenosis or occlusion"
         exclude_terms:
-          - "a catheter, stent, drain, graft or other device, where the organ is otherwise normal"
+          - "a catheter, stent, drain, graft or other device, where nothing else is abnormal"
   Retroperitoneum:
     description: "Retroperitoneal space findings"
     questions:
@@ -827,7 +827,7 @@ categories:
         question: "Is there any abnormality of the prostate or scrotum?"
         variants:
           - "According to the report, is there any abnormality of the prostate or scrotum?"
-        definition: "An abnormality of the prostate or the scrotum is defined as any abnormal finding in the prostate or the scrotum. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the prostate or the scrotum is defined as any abnormal finding in the prostate or the scrotum. This definition includes operative change, a surgically absent prostate or testis, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
         include_terms:
           - "prostatic enlargement or prostatomegaly"
           - "a prostatic mass or calcification"
@@ -860,7 +860,7 @@ categories:
         question: "Is there any abnormality of the uterus, ovaries or adnexa?"
         variants:
           - "According to the report, is there any abnormality of the uterus, ovaries or adnexa?"
-        definition: "An abnormality of the uterus, the ovaries or the adnexa is defined as any abnormal finding in the uterus, the ovaries or the adnexa. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the uterus, the ovaries or the adnexa is defined as any abnormal finding in the uterus, the ovaries or the adnexa. This definition includes operative change, a surgically absent uterus or ovary, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
         include_terms:
           - "a uterine fibroid, leiomyoma or enlarged uterus"
           - "an ovarian or adnexal cyst"
@@ -886,7 +886,7 @@ categories:
         question: "Is there any abnormality of the bones or body wall?"
         variants:
           - "According to the report, is there any abnormality of the bones or body wall?"
-        definition: "An abnormality of a bone or the body wall is defined as any abnormal finding in a bone or the body wall. This definition includes operative change, surgical absence of the organ, a normal anatomical variant, and degenerative or spondylotic change. It excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of a bone or the body wall is defined as any abnormal finding in a bone or the body wall. This definition includes operative change, a resected or amputated bone, a normal anatomical variant, and degenerative or spondylotic change. It excludes a device where nothing else is abnormal."
         include_terms:
           - "a fracture of any bone in the imaged volume"
           - "a bone lesion, metastasis or sclerosis"
@@ -906,7 +906,7 @@ categories:
         question: "Is there any abnormality of the pleural spaces or lung bases?"
         variants:
           - "According to the report, is there any abnormality of the pleural spaces or lung bases?"
-        definition: "An abnormality of a pleural space or a visible lung base is defined as any abnormal finding in a pleural space or a visible lung base. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal. It covers only the lung bases inside the imaged volume."
+        definition: "An abnormality of a pleural space or a visible lung base is defined as any abnormal finding in a pleural space or a visible lung base. This definition includes operative change, a lung or a lobe removed at surgery, and a normal anatomical variant. It excludes a device where nothing else is abnormal. It covers only the lung bases inside the imaged volume."
         include_terms:
           - "a pleural effusion or pleural fluid"
           - "pleural thickening or a pleural plaque"
@@ -966,11 +966,11 @@ categories:
         question: "Is there any abnormality of the ureters or bladder?"
         variants:
           - "According to the report, is there any abnormality of the ureters or bladder?"
-        definition: "An abnormality of a ureter or the bladder is defined as any abnormal finding in a ureter or the bladder. This definition includes operative change, surgical absence of the organ, and a normal anatomical variant. It excludes a device where the organ is otherwise normal, and it excludes the kidneys."
+        definition: "An abnormality of a ureter or the bladder is defined as any abnormal finding in a ureter or the bladder. This definition includes operative change, a surgically absent bladder, and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the kidneys."
         include_terms:
           - "ureteral dilation or hydroureter"
           - "a ureteral or bladder stone"
           - "bladder wall thickening or trabeculation"
           - "a bladder mass"
         exclude_terms:
-          - "a catheter, stent, drain, graft or other device, where the organ is otherwise normal"
+          - "a catheter, stent, drain, graft or other device, where nothing else is abnormal"
