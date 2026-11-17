@@ -9,14 +9,14 @@ categories:
         question: "Is there acute pancreatitis?"
         variants:
           - "According to the report, is there acute pancreatitis?"
-        definition: "Acute pancreatitis is defined as an acutely inflamed pancreas: peripancreatic fat stranding or fluid, glandular enlargement, a non-enhancing segment, or acute pancreatitis the report names. This definition includes an acute episode on a chronic background. It excludes chronic pancreatitis alone, whose signs are atrophy, parenchymal or ductal calcification, and a dilated duct. The pancreas compartment question covers those signs."
+        definition: "Acute pancreatitis is defined as an acutely inflamed pancreas: peripancreatic fat stranding or fluid, glandular enlargement, a non-enhancing segment, or acute pancreatitis the report names. This definition includes an acute episode on a chronic background. It excludes chronic pancreatitis alone, whose signs are atrophy, parenchymal or ductal calcification, and a dilated duct."
       
 
       - id: any_pancreas
         question: "Is there any abnormality of the pancreas?"
         variants:
           - "According to the report, is there any abnormality of the pancreas?"
-        definition: "An abnormality of the pancreas is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the pancreas is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
         include_terms:
           - "pancreatitis or peripancreatic inflammation"
           - "a pancreatic mass, cyst or pseudocyst"
@@ -35,12 +35,12 @@ categories:
         question: "Are there any epithelial splenic cysts?"
         variants:
           - "According to the report, are there any epithelial splenic cysts?"
-        definition: "An epithelial splenic cyst is defined as a true splenic cyst with an epithelial lining, congenital or epidermoid, thin-walled and fluid-density. This definition excludes a cyst the report attributes to trauma, infarction or infection. The splenic pseudocyst question covers that cyst."
+        definition: "An epithelial splenic cyst is defined as a true splenic cyst with an epithelial lining, congenital or epidermoid, thin-walled and fluid-density. This definition excludes a cyst the report attributes to trauma, infarction or infection."
       - id: splenic_pseudocyst
         question: "Are there any splenic pseudocysts?"
         variants:
           - "According to the report, are there any splenic pseudocysts?"
-        definition: "A splenic pseudocyst is defined as a splenic cyst with no epithelial lining, which the report attributes to prior trauma, infarction or infection. This definition excludes a congenital or epidermoid cyst. The epithelial splenic cyst question covers that cyst."
+        definition: "A splenic pseudocyst is defined as a splenic cyst with no epithelial lining, which the report attributes to prior trauma, infarction or infection. This definition excludes a congenital or epidermoid cyst."
       - id: splenic_lymphoma
         question: "Is splenic lymphoma present?"
         variants:
@@ -61,7 +61,7 @@ categories:
         question: "Is the spleen absent?"
         variants:
           - "According to the report, is the spleen absent?"
-        definition: "An absent spleen is defined as no spleen in the splenic fossa, for any reason: a splenectomy, congenital asplenia, or an autosplenectomy. This definition excludes the operative change a splenectomy leaves behind. The post-splenectomy question covers that change."
+        definition: "An absent spleen is defined as no spleen in the splenic fossa, for any reason: a splenectomy, congenital asplenia, or an autosplenectomy. This definition excludes the operative change a splenectomy leaves behind."
         include_terms:
           - "splenectomy"
           - "surgically absent spleen"
@@ -75,13 +75,13 @@ categories:
         variants:
           - "Is there a splenule?"
           - "According to the report, are there any accessory spleens?"
-        definition: "An accessory spleen is defined as a splenule, a small round nodule of splenic tissue near the splenic hilum or in the splenic ligaments. This definition excludes splenosis after a splenectomy. The post-splenectomy question covers that."
+        definition: "An accessory spleen is defined as a splenule, a small round nodule of splenic tissue near the splenic hilum or in the splenic ligaments. This definition excludes splenosis after a splenectomy."
 
       - id: post_splenectomy_changes
         question: "Are there any post-splenectomy changes in the splenic bed?"
         variants:
           - "According to the report, are there any post-splenectomy changes in the splenic bed?"
-        definition: "Post-splenectomy change is defined as operative change from a splenectomy that the report describes: clips or sutures in the splenic bed, a surgical bed or cavity, or splenosis. This definition excludes an absent spleen with no operative change described. The spleen-absent question covers that."
+        definition: "Post-splenectomy change is defined as operative change from a splenectomy that the report describes: clips or sutures in the splenic bed, a surgical bed or cavity, or splenosis. This definition excludes an absent spleen with no operative change described."
         include_terms:
           - "post-splenectomy change"
           - "splenectomy clips"
@@ -95,7 +95,7 @@ categories:
         question: "Is there any abnormality of the spleen?"
         variants:
           - "According to the report, is there any abnormality of the spleen?"
-        definition: "An abnormality of the spleen is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the spleen is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
         include_terms:
           - "splenomegaly"
           - "a splenic lesion, cyst or mass"
@@ -120,7 +120,7 @@ categories:
         question: "Is there any abnormality of the bile ducts?"
         variants:
           - "According to the report, is there any abnormality of the bile ducts?"
-        definition: "An abnormality of the bile ducts is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the gallbladder, which is a separate compartment."
+        definition: "An abnormality of the bile ducts is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the gallbladder."
         include_terms:
           - "intrahepatic or extrahepatic ductal dilation"
           - "a duct stone or choledocholithiasis"
@@ -157,7 +157,7 @@ categories:
         question: "Is there portal hypertension?"
         variants:
           - "According to the report, is there portal hypertension?"
-        definition: "Portal hypertension is defined as portal hypertension the report states, or a portosystemic collateral or a recanalised paraumbilical vein it names. This definition excludes splenomegaly alone and varices alone. The splenomegaly and varices questions cover those."
+        definition: "Portal hypertension is defined as portal hypertension the report states, or a portosystemic collateral or a recanalised paraumbilical vein it names. This definition excludes splenomegaly alone and varices alone."
         include_terms:
           - "portal hypertension"
           - "portosystemic collaterals"
@@ -166,7 +166,7 @@ categories:
         question: "Are there any esophageal or gastric varices?"
         variants:
           - "According to the report, are there any esophageal or gastric varices?"
-        definition: "Gastroesophageal varices are defined as dilated collateral veins at the oesophagus or the gastric fundus. This definition excludes portosystemic collaterals elsewhere. The portal hypertension question covers those."
+        definition: "Gastroesophageal varices are defined as dilated collateral veins at the oesophagus or the gastric fundus. This definition excludes portosystemic collaterals elsewhere."
       - id: polycystic_liver_disease
         question: "Is polycystic liver disease present?"
         variants:
@@ -201,7 +201,7 @@ categories:
         variants:
           - "Are there any indeterminate liver masses?"
           - "According to the report, are there any indeterminate hepatic masses?"
-        definition: "An indeterminate hepatic mass is defined as a hepatic lesion the report calls a mass or describes as solid and does not characterise further. This definition excludes a cyst. It excludes a lesion the report names, such as a hemangioma, a metastasis or a hepatocellular carcinoma. It excludes a hypodensity or a low-density lesion the report leaves uncharacterised. The hepatic hypodensity umbrella question covers that lesion."
+        definition: "An indeterminate hepatic mass is defined as a hepatic lesion the report calls a mass or describes as solid and does not characterise further. This definition excludes a cyst. It excludes a lesion the report names, such as a hemangioma, a metastasis or a hepatocellular carcinoma. It excludes a hypodensity or a low-density lesion the report leaves uncharacterised."
         include_terms:
           - "indeterminate hepatic lesion"
           - "indeterminate liver mass"
@@ -226,7 +226,7 @@ categories:
         variants:
           - "Are there any liver metastases?"
           - "According to the report, are there any hepatic metastases?"
-        definition: "A hepatic metastasis is defined as a hepatic lesion the report calls a metastasis or a secondary deposit. This definition excludes an uncharacterised solid lesion. The indeterminate hepatic mass question covers that lesion."
+        definition: "A hepatic metastasis is defined as a hepatic lesion the report calls a metastasis or a secondary deposit. This definition excludes an uncharacterised solid lesion."
       - id: liver_laceration
         question: "Are there any liver lacerations?"
         variants:
@@ -262,14 +262,14 @@ categories:
         variants:
           - "Is there portal venous air?"
           - "According to the report, is there any portal venous gas?"
-        definition: "Portal venous gas is defined as gas in the portal vein or its intrahepatic branches, extending to the periphery of the liver. This definition excludes gas in the bile ducts, which is central and does not extend to the periphery. The pneumobilia question covers that gas."
+        definition: "Portal venous gas is defined as gas in the portal vein or its intrahepatic branches, extending to the periphery of the liver. This definition excludes gas in the bile ducts, which is central and does not extend to the periphery."
       
       
       - id: hepatic_hypodensities
         question: "Are there any hepatic hypodensities?"
         variants:
           - "According to the report, are there any hepatic hypodensities?"
-        definition: "A hepatic hypodensity is defined as a low-density lesion in the liver, whatever the report calls it. This definition includes a simple cyst, an indeterminate mass and a hypodensity the report leaves uncharacterised, because this is the umbrella question and the specific liver lesion questions fall under it. It excludes a lesion the report characterises as solid and enhancing."
+        definition: "A hepatic hypodensity is defined as a low-density lesion in the liver, whatever the report calls it. This definition includes a simple cyst, an indeterminate mass and a hypodensity the report leaves uncharacterised. It excludes a lesion the report characterises as solid and enhancing."
         include_terms:
           - "hepatic hypodensity"
           - "hypodensity in the liver"
@@ -281,7 +281,7 @@ categories:
         question: "Is there any abnormality of the liver?"
         variants:
           - "According to the report, is there any abnormality of the liver?"
-        definition: "An abnormality of the liver is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the bile ducts and the gallbladder, which are separate compartments."
+        definition: "An abnormality of the liver is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the bile ducts and the gallbladder."
         include_terms:
           - "hepatic steatosis or a fatty liver"
           - "a hepatic lesion, cyst or mass"
@@ -312,7 +312,7 @@ categories:
         question: "Is there acute cholecystitis?"
         variants:
           - "According to the report, is there acute cholecystitis?"
-        definition: "Acute cholecystitis is defined as an acutely inflamed gallbladder: wall thickening with pericholecystic fluid or fat stranding, mural hyperenhancement, or acute cholecystitis the report names. This definition includes an acute episode on a chronic background. It excludes gallstones alone. It excludes chronic cholecystitis alone, whose signs are a contracted, thick-walled gallbladder with stones. The wall thickening and gallstone questions cover those signs."
+        definition: "Acute cholecystitis is defined as an acutely inflamed gallbladder: wall thickening with pericholecystic fluid or fat stranding, mural hyperenhancement, or acute cholecystitis the report names. This definition includes an acute episode on a chronic background. It excludes gallstones alone. It excludes chronic cholecystitis alone, whose signs are a contracted, thick-walled gallbladder with stones."
       - id: cholecystitis_with_rupture
         question: "Is there acute cholecystitis with rupture?"
         variants:
@@ -323,7 +323,7 @@ categories:
         question: "Is there emphysematous cholecystitis?"
         variants:
           - "According to the report, is there emphysematous cholecystitis?"
-        definition: "Emphysematous cholecystitis is defined as acute cholecystitis with gas in the gallbladder wall or lumen. This definition excludes gas in the bile ducts alone. The pneumobilia question covers that."
+        definition: "Emphysematous cholecystitis is defined as acute cholecystitis with gas in the gallbladder wall or lumen. This definition excludes gas in the bile ducts alone."
       - id: porcelain_gallbladder
         question: "Is there porcelain gallbladder?"
         variants:
@@ -372,7 +372,7 @@ categories:
         question: "Is there any abnormality of the gallbladder?"
         variants:
           - "According to the report, is there any abnormality of the gallbladder?"
-        definition: "An abnormality of the gallbladder is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the bile ducts, which are a separate compartment."
+        definition: "An abnormality of the gallbladder is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the bile ducts."
         include_terms:
           - "gallstones or cholelithiasis"
           - "gallbladder wall thickening"
@@ -401,12 +401,12 @@ categories:
         question: "Are there any renal hypodensities?"
         variants:
           - "According to the report, are there any renal hypodensities?"
-        definition: "A renal hypodensity is defined as a low-density lesion in the kidney, whatever the report calls it. This definition includes a simple cyst, a complex cyst and an uncharacterised hypodensity, because this is the umbrella question and the specific cyst questions fall under it. It excludes a solid enhancing mass."
+        definition: "A renal hypodensity is defined as a low-density lesion in the kidney, whatever the report calls it. This definition includes a simple cyst, a complex cyst and an uncharacterised hypodensity. It excludes a solid enhancing mass."
       - id: simple_renal_cysts
         question: "Are there any simple renal cysts?"
         variants:
           - "According to the report, are there any simple renal cysts?"
-        definition: "A simple renal cyst is defined as a renal cyst the report names without describing any internal complexity. Naming a lesion a renal cyst is itself the characterisation, so a report that describes no more than that counts. This definition excludes a cyst the report calls complex, septated, calcified, thick-walled, enhancing or solid. It excludes a hypodensity the report leaves uncharacterised. The complex-cyst question covers a complex cyst, and the renal hypodensity umbrella question covers an uncharacterised hypodensity."
+        definition: "A simple renal cyst is defined as a renal cyst the report names without describing any internal complexity. Naming a lesion a renal cyst is itself the characterisation, so a report that describes no more than that counts. This definition excludes a cyst the report calls complex, septated, calcified, thick-walled, enhancing or solid. It excludes a hypodensity the report leaves uncharacterised."
       - id: complex_renal_cyst
         question: "Are there any complex renal cysts?"
         variants:
@@ -495,7 +495,7 @@ categories:
         question: "Are there any post-nephrectomy changes in the renal fossa?"
         variants:
           - "According to the report, are there any post-nephrectomy changes in the renal fossa?"
-        definition: "Post-nephrectomy change is defined as operative change from a nephrectomy: a surgical bed or cavity in the renal fossa, clips or sutures, or a parenchymal defect from a partial nephrectomy. This definition includes a partial and a total nephrectomy alike, and a kidney the report states was surgically removed. It excludes an absent kidney alone, whether from congenital absence, from agenesis, or from an absence the report does not explain. It excludes a renal allograft. It excludes operative change from the removal of another organ. The splenectomy, cholecystectomy and hysterectomy questions cover that change."
+        definition: "Post-nephrectomy change is defined as operative change from a nephrectomy: a surgical bed or cavity in the renal fossa, clips or sutures, or a parenchymal defect from a partial nephrectomy. This definition includes a partial and a total nephrectomy alike, and a kidney the report states was surgically removed. It excludes an absent kidney alone, whether from congenital absence, from agenesis, or from an absence the report does not explain. It excludes a renal allograft. It excludes operative change from the removal of another organ."
       - id: post_renal_transplant
         question: "Are there any post-renal transplantation changes?"
         variants:
@@ -517,7 +517,7 @@ categories:
         question: "Is there any abnormality of the kidneys?"
         variants:
           - "According to the report, is there any abnormality of the kidneys?"
-        definition: "An abnormality of a kidney is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the ureters and the bladder, which are a separate compartment."
+        definition: "An abnormality of a kidney is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the ureters and the bladder."
         include_terms:
           - "a renal cyst, hypodensity, mass or angiomyolipoma"
           - "a renal or collecting-system stone"
@@ -544,7 +544,7 @@ categories:
         question: "Is there any abnormality of the adrenal glands?"
         variants:
           - "According to the report, is there any abnormality of the adrenal glands?"
-        definition: "An abnormality of an adrenal gland is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of an adrenal gland is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
         include_terms:
           - "an adrenal nodule, adenoma or myelolipoma"
           - "an adrenal mass"
@@ -575,7 +575,7 @@ categories:
         question: "Is bowel obstruction present?"
         variants:
           - "According to the report, is bowel obstruction present?"
-        definition: "Bowel obstruction is defined as mechanically obstructed bowel: dilated loops with a transition point or a named cause, or an obstruction the report names. This definition excludes dilated loops with no transition point. The ileus question covers those."
+        definition: "Bowel obstruction is defined as mechanically obstructed bowel: dilated loops with a transition point or a named cause, or an obstruction the report names. This definition excludes dilated loops with no transition point."
       - id: hiatal_hernia
         question: "Is hiatal hernia present?"
         variants:
@@ -585,7 +585,7 @@ categories:
         question: "Is there ileus?"
         variants:
           - "According to the report, is there ileus?"
-        definition: "Ileus is defined as dilated bowel without a mechanical obstruction, where the report names ileus or describes the bowel as adynamic or paralytic. This definition excludes a transition point or a named obstructing cause. The bowel obstruction question covers those."
+        definition: "Ileus is defined as dilated bowel without a mechanical obstruction, where the report names ileus or describes the bowel as adynamic or paralytic. This definition excludes a transition point or a named obstructing cause."
       - id: inguinal_hernias
         question: "Are there any inguinal hernias?"
         variants:
@@ -596,7 +596,7 @@ categories:
         question: "Is there any abnormality of the stomach or bowel?"
         variants:
           - "According to the report, is there any abnormality of the stomach or bowel?"
-        definition: "An abnormality of the stomach or the bowel is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the stomach or the bowel is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
         include_terms:
           - "bowel wall thickening"
           - "bowel obstruction or dilated loops"
@@ -620,7 +620,7 @@ categories:
         question: "Is there any ascites?"
         variants:
           - "According to the report, is there any ascites?"
-        definition: "Ascites is defined as free peritoneal fluid the report calls ascites, or attributes to cirrhosis, malignancy or heart failure. This definition excludes free blood. It excludes fluid the report places by location alone, such as trace free fluid in a dependent space. It excludes a section the report heads \"Ascites\" and then fills with fluid it calls blood or of unclear etiology. The hemoperitoneum question covers the blood, and the free-fluid umbrella question covers the fluid placed by location alone."
+        definition: "Ascites is defined as free peritoneal fluid the report calls ascites, or attributes to cirrhosis, malignancy or heart failure. This definition excludes free blood. It excludes fluid the report places by location alone, such as trace free fluid in a dependent space. It excludes a section the report heads \"Ascites\" and then fills with fluid it calls blood or of unclear etiology."
         include_terms:
           - "ascites"
           - "ascitic fluid"
@@ -648,7 +648,7 @@ categories:
         question: "Is there peritoneal carcinomatosis?"
         variants:
           - "According to the report, is there peritoneal carcinomatosis?"
-        definition: "Peritoneal carcinomatosis is defined as tumour deposits studding the peritoneum as nodules or plaques. This definition excludes an infiltrated omentum. The omental caking question covers that."
+        definition: "Peritoneal carcinomatosis is defined as tumour deposits studding the peritoneum as nodules or plaques. This definition excludes an infiltrated omentum."
         include_terms:
           - "peritoneal carcinomatosis"
           - "peritoneal implants"
@@ -677,7 +677,7 @@ categories:
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
         variants:
           - "According to the report, is there hemoperitoneum or free intraperitoneal blood?"
-        definition: "Hemoperitoneum is defined as free intraperitoneal fluid the report calls blood, by that word, by its density, or by the injury it attributes the fluid to. This definition excludes fluid the report leaves uncharacterised. The free-fluid umbrella question covers that fluid."
+        definition: "Hemoperitoneum is defined as free intraperitoneal fluid the report calls blood, by that word, by its density, or by the injury it attributes the fluid to. This definition excludes fluid the report leaves uncharacterised."
         include_terms:
           - "hemoperitoneum"
           - "intraperitoneal blood"
@@ -695,7 +695,7 @@ categories:
         question: "Is there omental caking?"
         variants:
           - "According to the report, is there omental caking?"
-        definition: "Omental caking is defined as soft tissue replacing the fat of the omentum, as a thickened, nodular or infiltrated omental mass. This definition excludes discrete peritoneal nodules or plaques elsewhere. The peritoneal carcinomatosis question covers those."
+        definition: "Omental caking is defined as soft tissue replacing the fat of the omentum, as a thickened, nodular or infiltrated omental mass. This definition excludes discrete peritoneal nodules or plaques elsewhere."
         include_terms:
           - "omental caking"
           - "omental cake"
@@ -712,7 +712,7 @@ categories:
         question: "Is there any abnormality of the peritoneal cavity?"
         variants:
           - "According to the report, is there any abnormality of the peritoneal cavity?"
-        definition: "An abnormality of the peritoneal cavity is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes retroperitoneal fluid or blood."
+        definition: "An abnormality of the peritoneal cavity is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes retroperitoneal fluid or blood."
         include_terms:
           - "free intraperitoneal fluid, ascites or hemoperitoneum"
           - "free intraperitoneal air"
@@ -762,7 +762,7 @@ categories:
         question: "Is there any abnormality of the aorta or its branches?"
         variants:
           - "According to the report, is there any abnormality of the aorta or its branches?"
-        definition: "An abnormality of the aorta or its branches is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the aorta or its branches is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
         include_terms:
           - "aortic aneurysm or dilation"
           - "aortic atherosclerosis or calcification"
@@ -821,13 +821,13 @@ categories:
         variants:
           - "Is the prostate enlarged, or is there benign prostatic hyperplasia?"
           - "According to the report, is there prostatomegaly or prostatic hyperplasia?"
-        definition: "Prostatomegaly is defined as an enlarged prostate, or benign prostatic hyperplasia the report names. This definition excludes a prostatic mass and a malignancy. A patient with no prostate answers this question No, which covers a report that describes a female pelvis and a report that never mentions the prostate."
+        definition: "Prostatomegaly is defined as an enlarged prostate, or benign prostatic hyperplasia the report names. This definition excludes a prostatic mass and a malignancy. A patient with no prostate answers No, which covers a report that describes a female pelvis and a report that never mentions the prostate."
 
       - id: any_male_pelvis
         question: "Is there any abnormality of the prostate or scrotum?"
         variants:
           - "According to the report, is there any abnormality of the prostate or scrotum?"
-        definition: "An abnormality of the prostate or the scrotum is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the prostate or the scrotum is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
         include_terms:
           - "prostatic enlargement or prostatomegaly"
           - "a prostatic mass or calcification"
@@ -860,7 +860,7 @@ categories:
         question: "Is there any abnormality of the uterus, ovaries or adnexa?"
         variants:
           - "According to the report, is there any abnormality of the uterus, ovaries or adnexa?"
-        definition: "An abnormality of the uterus, the ovaries or the adnexa is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
+        definition: "An abnormality of the uterus, the ovaries or the adnexa is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal."
         include_terms:
           - "a uterine fibroid, leiomyoma or enlarged uterus"
           - "an ovarian or adnexal cyst"
@@ -874,19 +874,19 @@ categories:
         question: "Are there any fractures?"
         variants:
           - "According to the report, are there any fractures?"
-        definition: "A fracture is defined as any fractured bone in the imaged volume. A rib fracture also answers its own question, and the chronicity field records whether the fracture is acute or healed."
+        definition: "A fracture is defined as any fractured bone in the imaged volume. This definition includes a rib fracture."
       - id: rib_fractures
         question: "Are there any rib fractures?"
         variants:
           - "According to the report, are there any rib fractures?"
-        definition: "A rib fracture is defined as one or more fractured ribs. The chronicity field records whether the fracture is acute or healed."
+        definition: "A rib fracture is defined as one or more fractured ribs."
       
 
       - id: any_musculoskeletal
         question: "Is there any abnormality of the bones or body wall?"
         variants:
           - "According to the report, is there any abnormality of the bones or body wall?"
-        definition: "An abnormality of a bone or the body wall is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it includes degenerative and spondylotic change."
+        definition: "An abnormality of a bone or the body wall is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it includes degenerative and spondylotic change."
         include_terms:
           - "a fracture of any bone in the imaged volume"
           - "a bone lesion, metastasis or sclerosis"
@@ -906,7 +906,7 @@ categories:
         question: "Is there any abnormality of the pleural spaces or lung bases?"
         variants:
           - "According to the report, is there any abnormality of the pleural spaces or lung bases?"
-        definition: "An abnormality of a pleural space or a visible lung base is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal. The question covers only the lung bases inside the imaged volume."
+        definition: "An abnormality of a pleural space or a visible lung base is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal. It covers only the lung bases inside the imaged volume."
         include_terms:
           - "a pleural effusion or pleural fluid"
           - "pleural thickening or a pleural plaque"
@@ -966,7 +966,7 @@ categories:
         question: "Is there any abnormality of the ureters or bladder?"
         variants:
           - "According to the report, is there any abnormality of the ureters or bladder?"
-        definition: "An abnormality of a ureter or the bladder is defined as anything the report records as abnormal there, including a finding the specific questions do not cover. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the kidneys, which are a separate compartment."
+        definition: "An abnormality of a ureter or the bladder is defined as anything the report records as abnormal there. This definition includes operative change, an organ surgically absent, and a normal anatomical variant the report records. This definition excludes a device where the organ is otherwise normal, and it excludes the kidneys."
         include_terms:
           - "ureteral dilation or hydroureter"
           - "a ureteral or bladder stone"
