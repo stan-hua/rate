@@ -32,34 +32,128 @@ ROLES = {
 REPORTS = [f"SYN{n:04d}" for n in range(1, 11)]
 
 
-def rows(spec):
+def rows(spec, drop=(), blank=()):
     """Build a questions frame from {(finding, index): {report: fields}}.
 
     Every finding is asked of all ten reports, so a report absent from a
-    wording's map answers No under it with no graded fields.
+    wording's map answers No under it with no graded fields. `drop` names the
+    (finding, index, report) triples with no row at all and `blank` those
+    whose row stored no verdict.
     """
     out = []
     for (finding, index), answers in spec.items():
         for report in REPORTS:
+            if (finding, index, report) in set(drop):
+                continue
             fields = answers.get(report)
+            verdict = "yes" if fields is not None else "no"
+            if (finding, index, report) in set(blank):
+                verdict = ""
             out.append(
                 {
                     "report_id": report,
                     "finding_id": finding,
                     "variant_index": str(index),
-                    "verdict": "yes" if fields is not None else "no",
+                    "verdict": verdict,
                     "named_outright": (fields or {}).get("named", ""),
                     "certainty": (fields or {}).get("certainty", ""),
                     "severity": "",
+                    "truncated": (fields or {}).get("truncated", "False"),
                     "evidence": (fields or {}).get("evidence", "the report denies it"),
                 }
             )
     return pd.DataFrame(out)
 
 
-def yes(named="True", certainty="stated", evidence="the report names it"):
+def yes(named="True", certainty="stated", evidence="the report names it",
+        truncated="False"):
     """One Yes answer's graded fields."""
-    return {"named": named, "certainty": certainty, "evidence": evidence}
+    return {
+        "named": named,
+        "certainty": certainty,
+        "evidence": evidence,
+        "truncated": truncated,
+    }
+
+
+class TestWhatNoFigureDescribes:
+    """B10 and B7: three kinds of cell had been read as a disagreement."""
+
+    def test_a_cell_with_a_row_on_one_side_alone_is_counted(self):
+        """The join had been inner, so a hole in a run read as agreement."""
+        frame = rows(
+            {("ascites", 0): {"SYN0001": yes()}, ("ascites", 1): {"SYN0001": yes()}},
+            drop=[("ascites", 1, "SYN0002")],
+        )
+        joined = directional.paired(frame, ROLES)
+        assert len(joined) == 10, "the cell is in the table"
+        row = directional.per_finding(joined).iloc[0]
+        assert row["unpaired"] == 1
+        assert row["left_only"] == 0, "a missing row is not a disagreement"
+        assert row["both"] == 1
+
+    def test_an_unanswered_cell_is_not_a_no(self):
+        frame = rows(
+            {("ascites", 0): {"SYN0001": yes()}, ("ascites", 1): {}},
+            blank=[("ascites", 1, "SYN0001")],
+        )
+        row = directional.per_finding(directional.paired(frame, ROLES)).iloc[0]
+        assert row["unanswered"] == 1
+        assert row["left_only"] == 0
+        assert row["unpaired"] == 0
+
+    def test_the_same_cell_answered_no_is_a_disagreement(self):
+        frame = rows({("ascites", 0): {"SYN0001": yes()}, ("ascites", 1): {}})
+        row = directional.per_finding(directional.paired(frame, ROLES)).iloc[0]
+        assert row["left_only"] == 1
+        assert row["unanswered"] == 0
+
+    def test_a_truncated_row_is_outside_the_directness_rates(self):
+        """Truncation loses `named_outright` first, and the repair wrote false."""
+        frame = rows(
+            {
+                ("ascites", 0): {
+                    "SYN0001": yes(named="True"),
+                    "SYN0002": yes(named="False", truncated="True"),
+                    "SYN0003": yes(named="True"),
+                },
+                ("ascites", 1): {"SYN0001": yes(), "SYN0002": yes()},
+            }
+        )
+        row = directional.per_finding(directional.paired(frame, ROLES)).iloc[0]
+        assert row["truncated"] == 1
+        assert row["named_agreed"] == 1.0, "the false came from the cut, not the report"
+        assert row["named_alone"] == 1.0
+
+    def test_a_review_cell_needs_both_sides_answered(self):
+        frame = rows(
+            {("ascites", 0): {"SYN0001": yes(), "SYN0002": yes()}, ("ascites", 1): {}},
+            blank=[("ascites", 1, "SYN0002")],
+        )
+        cells = directional.review_pairs(frame, ROLES, "ascites", side="left")
+        assert len(cells) == 1
+        assert cells[0]["verdict_no"] == "no"
+
+
+class TestTheSortDoesNotHideALowPrevalenceFinding:
+    """B10: ranking by the absolute count is what hid them once already."""
+
+    def test_a_small_finding_disagreeing_throughout_sorts_first(self):
+        frame = rows(
+            {
+                # 2 of 2 cells disagree.
+                ("ascites", 0): {"SYN0001": yes(), "SYN0002": yes()},
+                ("ascites", 1): {},
+                # 3 of 10 disagree, so more cells and a smaller share.
+                ("cirrhosis", 0): {r: yes() for r in REPORTS},
+                ("cirrhosis", 2): {r: yes() for r in REPORTS[:7]},
+            }
+        )
+        table = directional.per_finding(directional.paired(frame, ROLES))
+        assert list(table["finding_id"]) == ["ascites", "cirrhosis"]
+        assert table.iloc[0]["disagreement_share"] == 1.0
+        assert table.iloc[0]["disagreements"] == 2
+        assert table.iloc[1]["disagreements"] == 3
 
 
 class TestPairingTwoRoles:
@@ -129,9 +223,14 @@ class TestWhichWayTheyDisagree:
         assert row["named_alone"] == 0.0
         assert row["named_gap"] == 1.0
 
-    def test_a_pair_that_agrees_everywhere_is_left_out(self):
+    def test_a_pair_that_agrees_everywhere_is_kept_with_nothing_to_show(self):
+        """B10: the filter is the caller's, so the table hides nothing."""
         frame = rows({("ascites", 0): {"SYN0001": yes()}, ("ascites", 1): {"SYN0001": yes()}})
-        assert directional.per_finding(directional.paired(frame, ROLES)).empty
+        joined = directional.paired(frame, ROLES)
+        row = directional.per_finding(joined).iloc[0]
+        assert row["disagreements"] == 0
+        assert row["disagreement_share"] == 0.0
+        assert directional.per_finding(joined, min_disagreements=1).empty
 
     def test_min_disagreements_cuts_the_table(self):
         frame = rows(

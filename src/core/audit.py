@@ -292,7 +292,9 @@ def _per_finding(frame, votes):
     )
     table = table.merge(disputed, on="finding_id", how="left")
     table["discordant"] = table["discordant"].fillna(0).astype(int)
-    levels = _levels_per_finding(frame[frame["verdict"] == "yes"])
+    answered = frame["verdict"] == "yes"
+    finished = ~frame["truncated"].str.lower().isin(("true", "1"))
+    levels = _levels_per_finding(frame[answered & finished])
     levels = levels.groupby("finding_id", as_index=False).sum(numeric_only=True)
     table = table.merge(levels, on="finding_id", how="left")
     for column in [*level_columns("cert"), *level_columns("sev")]:
@@ -487,6 +489,13 @@ def audit(frame, wordings=None, rule="max", lock_path=None, config_path=None):
 
     yes = frame[frame["verdict"] == "yes"]
     other = frame[frame["verdict"] != "yes"]
+    # The graded axes are reported over the Yes rows the generation finished.
+    # A repaired row stops where `max_tokens` cut it, so its `certainty` and
+    # its `named_outright` record where the generation stopped rather than
+    # what the report says, and pooling the two put a cut-off answer at the
+    # top of both scales (B7).
+    cut = frame["truncated"].str.lower().isin(("true", "1"))
+    graded = yes[~cut.reindex(yes.index, fill_value=False)]
     votes = aggregate_findings(frame, rule=rule)
 
     table = _sole_per_finding(frame, _per_finding(frame, votes))
@@ -497,8 +506,14 @@ def audit(frame, wordings=None, rule="max", lock_path=None, config_path=None):
         "coverage": _coverage(frame, wordings),
         "verdicts": _counts(frame["verdict"]),
         "parse": _parse_health(frame, yes),
-        "certainty_on_yes": _counts(yes["certainty"]),
-        "severity_on_yes": _counts(yes["severity"]),
+        "certainty_on_yes": _counts(graded["certainty"]),
+        "severity_on_yes": _counts(graded["severity"]),
+        # What the two distributions above leave out, and why.
+        "truncated_on_yes": {
+            "yes_rows": len(yes),
+            "graded": len(graded),
+            "truncated_and_excluded": len(yes) - len(graded),
+        },
         "unquoted_on_yes": {
             "certainty": int(yes["unquoted"].str.contains("certainty").sum()),
             "severity": int(yes["unquoted"].str.contains("severity").sum()),
@@ -519,7 +534,7 @@ def audit(frame, wordings=None, rule="max", lock_path=None, config_path=None):
         # Yes the model says it did not name.
         "named_outright_by_certainty": {
             str(level): _counts(rows["named_outright"])
-            for level, rows in yes.groupby(yes["certainty"], sort=False)
+            for level, rows in graded.groupby(graded["certainty"], sort=False)
         },
         "columns": {
             "declared_absent": [c for c in QUESTION_COLUMNS if c not in frame.columns],

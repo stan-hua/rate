@@ -32,6 +32,8 @@ from src.core.lexicon import (
     CERTAINTY_LEVELS,
     CERTAINTY_ORDER,
     SEVERITY_ORDER,
+    STATED,
+    UNSPECIFIED,
     at_least,
     certainty_of,
     load_lexicon,
@@ -600,6 +602,77 @@ class TestClosingAnOpenObject:
 
     def test_truncated_is_a_stored_column(self):
         assert "truncated" in ANSWER_COLUMNS
+
+
+class TestWhatATruncatedAnswerDoesNotClaim:
+    """B7: the repair had graded a cut-off answer at the top of two scales.
+
+    `named_outright` is the last property in `RESPONSE_SCHEMA`, so truncation
+    loses it first, and the repair appended `,"named_outright":false}` -- a
+    field the model never reached, entering the directness figures as an
+    answer. An absent `certainty_phrase` on a structured Yes grades `stated`,
+    which is right where the model chose to leave it empty and wrong where
+    `max_tokens` cut the generation before it.
+    """
+
+    FLOOD = "\t\n" * 200
+
+    def test_a_field_the_generation_never_reached_is_blank(self):
+        raw = '{"answer": "yes", "evidence": "Moderate ascites."' + self.FLOOD
+        got = parse_answer(raw)
+        assert got["truncated"] is True
+        assert got["named_outright"] == ""
+
+    def test_a_field_the_model_emitted_is_kept(self):
+        raw = (
+            '{"answer": "yes", "evidence": "x", "named_outright": true,'
+            ' "attribution": "unknown"' + self.FLOOD
+        )
+        got = parse_answer(raw)
+        assert got["truncated"] is True
+        assert got["named_outright"] is True
+
+    def test_a_complete_object_keeps_a_false_it_stated(self):
+        raw = '{"answer": "yes", "evidence": "x", "named_outright": false}'
+        got = parse_answer(raw)
+        assert got["truncated"] is False
+        assert got["named_outright"] is False
+
+    def test_a_cut_before_the_hedge_does_not_grade_stated(self):
+        raw = '{"answer": "yes", "evidence": "Moderate ascites."' + self.FLOOD
+        got = parse_answer(raw)
+        assert got["certainty_phrase"] == ""
+        assert got["certainty"] == UNSPECIFIED
+
+    def test_a_hedge_the_model_left_empty_still_grades_stated(self):
+        """The field is present and empty, which is the model's own answer."""
+        raw = (
+            '{"answer": "yes", "evidence": "Moderate ascites.",'
+            ' "certainty_phrase": ""' + self.FLOOD
+        )
+        got = parse_answer(raw)
+        assert got["truncated"] is True
+        assert got["certainty"] == STATED
+
+    def test_a_clean_object_with_no_hedge_still_grades_stated(self):
+        raw = '{"answer": "yes", "evidence": "Moderate ascites.", "named_outright": true}'
+        assert parse_answer(raw)["certainty"] == STATED
+
+    def test_a_property_the_generation_died_inside_is_dropped(self):
+        """The fields before the fragment are the answer, and they survive."""
+        raw = '{"answer": "yes", "evidence": "x", "named_outri' + self.FLOOD
+        got = parse_answer(raw)
+        assert got is not None
+        assert got["verdict"] == "yes"
+        assert got["evidence"] == "x"
+        assert got["named_outright"] == ""
+        assert got["truncated"] is True
+
+    def test_a_colon_with_nothing_after_it_is_dropped(self):
+        raw = '{"answer": "yes", "evidence": "x", "named_outright":' + self.FLOOD
+        got = parse_answer(raw)
+        assert got is not None
+        assert got["named_outright"] == ""
 
 
 class TestWhatNotAssessedMeans:

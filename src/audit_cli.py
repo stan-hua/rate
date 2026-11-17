@@ -131,12 +131,16 @@ def main(argv=None):
     _section("Coverage", report["coverage"])
     _section("Verdicts", report["verdicts"])
     _section("Parse", report["parse"])
-    _section("Certainty on Yes rows", report["certainty_on_yes"])
-    _section("Severity on Yes rows", report["severity_on_yes"])
+    _section("Yes rows the generation finished", report["truncated_on_yes"])
+    _section("Certainty on Yes rows, truncated excluded", report["certainty_on_yes"])
+    _section("Severity on Yes rows, truncated excluded", report["severity_on_yes"])
     _section("Phrase absent from its own evidence, Yes rows", report["unquoted_on_yes"])
     _section("Phrase quoted on a non-Yes row", report["phrases_on_non_yes"])
     _section("Attribution on Yes rows", report["attribution_on_yes"])
-    _section("Named outright by certainty, Yes rows", report["named_outright_by_certainty"])
+    _section(
+        "Named outright by certainty, Yes rows, truncated excluded",
+        report["named_outright_by_certainty"],
+    )
     _section("Columns", report["columns"])
     _section("Wording stability", report["vote"])
 

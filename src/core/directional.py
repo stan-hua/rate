@@ -31,7 +31,12 @@ import pandas as pd
 
 TRUE = ("true", "1", "yes", "t")
 
-SIDE_COLUMNS = ("verdict", "named_outright", "certainty", "severity")
+# The two verdicts that answer the question. A blank verdict is a cell the
+# wording left unanswered, and counting it as a No had put the other side's
+# Yes in `left_only` -- a disagreement about nothing.
+ANSWERS = ("yes", "no")
+
+SIDE_COLUMNS = ("verdict", "named_outright", "certainty", "severity", "truncated")
 
 RATE_COLUMNS = (
     "named_agreed",
@@ -107,7 +112,16 @@ def paired(frame, roles, left="canonical", right="sourced", with_evidence=False)
     -------
     pandas.DataFrame
         One row per finding and report, with each side's verdict and graded
-        columns under a `left_` or `right_` prefix.
+        columns under a `left_` or `right_` prefix, and `paired` saying
+        whether both sides have a row at all.
+
+    Notes
+    -----
+    The join is an outer one. It had been inner, so a cell with a row on one
+    side alone left the table and nothing counted it -- which is how a hole in
+    a run reads as agreement. The missing side's columns are empty and
+    `paired` is False, so `_profile` counts the cell as unanswered rather than
+    as a No.
     """
     wanted = {finding: index for finding, index in role_index(roles, left, right).items()}
     if not wanted:
@@ -133,37 +147,74 @@ def paired(frame, roles, left="canonical", right="sourced", with_evidence=False)
             columns={column: f"{name}_{column}" for column in columns}
         )
         sides.append(side)
-    return sides[0].merge(sides[1], on=["finding_id", "report_id"], how="inner")
+    joined = sides[0].merge(
+        sides[1], on=["finding_id", "report_id"], how="outer", indicator="_sides"
+    )
+    joined["paired"] = joined["_sides"] == "both"
+    joined = joined.drop(columns="_sides")
+    for name in ("left", "right"):
+        for column in columns:
+            joined[f"{name}_{column}"] = joined[f"{name}_{column}"].fillna("")
+    return joined
+
+
+def _named(rows, side):
+    """The directness rate over the cells whose generation finished.
+
+    `named_outright` is the last property in the answer schema, so truncation
+    loses it first and the repair had written `false`. A truncated row records
+    where the generation stopped, so it says nothing about whether the report
+    named the finding (B7).
+    """
+    finished = rows[~rows[f"{side}_truncated"].isin(TRUE)]
+    return _rate(finished[f"{side}_named_outright"])
 
 
 def _profile(rows):
     """The counts and rates for one finding's paired rows."""
     left_yes = rows["left_verdict"] == "yes"
     right_yes = rows["right_verdict"] == "yes"
-    agreed = rows[left_yes & right_yes]
-    alone = rows[left_yes & ~right_yes]
-    opposite = rows[right_yes & ~left_yes]
+    # Both sides answered this cell, so a disagreement here is about the
+    # finding. A missing row and an unparsed answer are both counted, apart.
+    answered = rows["left_verdict"].isin(ANSWERS) & rows["right_verdict"].isin(ANSWERS)
+    agreed = rows[answered & left_yes & right_yes]
+    alone = rows[answered & left_yes & ~right_yes]
+    opposite = rows[answered & right_yes & ~left_yes]
     union = len(agreed) + len(alone) + len(opposite)
-    named_agreed = _rate(agreed["left_named_outright"])
-    named_alone = _rate(alone["left_named_outright"])
+    named_agreed = _named(agreed, "left")
+    named_alone = _named(alone, "left")
     gap = None
     if named_agreed is not None and named_alone is not None:
         gap = round(named_agreed - named_alone, 3)
+    unpaired = int((~rows["paired"]).sum()) if "paired" in rows else 0
     return {
         "both": len(agreed),
         "left_only": len(alone),
         "right_only": len(opposite),
         "j": round(len(agreed) / union, 3) if union else None,
+        # The share of the union the two wordings disagree on. A finding with
+        # 5 of 6 cells disagreeing ranks nowhere by the absolute count, which
+        # is the sort that hid every low-prevalence defect once already.
+        "disagreement_share": (
+            round((len(alone) + len(opposite)) / union, 3) if union else None
+        ),
         "named_agreed": named_agreed,
         "named_alone": named_alone,
         "named_gap": gap,
         "stated_agreed": _share(agreed["left_certainty"], "stated"),
         "stated_alone": _share(alone["left_certainty"], "stated"),
-        "named_opposite": _rate(opposite["right_named_outright"]),
+        "named_opposite": _named(opposite, "right"),
+        # Cells no figure above describes: one side has no row, or a row
+        # with no verdict.
+        "unpaired": unpaired,
+        "unanswered": int((~answered).sum()) - unpaired,
+        "truncated": int(
+            (rows["left_truncated"].isin(TRUE) | rows["right_truncated"].isin(TRUE)).sum()
+        ),
     }
 
 
-def per_finding(joined, min_disagreements=1):
+def per_finding(joined, min_disagreements=0):
     """One row per finding: which way its two wordings disagree, and on what.
 
     Parameters
@@ -171,12 +222,16 @@ def per_finding(joined, min_disagreements=1):
     joined : pandas.DataFrame
         What `paired` returns.
     min_disagreements : int, optional
-        Report a finding only where the two wordings disagree this often.
+        Keep a finding only where the two wordings disagree this often. The
+        default keeps every finding, and a caller that filters states the
+        count it started from: dropping rows inside the table and printing
+        the count afterwards is what hid the low-prevalence defects.
 
     Returns
     -------
     pandas.DataFrame
-        Sorted by the number of disagreeing cells, descending.
+        Sorted by the share of the union the two wordings disagree on, then by
+        the absolute count.
     """
     if not len(joined):
         return pd.DataFrame(columns=["finding_id", "both", "left_only", "right_only", "j"])
@@ -186,7 +241,12 @@ def per_finding(joined, min_disagreements=1):
     table = pd.DataFrame(rows)
     table["disagreements"] = table["left_only"] + table["right_only"]
     table = table[table["disagreements"] >= min_disagreements]
-    return table.sort_values("disagreements", ascending=False).reset_index(drop=True)
+    return table.sort_values(
+        ["disagreement_share", "disagreements", "finding_id"],
+        ascending=[False, False, True],
+        na_position="last",
+        ignore_index=True,
+    )
 
 
 def pooled(joined, groups=None):
@@ -242,7 +302,12 @@ def compartment_question_groups(lock_path):
 def _one_side(joined, left, right, side, limit):
     """The cells one of the two wordings answered Yes alone."""
     yes, no = ("left", "right") if side == "left" else ("right", "left")
-    rows = joined[(joined[f"{yes}_verdict"] == "yes") & (joined[f"{no}_verdict"] != "yes")]
+    # Both sides answered, so the reader meets a disagreement rather than a
+    # cell one wording never answered.
+    rows = joined[
+        (joined[f"{yes}_verdict"] == "yes")
+        & (joined[f"{no}_verdict"] == "no")
+    ]
     out = []
     for _, row in rows.head(limit).iterrows():
         out.append(

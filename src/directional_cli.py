@@ -183,16 +183,32 @@ def main(argv=None):
     print("\nWhere the Yes answers land, and how often they were named outright")
     print(directional.pooled(joined, groups).to_string(index=False))
 
-    table = directional.per_finding(joined, min_disagreements=args.min_disagreements)
+    # Every finding, then the cut. The count printed is what the table
+    # started from, because a filter applied inside the table and a count
+    # printed afterwards is how `--top 15` over an absolute sort hid every
+    # low-prevalence defect.
+    whole = directional.per_finding(joined)
+    table = whole[whole["disagreements"] >= args.min_disagreements]
     print(
-        f"\nWhich way each finding disagrees, {len(table)} with at least "
-        f"{args.min_disagreements} disagreeing cell(s), top {args.top}"
+        f"\nWhich way each finding disagrees: {len(whole)} finding(s) paired, "
+        f"{len(table)} with at least {args.min_disagreements} disagreeing cell(s), "
+        f"top {args.top} by the share of the union they disagree on"
     )
     print(table.head(args.top).to_string(index=False) if len(table) else "  none")
 
+    hidden = whole[whole["disagreements"] < args.min_disagreements]
+    disagreeing = hidden[hidden["disagreements"] > 0]
+    if len(disagreeing):
+        print(
+            f"\n{len(disagreeing)} finding(s) disagree under "
+            f"{args.min_disagreements} cell(s) and are left out of the table "
+            f"above. --min-disagreements 1 shows them: "
+            f"{sorted(disagreeing['finding_id'])}"
+        )
+
     if args.out:
-        table.to_csv(args.out, index=False)
-        print(f"\nPer-finding table written to {args.out}")
+        whole.to_csv(args.out, index=False)
+        print(f"\nPer-finding table written to {args.out}, every paired finding")
 
     if args.review:
         wanted = [name.strip() for name in args.review.split(",") if name.strip()]

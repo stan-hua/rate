@@ -186,6 +186,40 @@ class TestCounts:
             "low": {"True": 1},
         }
 
+    def test_a_truncated_row_is_outside_the_graded_distributions(self):
+        """B7: its levels record where the generation stopped.
+
+        `named_outright` is the last property in the schema, so truncation
+        loses it first and the repair had written `false`; an absent
+        `certainty_phrase` graded `stated`. Both entered the distributions as
+        though the model had answered them.
+        """
+        rows = frame([
+            row(certainty="stated", severity="trace", named_outright="True"),
+            row(index="1", certainty="stated", severity="marked",
+                named_outright="False", truncated="True"),
+        ])
+        report = audit(rows)
+        assert report["truncated_on_yes"] == {
+            "yes_rows": 2,
+            "graded": 1,
+            "truncated_and_excluded": 1,
+        }
+        assert report["certainty_on_yes"] == {"stated": 1}
+        assert report["severity_on_yes"] == {"trace": 1}
+        assert report["named_outright_by_certainty"] == {"stated": {"True": 1}}
+        assert report["parse"]["truncated"] == 1, "the row is still counted"
+
+    def test_a_truncated_row_is_outside_the_per_finding_levels(self):
+        rows = frame([
+            row(severity="trace"),
+            row(index="1", severity="marked", truncated="True"),
+        ])
+        table = audit(rows)["per_finding"].set_index("finding_id")
+        assert table.loc["ascites"]["sev_trace"] == 1
+        assert table.loc["ascites"]["sev_marked"] == 0
+        assert table.loc["ascites"]["yes"] == 2, "both still answered Yes"
+
     def test_truncation_and_an_empty_evidence_are_counted(self):
         rows = frame([
             row(truncated="True"),

@@ -246,15 +246,22 @@ def parse_answer(raw):
         verdict = str(body.get("answer", "")).strip().lower()
         if verdict not in ANSWER_VALUES:
             return None
+        # A repaired object stops where the generation stopped, so a field
+        # it never reached is absent while a field it chose to leave empty is
+        # present and empty. The two mean different things and only the
+        # second is a claim.
+        named = body.get("named_outright")
         return _graded({
             "verdict": verdict,
             "evidence": body.get("evidence") or "",
             "certainty_phrase": _phrase(body.get("certainty_phrase")),
             "severity_phrase": _phrase(body.get("severity_phrase")),
             "attribution": body.get("attribution") or "unknown",
-            "named_outright": bool(body.get("named_outright", False)),
+            "named_outright": (
+                "" if truncated and "named_outright" not in body else bool(named)
+            ),
             "truncated": truncated,
-        }, structured=True)
+        }, structured=True, phrase_reached=not truncated or "certainty_phrase" in body)
 
     # Every run before the schema answered in words. The first line that opens
     # with yes or no decides, which is the rule the downstream project already
@@ -301,9 +308,16 @@ def _load_object(text):
     # An odd number of unescaped quotes means the flood began inside a string.
     if len(re.findall(r'(?<!\\)"', body)) % 2:
         body += '"'
-    for suffix in ('}', ',"named_outright":false}'):
+    # The second candidate drops a property the generation died inside, a key
+    # with no value or a colon with nothing after it. The repair had instead
+    # appended `,"named_outright":false}`, which wrote a field the model never
+    # reached: `named_outright` is the last property in `RESPONSE_SCHEMA`, so
+    # truncation loses it first, and a fabricated `false` then entered the
+    # directness figures as though the model had answered it.
+    fragment = re.compile(r',\s*("[^"]*"\s*:?\s*)?$')
+    for candidate in (body, fragment.sub("", body)):
         try:
-            return json.loads(body + suffix), True
+            return json.loads(candidate + '}'), True
         except json.JSONDecodeError:
             continue
     return None, False
@@ -346,7 +360,7 @@ def _quoted(phrase, evidence):
     return text in source
 
 
-def _graded(record, structured):
+def _graded(record, structured, phrase_reached=True):
     """Add the level each quoted phrase maps to, leaving the phrase alone.
 
     The model quotes the report's hedge and magnitude word and never names a
@@ -359,6 +373,11 @@ def _graded(record, structured):
     Reading an empty phrase as `unspecified` put those rows off the scale,
     where a single hedged wording outranked them: `vote.py` takes the highest
     level the wordings reached, and `unspecified` is not one.
+
+    A truncated object is the fourth case. `max_tokens` cut the generation
+    before `certainty_phrase`, so the field is absent rather than empty, and
+    reading it as a flat statement grades a cut-off answer at the top of the
+    scale. `truncated` marks the row and the level stays `unspecified`.
 
     Three cases stay `unspecified`, and each means something different from a
     flat statement. A hedge the lexicon does not list -- the model wrote one
@@ -389,6 +408,11 @@ def _graded(record, structured):
     structured : bool
         Whether the answer was a JSON object, which is what makes an empty
         `certainty_phrase` a claim rather than a field nobody asked for.
+    phrase_reached : bool, optional
+        Whether the generation reached `certainty_phrase` at all. False on a
+        repaired object whose fields stop before it, where the absence is
+        truncation and grading it `stated` would put a cut-off answer at the
+        top of the certainty scale.
     """
     if record["verdict"] != "yes":
         record["certainty"] = UNSPECIFIED
@@ -398,7 +422,7 @@ def _graded(record, structured):
 
     record["certainty"] = certainty_of(record["certainty_phrase"])
     record["severity"] = severity_of(record["severity_phrase"])
-    if structured and not record["certainty_phrase"].strip():
+    if structured and phrase_reached and not record["certainty_phrase"].strip():
         record["certainty"] = STATED
 
     # Which phrases the evidence does not contain. The level stays, and this
