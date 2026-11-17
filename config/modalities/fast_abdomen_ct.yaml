@@ -9,14 +9,15 @@ categories:
         question: "Is there acute pancreatitis?"
         variants:
           - "According to the report, is there acute pancreatitis?"
-        definition: "Acute pancreatitis is defined as acute inflammation of the pancreas, with peripancreatic fat stranding or fluid, diffuse glandular enlargement, or a non-enhancing parenchymal segment. This definition includes an acute episode on a chronic background. It excludes chronic pancreatitis alone, whose signs are glandular atrophy, parenchymal or ductal calcification, and ductal dilation."
+        definition: "Acute pancreatitis is defined as acute inflammation of the pancreas, with peripancreatic fat stranding or fluid, diffuse glandular enlargement, or a non-enhancing parenchymal segment. This definition includes an acute episode on a chronic background, and it includes necrosis, a peripancreatic collection and a walled-off collection. It excludes chronic pancreatitis alone, whose signs are glandular atrophy, parenchymal or ductal calcification, and ductal dilation."
+        severity_scale: "mild, moderate or severe"
       
 
       - id: any_pancreas
         question: "Is there any abnormality of the pancreas?"
         variants:
           - "According to the report, is there any abnormality of the pancreas?"
-        definition: "An abnormality of the pancreas is defined as any abnormal finding in the pancreas. This definition includes operative change, a resected part of the pancreas, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of the pancreas is defined as any abnormal finding in the pancreas. Operative change and a resected part of the pancreas count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal."
         include_terms:
           - "pancreatitis or peripancreatic inflammation"
           - "a pancreatic mass, cyst or pseudocyst"
@@ -30,17 +31,18 @@ categories:
         variants:
           - "Is the spleen enlarged?"
           - "According to the report, is there splenomegaly?"
-        definition: "Splenomegaly is defined as an enlarged spleen. A spleen normal in size does not count, whatever its measurement."
+        definition: "Splenomegaly is defined as an enlarged spleen, as the radiologist judges it. No single CT measurement defines it, so a spleen called normal in size does not count, whatever its measurement."
+        severity_scale: "mild, moderate or marked"
       - id: epithelial_splenic_cysts
         question: "Are there any epithelial splenic cysts?"
         variants:
           - "According to the report, are there any epithelial splenic cysts?"
-        definition: "An epithelial splenic cyst is defined as a true splenic cyst with an epithelial lining, congenital or epidermoid, thin-walled and of fluid attenuation. This definition excludes a post-traumatic, post-infarction or post-infectious cyst."
+        definition: "An epithelial splenic cyst is defined as a true splenic cyst with an epithelial lining, congenital or epidermoid, thin-walled and of fluid attenuation. A lesion identified only as a splenic cyst, with no cause given, counts here. It excludes a post-traumatic, post-infarction or post-infectious cyst."
       - id: splenic_pseudocyst
         question: "Are there any splenic pseudocysts?"
         variants:
           - "According to the report, are there any splenic pseudocysts?"
-        definition: "A splenic pseudocyst is defined as a splenic cyst with no epithelial lining, following trauma, infarction or infection. This definition excludes a congenital or epidermoid cyst."
+        definition: "A splenic pseudocyst is defined as a splenic cyst with no epithelial lining, following trauma, infarction or infection. It excludes a congenital or epidermoid cyst, and a cyst described only as a splenic cyst with no cause given."
       - id: splenic_lymphoma
         question: "Is splenic lymphoma present?"
         variants:
@@ -56,7 +58,7 @@ categories:
         question: "Are there any splenic infarcts?"
         variants:
           - "According to the report, are there any splenic infarcts?"
-        definition: "A splenic infarct is defined as a non-enhancing area of splenic parenchyma, wedge-shaped or global, from vascular occlusion."
+        definition: "A splenic infarct is defined as a non-enhancing area of splenic parenchyma, wedge-shaped or global, from vascular occlusion. It excludes a devascularized segment attributed to trauma."
       - id: spleen_absent
         question: "Is the spleen absent?"
         variants:
@@ -67,15 +69,17 @@ categories:
           - "surgically absent spleen"
           - "asplenia"
           - "absent spleen"
-        exclude_terms:
-          - "splenosis"
-          - "splenectomy clips"
       - id: accessory_spleen
         question: "Are there any accessory spleens?"
         variants:
           - "Is there a splenule?"
           - "According to the report, are there any accessory spleens?"
-        definition: "An accessory spleen is defined as a splenule, a small round nodule of splenic tissue near the splenic hilum or in the splenic ligaments. This definition excludes splenosis after a splenectomy."
+        definition: "An accessory spleen is defined as a splenule, a small round nodule of splenic tissue near the splenic hilum, in the splenic ligaments, or in the pancreatic tail. This definition excludes splenosis after a splenectomy."
+        include_terms:
+          - "splenule"
+          - "splenunculus"
+          - "accessory spleen"
+          - "intrapancreatic accessory spleen"
 
       - id: post_splenectomy_changes
         question: "Are there any post-splenectomy changes in the splenic bed?"
@@ -85,7 +89,7 @@ categories:
         include_terms:
           - "post-splenectomy change"
           - "splenectomy clips"
-          - "splenic bed"
+          - "clips or a surgical bed in the splenic fossa"
           - "splenosis"
           - "surgical bed in the left upper quadrant"
         exclude_terms:
@@ -95,7 +99,7 @@ categories:
         question: "Is there any abnormality of the spleen?"
         variants:
           - "According to the report, is there any abnormality of the spleen?"
-        definition: "An abnormality of the spleen is defined as any abnormal finding in the spleen. This definition includes operative change, a surgically absent spleen, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of the spleen is defined as any abnormal finding in the spleen. Operative change and a surgically absent spleen count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal."
         include_terms:
           - "splenomegaly"
           - "a splenic lesion, cyst or mass"
@@ -114,20 +118,18 @@ categories:
         question: "Is there any extrahepatic biliary ductal dilation?"
         variants:
           - "According to the report, is there any extrahepatic biliary ductal dilation?"
-        definition: "Extrahepatic biliary ductal dilation is defined as dilation of the common hepatic duct, the common bile duct, or both. This definition includes a dilated duct after a cholecystectomy. It excludes a dilated intrahepatic duct beside a normal common duct."
+        definition: "Extrahepatic biliary ductal dilation is defined as dilation of the common hepatic duct, the common bile duct, or both. A common bile duct wider than about 6 mm counts, allowing roughly 1 mm per decade over 60 and up to about 10 mm after a cholecystectomy. This definition includes a dilated duct after a cholecystectomy. It excludes a dilated intrahepatic duct beside a normal common duct."
 
       - id: any_biliary
         question: "Is there any abnormality of the bile ducts?"
         variants:
           - "According to the report, is there any abnormality of the bile ducts?"
-        definition: "An abnormality of the bile ducts is defined as any abnormal finding in the bile ducts. This definition includes operative change and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the gallbladder."
+        definition: "An abnormality of the bile ducts is defined as any abnormal finding in the bile ducts. Operative change counts, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal, and it excludes the gallbladder."
         include_terms:
           - "intrahepatic or extrahepatic ductal dilation"
           - "a duct stone or choledocholithiasis"
           - "pneumobilia"
           - "a biliary stricture"
-        exclude_terms:
-          - "a catheter, stent, drain, graft or other device, where nothing else is abnormal"
   Liver:
     description: "Liver-related findings"
     questions:
@@ -135,7 +137,8 @@ categories:
         question: "Is there hepatomegaly?"
         variants:
           - "According to the report, is there hepatomegaly?"
-        definition: "Hepatomegaly is defined as an enlarged liver. A liver normal in size does not count, whatever its measurement."
+        definition: "Hepatomegaly is defined as an enlarged liver, as the radiologist judges it. No single CT measurement defines it, so a liver called normal in size does not count, whatever its measurement."
+        severity_scale: "mild, moderate or marked"
       - id: hepatic_steatosis
         question: "Is there hepatic steatosis, fatty liver or focal fatty infiltration?"
         variants:
@@ -157,7 +160,7 @@ categories:
         question: "Is there portal hypertension?"
         variants:
           - "According to the report, is there portal hypertension?"
-        definition: "Portal hypertension is defined as raised portal venous pressure, shown by a portosystemic collateral or a recanalized paraumbilical vein. This definition excludes splenomegaly alone and varices alone."
+        definition: "Portal hypertension is defined as raised portal venous pressure, shown by a portosystemic collateral, including esophageal, gastric, splenorenal or mesenteric varices, or by a recanalized paraumbilical vein. Splenomegaly alone, ascites alone, and a dilated portal vein alone do not count."
         include_terms:
           - "portal hypertension"
           - "portosystemic collaterals"
@@ -170,7 +173,7 @@ categories:
         question: "Is polycystic liver disease present?"
         variants:
           - "According to the report, is polycystic liver disease present?"
-        definition: "Polycystic liver disease is defined as innumerable hepatic cysts replacing the parenchyma. This definition excludes a few scattered cysts."
+        definition: "Polycystic liver disease is defined as innumerable hepatic cysts replacing the parenchyma, including hepatic involvement of autosomal dominant polycystic kidney disease. More than 20 cysts counts. A few scattered cysts does not."
       - id: hepatic_abscess
         question: "Are there any hepatic abscesses?"
         variants:
@@ -188,7 +191,7 @@ categories:
         variants:
           - "Is there a liver hemangioma?"
           - "According to the report, are there any hepatic hemangiomas?"
-        definition: "A hepatic hemangioma is defined as a benign vascular lesion of the liver, shown by peripheral nodular enhancement with centripetal fill-in."
+        definition: "A hepatic hemangioma is defined as a benign vascular lesion of the liver. Peripheral nodular enhancement with centripetal fill-in is the classic appearance, and a single-phase study need not show it."
       - id: hepatic_adenoma
         question: "Are there any hepatic adenomas?"
         variants:
@@ -231,7 +234,7 @@ categories:
         variants:
           - "Is there a hepatic laceration?"
           - "According to the report, are there any liver lacerations?"
-        definition: "A liver laceration is defined as torn hepatic parenchyma: a laceration, a fracture, or a devascularized segment. This definition excludes a subcapsular or perihepatic hematoma with no parenchymal tear."
+        definition: "A liver laceration is defined as torn hepatic parenchyma: a laceration, a fracture, or a devascularized segment. This definition excludes a subcapsular or perihepatic hematoma with no parenchymal injury."
       - id: active_extravasation_liver
         question: "Are there any sites of active extravasation in the liver?"
         variants:
@@ -268,19 +271,18 @@ categories:
         question: "Are there any hepatic hypodensities?"
         variants:
           - "According to the report, are there any hepatic hypodensities?"
-        definition: "A hepatic hypodensity is defined as a hypoattenuating lesion in the liver, of any cause. This definition includes a simple cyst, an indeterminate mass and a hypodensity left uncharacterized. It excludes a lesion characterized as solid and enhancing."
+        definition: "A hepatic hypodensity is defined as a hypoattenuating lesion in the liver, of any cause. This definition includes a simple cyst, an indeterminate mass and a hypodensity left uncharacterized. It excludes a lesion described as hyperdense or isodense, and a lesion described only as a solid enhancing mass with no low-attenuation component."
         include_terms:
           - "hepatic hypodensity"
           - "hypodensity in the liver"
           - "hypoattenuating hepatic lesion"
           - "low-density hepatic lesion"
           - "too small to characterize"
-        severity_scale: "the size in centimetres"
       - id: any_liver
         question: "Is there any abnormality of the liver?"
         variants:
           - "According to the report, is there any abnormality of the liver?"
-        definition: "An abnormality of the liver is defined as any abnormal finding in the liver. This definition includes operative change, a resected part of the liver, a transplanted liver, and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the bile ducts and the gallbladder."
+        definition: "An abnormality of the liver is defined as any abnormal finding in the liver. Operative change and a resected part of the liver, a transplanted liver count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal, and it excludes the bile ducts and the gallbladder."
         include_terms:
           - "hepatic steatosis or a fatty liver"
           - "a hepatic lesion, cyst or mass"
@@ -306,7 +308,7 @@ categories:
         question: "Are there any choledochal cysts?"
         variants:
           - "According to the report, are there any choledochal cysts?"
-        definition: "A choledochal cyst is defined as a congenital cystic dilation of the bile duct, of any Todani type. This definition excludes acquired dilation from obstruction, so a dilated duct beside a stone or a mass does not count."
+        definition: "A choledochal cyst is defined as a congenital cystic dilation of the bile duct, of any Todani type, including Caroli disease of the intrahepatic ducts. This definition excludes acquired dilation from obstruction, so a dilated duct beside a stone or a mass does not count."
       - id: acute_cholecystitis
         question: "Is there acute cholecystitis?"
         variants:
@@ -333,7 +335,7 @@ categories:
         variants:
           - "Is there aerobilia?"
           - "According to the report, is there pneumobilia?"
-        definition: "Pneumobilia is defined as gas in the biliary tree: the intrahepatic ducts, the extrahepatic ducts, or the gallbladder."
+        definition: "Pneumobilia is defined as gas in the biliary tree: the intrahepatic ducts, the extrahepatic ducts, or the gallbladder lumen. It excludes gas in the gallbladder wall, and gas in the portal or mesenteric veins."
         include_terms:
           - "pneumobilia"
           - "biliary gas"
@@ -343,7 +345,7 @@ categories:
         question: "Is there diffuse gallbladder wall thickening?"
         variants:
           - "According to the report, is there diffuse gallbladder wall thickening?"
-        definition: "Gallbladder wall thickening is defined as diffuse thickening of the gallbladder wall. This definition excludes focal thickening with the features of adenomyomatosis."
+        definition: "Gallbladder wall thickening is defined as diffuse thickening of the gallbladder wall. A wall measuring more than 3 mm counts. It excludes thickening attributed to adenomyomatosis, whether focal, segmental or diffuse, and a contracted or underdistended gallbladder whose wall only appears thick."
         include_terms:
           - "gallbladder wall thickening"
           - "thickened gallbladder wall"
@@ -355,7 +357,7 @@ categories:
         question: "Is there gallbladder adenomyomatosis?"
         variants:
           - "According to the report, is there gallbladder adenomyomatosis?"
-        definition: "Gallbladder adenomyomatosis is defined as a thickened gallbladder wall containing intramural diverticula or Rokitansky-Aschoff sinuses, at the fundus or in the mid-body."
+        definition: "Gallbladder adenomyomatosis is defined as a thickened gallbladder wall containing intramural diverticula or Rokitansky-Aschoff sinuses, fundal, segmental or diffuse."
         include_terms:
           - "adenomyomatosis"
           - "adenomyomatous"
@@ -371,7 +373,7 @@ categories:
         question: "Is there any abnormality of the gallbladder?"
         variants:
           - "According to the report, is there any abnormality of the gallbladder?"
-        definition: "An abnormality of the gallbladder is defined as any abnormal finding in the gallbladder. This definition includes operative change, a surgically absent gallbladder, and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the bile ducts."
+        definition: "An abnormality of the gallbladder is defined as any abnormal finding in the gallbladder. Operative change and a surgically absent gallbladder count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal, and it excludes the bile ducts."
         include_terms:
           - "gallstones or cholelithiasis"
           - "gallbladder wall thickening"
@@ -400,7 +402,7 @@ categories:
         question: "Are there any renal hypodensities?"
         variants:
           - "According to the report, are there any renal hypodensities?"
-        definition: "A renal hypodensity is defined as a hypoattenuating lesion in the kidney, of any cause. This definition includes a simple cyst, a complex cyst and a hypodensity left uncharacterized. It excludes a solid enhancing mass."
+        definition: "A renal hypodensity is defined as a hypoattenuating lesion in the kidney, of any cause. This definition includes a simple cyst, a complex cyst and a hypodensity left uncharacterized. It excludes a mass that is solid and enhancing throughout, with no cystic or low-attenuation component."
       - id: simple_renal_cysts
         question: "Are there any simple renal cysts?"
         variants:
@@ -410,11 +412,13 @@ categories:
         question: "Are there any complex renal cysts?"
         variants:
           - "According to the report, are there any complex renal cysts?"
-        definition: "A complex renal cyst is defined as a renal cyst with internal complexity: septations, multiple locules, a thickened or enhancing wall, calcification, or solid elements. Bosniak IIF and above count."
+        definition: "A complex renal cyst is defined as a renal cyst with internal complexity beyond Bosniak II: four or more septa, a septum or wall thicker than 2 mm, an irregular or enhancing wall, thick or nodular calcification, or an enhancing solid component. Bosniak IIF, III and IV count. One to three thin smooth septa, or thin calcification alone, is Bosniak II and does not count."
         include_terms:
           - "complex cyst"
           - "septated cyst"
-          - "Bosniak"
+          - "Bosniak IIF"
+          - "Bosniak III"
+          - "Bosniak IV"
           - "multiloculated cyst"
         exclude_terms:
           - "simple cyst"
@@ -429,7 +433,7 @@ categories:
         question: "Is there xanthogranulomatous pyelonephritis?"
         variants:
           - "According to the report, is there xanthogranulomatous pyelonephritis?"
-        definition: "Xanthogranulomatous pyelonephritis is defined as chronic destructive infection of the kidney, with a staghorn calculus and inflammatory masses replacing the parenchyma."
+        definition: "Xanthogranulomatous pyelonephritis is defined as chronic destructive infection of the kidney, with inflammatory masses replacing the parenchyma and dilated multiloculated calyces, the bear-paw appearance, usually with a staghorn or obstructing calculus. A focal form with no calculus counts."
       - id: renal_stones_nephrolithiasis
         question: "Are there any renal stones or nephrolithiasis?"
         variants:
@@ -453,14 +457,14 @@ categories:
         question: "Is there polycystic kidney disease?"
         variants:
           - "According to the report, is there polycystic kidney disease?"
-        definition: "Polycystic kidney disease is defined as innumerable bilateral renal cysts replacing the parenchyma. This definition excludes a few cysts in each kidney."
+        definition: "Polycystic kidney disease is defined as numerous bilateral renal cysts replacing the parenchyma, including autosomal dominant polycystic kidney disease. A few cysts in each kidney does not count, and neither does acquired cystic kidney disease of dialysis."
         include_terms:
           - "polycystic kidney"
           - "ADPKD"
           - "innumerable bilateral renal cysts"
         exclude_terms:
-          - "bilateral renal cysts"
-          - "multiple renal cysts"
+          - "a few bilateral renal cysts"
+          - "acquired cystic kidney disease"
       - id: horseshoe_kidney
         question: "Is there horseshoe kidney?"
         variants:
@@ -470,7 +474,7 @@ categories:
         question: "Are there any renal cell carcinomas?"
         variants:
           - "According to the report, are there any renal cell carcinomas?"
-        definition: "Renal cell carcinoma is defined as a primary malignant neoplasm of the kidney. This definition excludes a renal mass left uncharacterized and a complex cyst."
+        definition: "Renal cell carcinoma is defined as a primary malignant neoplasm arising from the renal tubular epithelium, of any subtype. This definition excludes urothelial carcinoma of the renal pelvis, renal lymphoma, a renal mass left uncharacterized, and a complex cyst."
       - id: renal_lymphoma
         question: "Is there renal lymphoma?"
         variants:
@@ -484,7 +488,7 @@ categories:
         definition: "An angiomyolipoma is defined as a benign fat-containing tumor of the kidney or the liver. This definition excludes an adrenal myelolipoma, a different lesion in a different organ."
         include_terms:
           - "angiomyolipoma"
-          - "AML"
+          - "renal angiomyolipoma"
           - "fat-containing renal lesion"
         exclude_terms:
           - "myelolipoma"
@@ -516,7 +520,7 @@ categories:
         question: "Is there any abnormality of the kidneys?"
         variants:
           - "According to the report, is there any abnormality of the kidneys?"
-        definition: "An abnormality of a kidney is defined as any abnormal finding in a kidney. This definition includes operative change, a surgically absent or transplanted kidney, and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the ureters and the bladder."
+        definition: "An abnormality of a kidney is defined as any abnormal finding in a kidney. Operative change and a surgically absent or transplanted kidney count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal, and it excludes the ureters and the bladder."
         include_terms:
           - "a renal cyst, hypodensity, mass or angiomyolipoma"
           - "a renal or collecting-system stone"
@@ -543,7 +547,7 @@ categories:
         question: "Is there any abnormality of the adrenal glands?"
         variants:
           - "According to the report, is there any abnormality of the adrenal glands?"
-        definition: "An abnormality of an adrenal gland is defined as any abnormal finding in an adrenal gland. This definition includes operative change, a surgically absent adrenal gland, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of an adrenal gland is defined as any abnormal finding in an adrenal gland. Operative change and a surgically absent adrenal gland count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal."
         include_terms:
           - "an adrenal nodule, adenoma or myelolipoma"
           - "an adrenal mass"
@@ -562,24 +566,23 @@ categories:
           - "acute appendicitis"
           - "inflamed appendix"
           - "appendiceal wall thickening"
-          - "periappendiceal inflammatory change"
-          - "periappendiceal fluid"
+          - "periappendiceal inflammatory change with an abnormal appendix"
+          - "periappendiceal fluid with an abnormal appendix"
         exclude_terms:
-          - "normal appendix"
-          - "appendicolith"
-          - "post-appendectomy"
-          - "appendectomy"
+          - "an appendicolith with no inflammatory change"
+          - "a normal appendix"
+          - "a prior appendectomy"
         severity_scale: "mild, moderate or marked"
       - id: bowel_obstruction
         question: "Is bowel obstruction present?"
         variants:
           - "According to the report, is bowel obstruction present?"
-        definition: "Bowel obstruction is defined as mechanical obstruction of the bowel, with dilated loops and a transition point or a named cause. This definition excludes dilated loops with no transition point."
+        definition: "Bowel obstruction is defined as mechanical obstruction of the bowel, with dilated proximal loops and decompressed bowel beyond. A transition point or a named obstructing cause supports it and is not required, and an obstruction attributed to adhesions counts. This definition excludes dilated loops attributed to ileus, and dilated loops with no obstruction described."
       - id: hiatal_hernia
         question: "Is hiatal hernia present?"
         variants:
           - "According to the report, is hiatal hernia present?"
-        definition: "A hiatal hernia is defined as herniation of the stomach through the esophageal hiatus of the diaphragm. This definition includes a sliding and a paraesophageal hernia."
+        definition: "A hiatal hernia is defined as herniation of the stomach through the esophageal hiatus of the diaphragm. This definition includes a sliding, a paraesophageal and a mixed hernia, and a hernia containing organs other than the stomach."
       - id: ileus
         question: "Is there ileus?"
         variants:
@@ -595,7 +598,7 @@ categories:
         question: "Is there any abnormality of the stomach or bowel?"
         variants:
           - "According to the report, is there any abnormality of the stomach or bowel?"
-        definition: "An abnormality of the stomach or the bowel is defined as any abnormal finding in the stomach or the bowel. This definition includes operative change, a resected segment of stomach or bowel, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of the stomach or the bowel is defined as any abnormal finding in the stomach or the bowel. Operative change and a resected segment of stomach or bowel count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal."
         include_terms:
           - "bowel wall thickening"
           - "bowel obstruction or dilated loops"
@@ -611,6 +614,9 @@ categories:
         variants:
           - "According to the report, are there any intra-uterine devices?"
         definition: "An intrauterine device is defined as a contraceptive device in the uterine cavity. This definition excludes a tubal ligation clip, a pessary and a ureteric stent."
+        exclude_terms:
+          - "intrauterine fetal demise"
+          - "intrauterine death"
 
   Peritoneum:
     description: "Peritoneal cavity findings"
@@ -619,7 +625,7 @@ categories:
         question: "Is there any ascites?"
         variants:
           - "According to the report, is there any ascites?"
-        definition: "Ascites is defined as non-hemorrhagic free peritoneal fluid, as in cirrhosis, malignancy or heart failure. This definition excludes free blood. It excludes fluid placed by location alone, such as trace free fluid in a dependent space. It excludes a section headed \"Ascites\" that then describes blood or fluid of unclear etiology."
+        definition: "Ascites is defined as non-hemorrhagic free peritoneal fluid, as in cirrhosis, malignancy or heart failure, and including bile, chylous and pancreatic ascites. This definition excludes free blood. It excludes fluid placed by location alone, such as trace free fluid in a dependent space. It excludes a section headed \"Ascites\" that then describes blood or fluid of unclear etiology."
         include_terms:
           - "ascites"
           - "ascitic fluid"
@@ -631,12 +637,18 @@ categories:
         question: "Is there any free air or pneumoperitoneum?"
         variants:
           - "According to the report, is there any free air or pneumoperitoneum?"
-        definition: "Free air is defined as gas outside the bowel lumen in the peritoneal cavity. This definition includes gas confined to the mesentery."
+        definition: "Free air is defined as extraluminal gas in the peritoneal cavity, including gas tracking in the mesentery. It excludes gas in the bowel wall, gas in the portal or mesenteric veins, gas in the biliary tree, and gas confined to the retroperitoneum."
         include_terms:
           - "pneumoperitoneum"
           - "free air"
           - "free intraperitoneal air"
           - "mesenteric free air"
+        exclude_terms:
+          - "gas in the bowel wall"
+          - "pneumatosis intestinalis"
+          - "retroperitoneal gas"
+          - "gas in the portal or mesenteric veins"
+          - "gas in the biliary tree"
         severity_scale: "trace, small, moderate or large"
       - id: pseudomyxoma_peritonei
         question: "Is there pseudomyxoma peritonei?"
@@ -647,13 +659,11 @@ categories:
         question: "Is there peritoneal carcinomatosis?"
         variants:
           - "According to the report, is there peritoneal carcinomatosis?"
-        definition: "Peritoneal carcinomatosis is defined as tumor deposits studding the peritoneum as nodules or plaques. This definition excludes an infiltrated omentum."
+        definition: "Peritoneal carcinomatosis is defined as tumor deposits studding the peritoneum as nodules or plaques. An infiltrated omentum with no discrete peritoneal nodule or plaque does not count."
         include_terms:
           - "peritoneal carcinomatosis"
           - "peritoneal implants"
           - "peritoneal nodularity"
-        exclude_terms:
-          - "omental caking"
 
       - id: free_intraperitoneal_fluid
         question: "Is there any free intraperitoneal fluid?"
@@ -664,10 +674,10 @@ categories:
           - "free fluid"
           - "free intraperitoneal fluid"
           - "intraperitoneal fluid"
-          - "fluid in the pelvis"
+          - "free fluid in the pelvis"
           - "fluid in Morison's pouch"
-          - "perihepatic fluid"
-          - "perisplenic fluid"
+          - "free perihepatic fluid"
+          - "free perisplenic fluid"
           - "pelvic free fluid"
           - "hemoperitoneum"
           - "ascites"
@@ -676,7 +686,7 @@ categories:
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
         variants:
           - "According to the report, is there hemoperitoneum or free intraperitoneal blood?"
-        definition: "Hemoperitoneum is defined as blood in the peritoneal cavity, shown by high-attenuation free fluid or by free fluid attributed to an injury. This definition excludes fluid left uncharacterized."
+        definition: "Hemoperitoneum is defined as blood in the peritoneal cavity, shown by high-attenuation free fluid or by free fluid attributed to an injury. Ascites on its own does not count, and blood described within or alongside ascites does. It excludes fluid left uncharacterized."
         include_terms:
           - "hemoperitoneum"
           - "intraperitoneal blood"
@@ -688,7 +698,6 @@ categories:
         exclude_terms:
           - "simple fluid"
           - "low-density fluid"
-          - "ascites"
         severity_scale: "trace, small, moderate or large"
       - id: omental_caking
         question: "Is there omental caking?"
@@ -698,20 +707,16 @@ categories:
         include_terms:
           - "omental caking"
           - "omental cake"
-          - "omental thickening"
           - "omental nodularity"
-          - "omental infiltration"
+          - "omental thickening attributed to tumor"
+          - "omental infiltration attributed to tumor"
           - "infiltrated omentum"
-        exclude_terms:
-          - "peritoneal carcinomatosis"
-          - "peritoneal implants"
-          - "peritoneal nodularity"
         severity_scale: "mild, moderate or marked"
       - id: any_peritoneum
         question: "Is there any abnormality of the peritoneal cavity?"
         variants:
           - "According to the report, is there any abnormality of the peritoneal cavity?"
-        definition: "An abnormality of the peritoneal cavity is defined as any abnormal finding in the peritoneal cavity. This definition includes operative change and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes retroperitoneal fluid or blood."
+        definition: "An abnormality of the peritoneal cavity is defined as any abnormal finding in the peritoneal cavity. Operative change counts, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal, and it excludes retroperitoneal fluid or blood."
         include_terms:
           - "free intraperitoneal fluid, ascites or hemoperitoneum"
           - "free intraperitoneal air"
@@ -737,12 +742,11 @@ categories:
           - "atherosclerosis"
           - "thoracic aortic aneurysm"
           - "iliac aneurysm"
-        severity_scale: "the maximum diameter in centimetres"
       - id: aortic_atherosclerosis
         question: "Is there aortic atherosclerosis?"
         variants:
           - "According to the report, is there aortic atherosclerosis?"
-        definition: "Aortic atherosclerosis is defined as atherosclerotic disease of the aortic wall: calcified or non-calcified mural plaque. This definition excludes a dilated or aneurysmal aorta."
+        definition: "Aortic atherosclerosis is defined as atherosclerotic disease of the aortic wall: calcified or non-calcified mural plaque. Dilation on its own does not count. An aorta described as both atherosclerotic and aneurysmal, ectatic or dissected counts."
         include_terms:
           - "aortic atherosclerosis"
           - "atherosclerotic calcification"
@@ -751,25 +755,20 @@ categories:
           - "atheromatous"
           - "atherosclerotic disease of the aorta"
         exclude_terms:
-          - "aneurysm"
-          - "ectasia"
-          - "dissection"
-          - "mural thrombus"
+          - "aortic dilation with no plaque or calcification described"
         severity_scale: "mild, moderate or extensive"
 
       - id: any_great_vessels
         question: "Is there any abnormality of the aorta or its branches?"
         variants:
           - "According to the report, is there any abnormality of the aorta or its branches?"
-        definition: "An abnormality of the aorta or its branches is defined as any abnormal finding in the aorta or its branches. This definition includes operative change and a normal anatomical variant. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of the aorta or its branches is defined as any abnormal finding in the aorta or its branches. Operative change counts, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal."
         include_terms:
           - "aortic aneurysm or dilation"
           - "aortic atherosclerosis or calcification"
           - "aortic dissection"
           - "arterial or venous thrombus"
           - "arterial stenosis or occlusion"
-        exclude_terms:
-          - "a catheter, stent, drain, graft or other device, where nothing else is abnormal"
   Retroperitoneum:
     description: "Retroperitoneal space findings"
     questions:
@@ -777,12 +776,13 @@ categories:
         question: "Are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?"
         variants:
           - "According to the report, are there enlarged lymph nodes in the retroperitoneum, the peritoneum or the pelvis?"
-        definition: "Lymphadenopathy is defined as a pathologically enlarged lymph node in the retroperitoneum, the peritoneum or the pelvis. A prominent, mildly prominent, reactive or nonspecific node does not count, and neither does a node normal in size. A section headed \"Lymphadenopathy\" that lists only such nodes does not count either."
+        definition: "Lymphadenopathy is defined as a lymph node larger than 10 mm in short axis in the retroperitoneum, the peritoneum or the pelvis, or a node called enlarged, bulky or pathologic. A node called prominent, mildly prominent or normal in size does not count, and neither does a node under 10 mm. A section headed \"Lymphadenopathy\" that lists only such nodes does not count either."
       - id: retroperitoneal_hemorrhage
         question: "Is there retroperitoneal hemorrhage or retroperitoneal hematomas?"
         variants:
           - "According to the report, is there retroperitoneal hemorrhage or retroperitoneal hematomas?"
         definition: "Retroperitoneal hemorrhage is defined as blood in the retroperitoneum: a hematoma, active bleeding, or high-attenuation retroperitoneal fluid. This definition includes a psoas and a perinephric hematoma."
+        severity_scale: "trace, small, moderate or large"
       
 
   Multi Organs:
@@ -793,23 +793,27 @@ categories:
         question: "Is there metastatic disease?"
         variants:
           - "According to the report, is there metastatic disease?"
-        definition: "Metastatic disease is defined as a metastatic deposit anywhere in the imaged volume. This definition includes a skeletal or a nodal metastasis on its own."
+        definition: "Metastatic disease is defined as a metastatic deposit anywhere in the imaged volume. This definition includes a skeletal or a nodal metastasis on its own. A history of malignancy, or an indication naming metastatic disease, does not count where no deposit is described in the imaged volume."
         include_terms:
           - "metastatic"
           - "metastasis"
           - "metastases"
           - "mets"
           - "secondary deposits"
+        exclude_terms:
+          - "history of metastatic disease"
+          - "known metastatic disease with no deposit described"
       - id: anasarca
         question: "Is there anasarca?"
         variants:
           - "According to the report, is there anasarca?"
-        definition: "Anasarca is defined as generalized subcutaneous edema, also called diffuse edema or third spacing."
+        definition: "Anasarca is defined as generalized subcutaneous edema, also called diffuse body wall edema. Fluid in a body cavity, such as ascites or a pleural effusion, does not count on its own."
         include_terms:
           - "anasarca"
           - "generalized edema"
           - "diffuse subcutaneous edema"
-          - "third spacing"
+          - "body wall edema"
+          - "diffuse soft tissue edema"
         severity_scale: "mild, moderate or marked"
 
   Male Pelvis:
@@ -826,7 +830,7 @@ categories:
         question: "Is there any abnormality of the prostate or scrotum?"
         variants:
           - "According to the report, is there any abnormality of the prostate or scrotum?"
-        definition: "An abnormality of the prostate or the scrotum is defined as any abnormal finding in the prostate or the scrotum. This definition includes operative change, a surgically absent prostate or testis, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of the prostate or the scrotum is defined as any abnormal finding in the prostate or the scrotum. Operative change and a surgically absent prostate or testis count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal."
         include_terms:
           - "prostatic enlargement or prostatomegaly"
           - "a prostatic mass or calcification"
@@ -847,19 +851,18 @@ categories:
           - "fibroid"
           - "leiomyomatous uterus"
           - "broad ligament myoma"
-        severity_scale: "the size in centimetres"
       - id: post_hysterectomy
         question: "Is there a prior hysterectomy?"
         variants:
           - "According to the report, is there a prior hysterectomy?"
-        definition: "A prior hysterectomy is defined as surgical removal of the uterus, shown by an absent uterus with a vaginal cuff. This definition excludes a uterus present but abnormal, and it excludes an oophorectomy with the uterus in place."
+        definition: "A prior hysterectomy is defined as surgical removal of the uterus, shown by a surgically absent uterus, or by an absent uterus with a vaginal cuff. This definition includes a supracervical hysterectomy with the cervix retained. It excludes a uterus present but abnormal, and an oophorectomy with the uterus in place."
   
 
       - id: any_female_pelvis
         question: "Is there any abnormality of the uterus, ovaries or adnexa?"
         variants:
           - "According to the report, is there any abnormality of the uterus, ovaries or adnexa?"
-        definition: "An abnormality of the uterus, the ovaries or the adnexa is defined as any abnormal finding in the uterus, the ovaries or the adnexa. This definition includes operative change, a surgically absent uterus or ovary, and a normal anatomical variant. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of the uterus, the ovaries or the adnexa is defined as any abnormal finding in the uterus, the ovaries or the adnexa. Operative change and a surgically absent uterus or ovary count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal."
         include_terms:
           - "a uterine fibroid, leiomyoma or enlarged uterus"
           - "an ovarian or adnexal cyst"
@@ -885,7 +888,7 @@ categories:
         question: "Is there any abnormality of the bones or body wall?"
         variants:
           - "According to the report, is there any abnormality of the bones or body wall?"
-        definition: "An abnormality of a bone or the body wall is defined as any abnormal finding in a bone or the body wall. This definition includes operative change, a resected or amputated bone, a normal anatomical variant, and degenerative or spondylotic change. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of a bone or the body wall is defined as any abnormal finding in a bone or the body wall. Operative change, a resected or amputated bone, and degenerative or spondylotic change count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal."
         include_terms:
           - "a fracture of any bone in the imaged volume"
           - "a bone lesion, metastasis or sclerosis"
@@ -900,12 +903,13 @@ categories:
         variants:
           - "Is there pleural fluid?"
           - "According to the report, is there any pleural effusion?"
-        definition: "A pleural effusion is defined as fluid in a pleural space at a visible lung base. This definition excludes pleural thickening with no fluid."
+        definition: "A pleural effusion is defined as fluid in a pleural space at a visible lung base. This definition includes a hemothorax and a hydropneumothorax. It excludes pleural thickening with no fluid."
+        severity_scale: "trace, small, moderate or large"
       - id: any_pleura
         question: "Is there any abnormality of the pleural spaces or lung bases?"
         variants:
           - "According to the report, is there any abnormality of the pleural spaces or lung bases?"
-        definition: "An abnormality of a pleural space or a visible lung base is defined as any abnormal finding in a pleural space or a visible lung base. This definition includes operative change, a lung or a lobe removed at surgery, and a normal anatomical variant. It excludes a device where nothing else is abnormal. It covers only the lung bases inside the imaged volume."
+        definition: "An abnormality of a pleural space or a visible lung base is defined as any abnormal finding in a pleural space or a visible lung base. Operative change and a lung or a lobe removed at surgery count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal. It covers only the lung bases inside the imaged volume."
         include_terms:
           - "a pleural effusion or pleural fluid"
           - "pleural thickening or a pleural plaque"
@@ -960,16 +964,14 @@ categories:
         variants:
           - "Is there bladder perforation?"
           - "According to the report, is there bladder rupture?"
-        definition: "Bladder rupture is defined as a breach of the bladder wall, with contrast or urine leaking intraperitoneally or extraperitoneally."
+        definition: "Bladder rupture is defined as a breach of the bladder wall, with contrast or urine leaking intraperitoneally or extraperitoneally. A wall defect with adjacent extravesical fluid counts where no cystogram was performed."
       - id: any_urinary_tract
         question: "Is there any abnormality of the ureters or bladder?"
         variants:
           - "According to the report, is there any abnormality of the ureters or bladder?"
-        definition: "An abnormality of a ureter or the bladder is defined as any abnormal finding in a ureter or the bladder. This definition includes operative change, a surgically absent bladder, and a normal anatomical variant. It excludes a device where nothing else is abnormal, and it excludes the kidneys."
+        definition: "An abnormality of a ureter or the bladder is defined as any abnormal finding in a ureter or the bladder. Operative change and a surgically absent bladder count, and a normal anatomical variant counts as well. It excludes a device where nothing else is abnormal, and it excludes the kidneys."
         include_terms:
           - "ureteral dilation or hydroureter"
           - "a ureteral or bladder stone"
           - "bladder wall thickening or trabeculation"
           - "a bladder mass"
-        exclude_terms:
-          - "a catheter, stent, drain, graft or other device, where nothing else is abnormal"

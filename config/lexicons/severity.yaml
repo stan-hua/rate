@@ -25,6 +25,7 @@ levels:
     - punctate
 
   mild:
+    - minimal to mild
     - mild
     - mildly
     - small
@@ -45,6 +46,10 @@ levels:
     - mild to moderate
 
   marked:
+    - moderate to large
+    - moderate to severe
+    - copious
+    - abundant
     - marked
     - markedly
     - severe
