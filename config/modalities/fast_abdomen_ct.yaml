@@ -824,7 +824,7 @@ categories:
         variants:
           - "Is the prostate enlarged, or is there benign prostatic hyperplasia?"
           - "According to the report, is there prostatomegaly or prostatic hyperplasia?"
-        definition: "Prostatomegaly is defined as an enlarged prostate, including benign prostatic hyperplasia. This definition excludes a prostatic mass and a malignancy. A patient with no prostate answers No, which covers a female pelvis and a study that does not mention the prostate."
+        definition: "Prostatomegaly is defined as an enlarged prostate, including benign prostatic hyperplasia. This definition excludes a prostatic mass and a malignancy. A patient with a prostate answers No where no enlargement is described. A female pelvis answers not_assessed, since there is no prostate to assess, and so does a patient whose prostate has been removed."
 
       - id: any_male_pelvis
         question: "Is there any abnormality of the prostate or scrotum?"
@@ -876,12 +876,12 @@ categories:
         question: "Are there any fractures?"
         variants:
           - "According to the report, are there any fractures?"
-        definition: "A fracture is defined as a break in the cortex of any bone in the imaged volume. This definition includes a rib fracture."
+        definition: "A fracture is defined as a break in the cortex of any bone in the imaged volume, of acute or indeterminate age. This definition includes a rib fracture. It excludes an old, healed, chronic or remote fracture, and a chronic deformity."
       - id: rib_fractures
         question: "Are there any rib fractures?"
         variants:
           - "According to the report, are there any rib fractures?"
-        definition: "A rib fracture is defined as a break in the cortex of one or more ribs."
+        definition: "A rib fracture is defined as a break in the cortex of one or more ribs, of acute or indeterminate age. It excludes an old, healed, chronic or remote fracture."
       
 
       - id: any_musculoskeletal

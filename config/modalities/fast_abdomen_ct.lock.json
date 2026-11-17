@@ -1,6 +1,6 @@
 {
   "digest": {
-    "file": "f7665d0d64a00c4c",
+    "file": "45c7d8ba20dc7b0d",
     "question_set": "2f64a00e72c5dc13"
   },
   "findings": {
@@ -857,7 +857,7 @@
     },
     "fractures_general": {
       "category": "Musculoskeletal",
-      "change": "paraphrase",
+      "change": "scope_change",
       "covariate": true,
       "replaced": true,
       "source_question": "Are there any fractures (general)?",
@@ -2162,6 +2162,7 @@
     },
     "rib_fractures": {
       "category": "Musculoskeletal",
+      "change": "scope_change",
       "covariate": true,
       "tier": "C",
       "variants": [
