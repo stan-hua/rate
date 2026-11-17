@@ -22,6 +22,20 @@ test than frame plus synonym invariance, and pooling the two groups would
 overstate the question set's stability, so every figure here is reported for
 the two groups apart.
 
+**A pair's Jaccard is computed over the cells both wordings answered.** A
+wording that produced no row for a report, or a row with no parseable verdict,
+answered nothing about it. Counting that as a No puts the other wording's Yes
+in the union with nothing in the intersection, which charges the pair for a
+missing answer. `dropped_cells` reports how many Yes answers the intersection
+leaves out, bounded by the measured `no_verdict` rate of 0.24-0.33%.
+
+**The screen cuts at 0.90 and the count below it is a queue.** A4 set a
+pairwise bar of 0.95, A30 replaced it with a 0.70 screen reported rather than
+enforced, and A47 Q5 moves it to 0.90. Two measured floors sit under the
+figure: a pure reframe moves 4-8% of a finding's Yes set (A31, A35), and both
+wordings quote one identical sentence in 65 of 126 reviewed cells (A42), which
+is extraction noise under a fixed wording.
+
 **Two screens flag a finding, and both run.** They are complementary: the ratio
 of the smallest per-wording Yes count to the largest catches a high-volume
 finding whose Jaccard stays moderate while one wording differs by more than
@@ -56,15 +70,23 @@ import yaml
 
 # A finding needs this many positives under at least one wording before its
 # Jaccard means anything. Below it the figure swings on one report, so the
-# finding is reported as unmeasured with its three Yes counts beside it.
+# finding is reported as unmeasured with its Yes counts beside it.
 MIN_POSITIVES = 30
 
-# The pairwise bar. A30 cut the screen at 0.70 and this figure is reported
-# rather than enforced: the 2026-11-12 pilot found nothing between 0.74 and
-# 0.95 that turned out to be a broken wording. On the 15 findings where the
-# frame matters the median canonical-sourced Jaccard is 0.935, so 0.95 is at
-# the edge of what frame invariance delivers.
-PAIRWISE_TARGET = 0.95
+# The review queue's cut. A4 set a pairwise bar of 0.95, A30 replaced it with
+# a 0.70 screen reported rather than enforced, and B2 (A47 Q5) moves it to
+# 0.90. A measured finding below this is a cell a reader looks at, and the
+# count is a queue length.
+#
+# Two floors sit under it, and both are measured:
+#
+# - A pure reframe moves 4-8% of a finding's Yes set, which bounds a clean
+#   high-volume pair between 0.916 and 0.962 (A31, A35). A finding at 0.93 may
+#   be at the ceiling of frame invariance.
+# - Both wordings quote one identical sentence in 65 of 126 reviewed cells
+#   (A42), so some of the disagreement is extraction noise under a fixed
+#   wording and no rewording reaches it.
+REVIEW_QUEUE_FLOOR = 0.9
 
 # Below this, one wording is answering a different question.
 RATIO_FLOOR = 0.5
@@ -96,6 +118,11 @@ NARROWING_QUALIFIERS = {
     "unilateral": r"unilateral|unilaterally",
 }
 
+# The two verdicts that answer the question. A row with anything else -- a
+# deferral, an unparsed body, a blank -- is a cell this wording left
+# unanswered, and a pair's Jaccard is computed over the cells both answered.
+ANSWERED = ("yes", "no")
+
 
 def jaccard(left, right):
     """Return |A and B| / |A or B|, or None where both sets are empty.
@@ -115,13 +142,34 @@ def jaccard(left, right):
     return round(len(left & right) / union, 3)
 
 
-def _yes_by_wording(frame):
-    """Report ids answering Yes, per (finding, variant index)."""
-    yes = frame[frame["verdict"] == "yes"]
-    grouped = {}
-    for (finding, index), rows in yes.groupby(["finding_id", "variant_index"]):
-        grouped[(finding, int(index))] = set(rows["report_id"])
-    return grouped
+def _sets_by_wording(frame):
+    """Per (finding, variant index), the Yes reports and the answered reports.
+
+    A wording that produced no row for a report answered nothing about it, and
+    so did a wording whose row has no parseable verdict. Keeping either as a No
+    puts the other wording's Yes in the union and nothing in the intersection,
+    which charges the pair for a missing answer. `vote.aggregate_findings`
+    already counts an answer as a verdict of yes or no, and this matches it.
+
+    Parameters
+    ----------
+    frame : pandas.DataFrame
+        Rows from `questions.csv`, with `verdict` folded to lower case.
+
+    Returns
+    -------
+    tuple of dict
+        Two maps from (finding, index) to a set of report ids: the Yes
+        answers, and every answer.
+    """
+    verdict = frame["verdict"]
+    answered_rows = frame[verdict.isin(ANSWERED)]
+    yes, answered = {}, {}
+    for (finding, index), rows in answered_rows.groupby(["finding_id", "variant_index"]):
+        key = (finding, int(index))
+        answered[key] = set(rows["report_id"])
+        yes[key] = set(rows[rows["verdict"] == "yes"]["report_id"])
+    return yes, answered
 
 
 def table_stem(stem):
@@ -180,16 +228,19 @@ def per_finding(frame, roles=None):
     frame : pandas.DataFrame
         Rows from `questions.csv`, with `verdict` folded to lower case.
     roles : dict, optional
-        As `wording_roles` returns. Without it the pairs are named by index.
+        As `wording_roles` returns. It names each pair and says how many
+        wordings the question set asks, which is how a wording that produced
+        no row at all is reported.
 
     Returns
     -------
     pandas.DataFrame
-        `finding_id`, `n_wordings`, `has_synonym`, `yes_v*`, `j_<role>_<role>`
-        per pair, `three_way`, `ratio`, `measured`, and the two screens.
+        `finding_id`, `n_wordings`, `wordings_missing`, `has_synonym`,
+        `yes_v*`, `j_<role>_<role>` per pair, `three_way`, `ratio`,
+        `dropped_cells`, `measured`, and the screens.
     """
     roles = roles or {}
-    yes = _yes_by_wording(frame)
+    yes, answered = _sets_by_wording(frame)
     indices_by_finding = (
         frame.groupby("finding_id")["variant_index"]
         .apply(lambda s: sorted(int(v) for v in set(s)))
@@ -197,30 +248,50 @@ def per_finding(frame, roles=None):
     )
 
     rows = []
-    for finding, indices in sorted(indices_by_finding.items()):
+    for finding, present in sorted(indices_by_finding.items()):
         named = roles.get(finding, {})
+        # The lock says how many wordings this finding is asked under. A
+        # wording whose rows are all absent leaves `n_wordings` at 1, and a
+        # ratio and a Jaccard over one wording both read 1.0, so the finding
+        # would land among those that clear the bar. `measured` is False while
+        # a wording is missing, which puts it in the unmeasured table where a
+        # reader meets it.
+        expected = sorted(named) if named else present
+        missing = [index for index in expected if index not in present]
+        indices = present
         sets = {index: yes.get((finding, index), set()) for index in indices}
+        answers = {index: answered.get((finding, index), set()) for index in indices}
         counts = {index: len(sets[index]) for index in indices}
         row = {
             "finding_id": finding,
             "n_wordings": len(indices),
+            "wordings_missing": len(missing),
             "has_synonym": "synonym" in named.values(),
         }
         for index in indices:
             row[f"yes_v{index}"] = counts[index]
 
+        dropped = 0
         for left, right in combinations(indices, 2):
             name = (
                 f"j_{named.get(left, f'v{left}')}_{named.get(right, f'v{right}')}"
                 if named
                 else f"j_v{left}_v{right}"
             )
-            row[name] = jaccard(sets[left], sets[right])
+            # Both sides of the pair answered these reports, so a
+            # disagreement here is a disagreement about the finding.
+            both = answers[left] & answers[right]
+            row[name] = jaccard(sets[left] & both, sets[right] & both)
+            dropped += len((sets[left] | sets[right]) - both)
+        row["dropped_cells"] = dropped
 
-        # Three-way `1 - D/U`, where U is the mean of the three pair unions.
+        # Three-way `1 - D/U` over the reports all three wordings answered.
         if len(indices) == 3:
-            union = set().union(*sets.values())
-            shared = set(sets[indices[0]])
+            common = answers[indices[0]].copy()
+            for index in indices[1:]:
+                common &= answers[index]
+            union = set().union(*sets.values()) & common
+            shared = set(sets[indices[0]]) & common
             for index in indices[1:]:
                 shared &= sets[index]
             row["three_way"] = (
@@ -233,7 +304,7 @@ def per_finding(frame, roles=None):
         row["ratio"] = (
             round(min(counts.values()) / largest, 3) if largest else None
         )
-        row["measured"] = largest >= MIN_POSITIVES
+        row["measured"] = largest >= MIN_POSITIVES and not missing
 
         pairs = [v for k, v in row.items() if k.startswith("j_") and v is not None]
         row["worst_pair"] = min(pairs) if pairs else None
@@ -243,12 +314,18 @@ def per_finding(frame, roles=None):
         row["fails_three_way"] = bool(
             row["three_way"] is not None and row["three_way"] < THREE_WAY_FLOOR
         )
-        row["fails_target"] = bool(
+        row["in_review_queue"] = bool(
             row["measured"]
             and row["worst_pair"] is not None
-            and row["worst_pair"] < PAIRWISE_TARGET
+            and row["worst_pair"] < REVIEW_QUEUE_FLOOR
         )
-        row["flagged"] = row["fails_ratio"] or row["fails_three_way"]
+        # Both screens read Yes counts, and a count under the floor swings on
+        # one report: a finding with two positives under one wording and none
+        # under another fails the ratio screen at 0.0 and says nothing. So a
+        # screen flags a measured finding, and the rest are unmeasured.
+        row["flagged"] = bool(
+            row["measured"] and (row["fails_ratio"] or row["fails_three_way"])
+        )
         rows.append(row)
 
     table = pd.DataFrame(rows)
@@ -281,9 +358,68 @@ def by_template(frame, roles=None):
     tables = {"all": per_finding(frame, roles)}
     if "template" not in frame.columns:
         return tables
-    for name, rows in frame.groupby(frame["template"].fillna("(unknown)")):
+    # A reader reads this file as text, so an unknown template arrives as an
+    # empty string rather than as NaN and `fillna` alone never fired.
+    named = frame["template"].fillna("").replace("", "(unknown)")
+    for name, rows in frame.groupby(named):
         tables[str(name)] = per_finding(rows, roles)
     return tables
+
+
+def unmeasured_anywhere(tables):
+    """Roll the per-template unmeasured counts up into three figures.
+
+    `MIN_POSITIVES` applied to a pooled Yes count understates what no figure
+    covers, because a finding reaching 30 positives over both templates may
+    reach 15 in each. Measured on the 2026-11-14 arm the pool reads 11
+    unmeasured, 12 findings are measured by no template, and 47 of 47 are
+    unmeasured in at least one.
+
+    One caveat on the third figure: a template group with few reports measures
+    nothing, so the 14 reports the arm could not assign a template take every
+    finding into `in_some_template`. Read it beside each template's own count,
+    which `summary` reports.
+
+    Parameters
+    ----------
+    tables : dict
+        As `by_template` returns.
+
+    Returns
+    -------
+    dict
+        `pooled`, `in_no_template`, `in_some_template` and `findings`, the
+        last being the ids no template measures. The pool alone puts the
+        pooled figure in all three.
+    """
+    pool = tables.get("all")
+    pooled = (
+        sorted(pool[~pool["measured"]]["finding_id"])
+        if pool is not None and len(pool)
+        else []
+    )
+    per_template = {name: part for name, part in tables.items() if name != "all"}
+    if not per_template:
+        return {
+            "pooled": len(pooled),
+            "in_no_template": len(pooled),
+            "in_some_template": len(pooled),
+            "findings": pooled,
+        }
+    everywhere, measured_somewhere, unmeasured_somewhere = set(), set(), set()
+    for part in per_template.values():
+        if not len(part):
+            continue
+        everywhere |= set(part["finding_id"])
+        measured_somewhere |= set(part[part["measured"]]["finding_id"])
+        unmeasured_somewhere |= set(part[~part["measured"]]["finding_id"])
+    nowhere = sorted(everywhere - measured_somewhere)
+    return {
+        "pooled": len(pooled),
+        "in_no_template": len(nowhere),
+        "in_some_template": len(unmeasured_somewhere),
+        "findings": nowhere,
+    }
 
 
 def summary(table):
@@ -308,12 +444,14 @@ def summary(table):
         "without_synonym": int(len(without)),
         "measured": int(table["measured"].sum()),
         "unmeasured": int((~table["measured"]).sum()),
-        "clears_target": int((table["measured"] & ~table["fails_target"]).sum()),
-        "below_target": int(table["fails_target"].sum()),
+        "wordings_missing": int((table["wordings_missing"] > 0).sum()),
+        "clears_queue": int((table["measured"] & ~table["in_review_queue"]).sum()),
+        "review_queue": int(table["in_review_queue"].sum()),
         "flagged_ratio": int(table["fails_ratio"].sum()),
         "flagged_three_way": int(table["fails_three_way"].sum()),
         "flagged_either": int(table["flagged"].sum()),
         "flagged_both": int((table["fails_ratio"] & table["fails_three_way"]).sum()),
+        "dropped_cells": int(table["dropped_cells"].sum()),
     }
     # Reported apart, because frame invariance alone is the weaker test and a
     # pooled figure would read as though every finding had met the stronger one.

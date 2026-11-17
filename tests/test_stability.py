@@ -28,21 +28,33 @@ ROLES = {
 }
 
 
-def rows(spec, template=None):
+def ids(first, last):
+    """The synthetic report ids from `first` to `last`, inclusive."""
+    return [f"SYN{n:04d}" for n in range(first, last + 1)]
+
+
+def rows(spec, template=None, n_reports=10, drop=(), blank=()):
     """Build a questions frame from {(finding, index): [reports answering Yes]}.
 
-    Every finding is asked of SYN0001..SYN0010, so a report absent from a
-    wording's list answers No under it.
+    Every finding is asked of SYN0001 upward, so a report absent from a
+    wording's list answers No under it. `drop` names the
+    (finding, index, report) triples whose row is absent altogether and
+    `blank` those whose row stored no verdict, which is what an unparsed
+    answer leaves behind.
     """
-    reports = [f"SYN{n:04d}" for n in range(1, 11)]
     out = []
     for (finding, index), positives in spec.items():
-        for report in reports:
+        for report in ids(1, n_reports):
+            if (finding, index, report) in set(drop):
+                continue
+            verdict = "yes" if report in positives else "no"
+            if (finding, index, report) in set(blank):
+                verdict = ""
             record = {
                 "report_id": report,
                 "finding_id": finding,
                 "variant_index": str(index),
-                "verdict": "yes" if report in positives else "no",
+                "verdict": verdict,
             }
             if template is not None:
                 record["template"] = template(report)
@@ -116,10 +128,10 @@ def test_a_finding_with_three_wordings_is_recorded_as_having_a_synonym():
 def test_one_wording_out_of_line_fails_the_ratio_screen():
     """`gallbladder_adenomyomatosis` answered Yes once against 93 and 96."""
     frame = rows({
-        ("cirrhosis", 0): ["SYN0001", "SYN0002", "SYN0003", "SYN0004"],
-        ("cirrhosis", 1): ["SYN0001"],
-        ("cirrhosis", 2): ["SYN0001", "SYN0002", "SYN0003", "SYN0004"],
-    })
+        ("cirrhosis", 0): ids(1, 40),
+        ("cirrhosis", 1): ids(1, 10),
+        ("cirrhosis", 2): ids(1, 40),
+    }, n_reports=100)
     row = stability.per_finding(frame, ROLES).iloc[0]
     assert row["ratio"] == 0.25
     assert row["fails_ratio"]
@@ -129,10 +141,10 @@ def test_one_wording_out_of_line_fails_the_ratio_screen():
 def test_wordings_disagreeing_report_by_report_fail_the_jaccard_screen():
     """The counts match and the sets do not, which the ratio cannot see."""
     frame = rows({
-        ("cirrhosis", 0): ["SYN0001", "SYN0002"],
-        ("cirrhosis", 1): ["SYN0003", "SYN0004"],
-        ("cirrhosis", 2): ["SYN0005", "SYN0006"],
-    })
+        ("cirrhosis", 0): ids(1, 30),
+        ("cirrhosis", 1): ids(31, 60),
+        ("cirrhosis", 2): ids(61, 90),
+    }, n_reports=100)
     row = stability.per_finding(frame, ROLES).iloc[0]
     assert row["ratio"] == 1.0, "the ratio screen is blind to this"
     assert row["three_way"] == 0.0
@@ -146,33 +158,193 @@ def test_a_finding_under_the_positive_floor_is_unmeasured_rather_than_failing():
                   ("cirrhosis", 2): []})
     row = stability.per_finding(frame, ROLES).iloc[0]
     assert not row["measured"]
-    assert not row["fails_target"]
+    assert not row["in_review_queue"]
 
 
-def test_a_measured_finding_below_the_bar_is_reported_as_such():
-    positives = [f"SYN{n:04d}" for n in range(1, 11)]
-    frame = pd.DataFrame(
-        [
-            {
-                "report_id": f"SYN{n:04d}",
-                "finding_id": "ascites",
-                "variant_index": str(index),
-                "verdict": "yes" if f"SYN{n:04d}" in keep else "no",
-            }
-            for index, keep in ((0, positives), (1, positives[:-3]))
-            for n in range(1, 41)
-        ]
-    )
-    # 40 reports, 10 positives under one wording and 7 under the other, so the
-    # pair agrees at 0.7 with the floor cleared.
-    row = stability.per_finding(frame, ROLES).iloc[0]
-    assert row["measured"] is False or row["fails_target"] in (True, False)
+class TestAScreenFlagsAMeasuredFindingAlone:
+    """B1: both screens read Yes counts, and a count under the floor swings
+    on one report.
+
+    `liver_laceration` and `hepatic_hemangioma` were flagged on the 100-report
+    smoke where every flag is unmeasured, so a reader met two findings whose
+    figures say nothing. A flag now means a measured finding, and the rest are
+    in the unmeasured table.
+    """
+
+    def test_a_ratio_of_zero_on_two_positives_is_not_a_flag(self):
+        frame = rows({
+            ("cirrhosis", 0): ["SYN0001", "SYN0002"],
+            ("cirrhosis", 1): [],
+            ("cirrhosis", 2): [],
+        })
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["ratio"] == 0.0
+        assert row["fails_ratio"], "the screen still records what it saw"
+        assert not row["measured"]
+        assert not row["flagged"]
+
+    def test_the_same_shape_over_the_floor_is_a_flag(self):
+        frame = rows({
+            ("cirrhosis", 0): ids(1, 40),
+            ("cirrhosis", 1): [],
+            ("cirrhosis", 2): [],
+        }, n_reports=100)
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["measured"]
+        assert row["flagged"]
+
+    def test_the_summary_counts_the_gated_flag(self):
+        frame = rows({
+            ("cirrhosis", 0): ["SYN0001", "SYN0002"],
+            ("cirrhosis", 1): [],
+            ("cirrhosis", 2): [],
+        })
+        counts = stability.summary(stability.per_finding(frame, ROLES))
+        assert counts["flagged_either"] == 0
+        assert counts["unmeasured"] == 1
+
+
+class TestTheReviewQueue:
+    """B2 (A47 Q5): the screen cuts at 0.90 and the count is a queue."""
+
+    def frame(self, shared, left_only):
+        """One finding, two wordings, agreeing on `shared` reports."""
+        return rows({
+            ("ascites", 0): ids(1, shared + left_only),
+            ("ascites", 1): ids(1, shared),
+        }, n_reports=200)
+
+    def test_a_measured_finding_below_the_cut_is_queued(self):
+        row = stability.per_finding(self.frame(40, 10), ROLES).iloc[0]
+        assert row["worst_pair"] == 0.8
+        assert row["measured"]
+        assert row["in_review_queue"]
+
+    def test_a_finding_above_the_cut_is_not(self):
+        row = stability.per_finding(self.frame(40, 2), ROLES).iloc[0]
+        assert row["worst_pair"] > stability.REVIEW_QUEUE_FLOOR
+        assert not row["in_review_queue"]
+
+    def test_the_old_bar_is_gone(self):
+        """A4's 0.95 would have queued a finding at 0.94."""
+        assert stability.REVIEW_QUEUE_FLOOR == 0.9
+        assert not hasattr(stability, "PAIRWISE_TARGET")
+
+    def test_the_summary_reports_the_queue_and_what_clears_it(self):
+        counts = stability.summary(stability.per_finding(self.frame(40, 10), ROLES))
+        assert counts["review_queue"] == 1
+        assert counts["clears_queue"] == 0
+
+
+class TestTheJaccardDenominator:
+    """B3: a cell one wording never answered leaves the union.
+
+    `_yes_by_wording` had kept `verdict == "yes"`, so a missing row and an
+    unparsed answer both counted as a No while the other wording's Yes kept
+    the report in the union. `vote.aggregate_findings` counts an answer as a
+    verdict of yes or no, and this matches it.
+    """
+
+    def test_a_missing_row_does_not_charge_the_pair(self):
+        frame = rows(
+            {("ascites", 0): ids(1, 40), ("ascites", 1): ids(1, 40)},
+            n_reports=100,
+            drop=[("ascites", 1, report) for report in ids(1, 10)],
+        )
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["j_canonical_reframe"] == 1.0
+        assert row["dropped_cells"] == 10
+
+    def test_an_unparsed_answer_does_not_either(self):
+        frame = rows(
+            {("ascites", 0): ids(1, 40), ("ascites", 1): ids(1, 40)},
+            n_reports=100,
+            blank=[("ascites", 1, report) for report in ids(1, 10)],
+        )
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["j_canonical_reframe"] == 1.0
+        assert row["dropped_cells"] == 10
+
+    def test_the_old_denominator_read_lower_on_the_same_frame(self):
+        """The reader had kept `verdict == "yes"`, so a missing row read No."""
+        frame = rows(
+            {("ascites", 0): ids(1, 40), ("ascites", 1): ids(1, 40)},
+            n_reports=100,
+            drop=[("ascites", 1, report) for report in ids(1, 10)],
+        )
+        yes_alone = {
+            index: set(part[part["verdict"] == "yes"]["report_id"])
+            for index, part in frame.groupby("variant_index")
+        }
+        assert stability.jaccard(yes_alone["0"], yes_alone["1"]) == 0.75
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["j_canonical_reframe"] == 1.0
+
+    def test_a_real_disagreement_still_counts(self):
+        frame = rows(
+            {("ascites", 0): ids(1, 40), ("ascites", 1): ids(11, 40)},
+            n_reports=100,
+        )
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["j_canonical_reframe"] == 0.75
+        assert row["dropped_cells"] == 0
+
+    def test_three_way_uses_the_cells_all_three_answered(self):
+        frame = rows(
+            {("cirrhosis", i): ids(1, 40) for i in range(3)},
+            n_reports=100,
+            drop=[("cirrhosis", 2, report) for report in ids(1, 10)],
+        )
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["three_way"] == 1.0
+
+
+class TestAWordingWithNoRows:
+    """B4: it had left the finding among those clearing the bar.
+
+    `indices_by_finding` is built from the indices present, so a wording that
+    produced nothing left `n_wordings` at 1, `ratio` at min over max of one
+    value, and no pair to judge -- and the finding read as stable. The lock's
+    wording count is the expectation.
+    """
+
+    def test_a_missing_wording_is_counted(self):
+        frame = rows({("cirrhosis", 0): ids(1, 40)}, n_reports=100)
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["n_wordings"] == 1
+        assert row["wordings_missing"] == 2
+
+    def test_it_does_not_read_as_measured(self):
+        frame = rows({("cirrhosis", 0): ids(1, 40)}, n_reports=100)
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["ratio"] == 1.0, "one wording agrees with itself"
+        assert not row["measured"]
+        assert not row["in_review_queue"]
+
+    def test_the_summary_reports_it(self):
+        frame = rows({("cirrhosis", 0): ids(1, 40)}, n_reports=100)
+        counts = stability.summary(stability.per_finding(frame, ROLES))
+        assert counts["wordings_missing"] == 1
+        assert counts["clears_queue"] == 0
+
+    def test_every_wording_present_reports_none_missing(self):
+        frame = rows({("cirrhosis", i): ids(1, 40) for i in range(3)}, n_reports=100)
+        row = stability.per_finding(frame, ROLES).iloc[0]
+        assert row["wordings_missing"] == 0
+        assert row["measured"]
+
+    def test_without_a_lock_nothing_is_claimed_missing(self):
+        """No expectation exists, so the figure is what the file has."""
+        frame = rows({("cirrhosis", 0): ids(1, 40)}, n_reports=100)
+        row = stability.per_finding(frame).iloc[0]
+        assert row["wordings_missing"] == 0
+        assert row["measured"]
 
 
 def test_the_flagged_findings_sort_first():
     frame = pd.concat([
-        rows({("cirrhosis", i): ["SYN0001"] for i in range(3)}),
-        rows({("ascites", 0): ["SYN0001", "SYN0002"], ("ascites", 1): []}),
+        rows({("cirrhosis", i): ids(1, 40) for i in range(3)}, n_reports=100),
+        rows({("ascites", 0): ids(1, 40), ("ascites", 1): []}, n_reports=100),
     ])
     table = stability.per_finding(frame, ROLES)
     assert table.iloc[0]["finding_id"] == "ascites"
@@ -197,6 +369,78 @@ def test_with_a_template_column_each_one_is_reported_apart():
     # Template A agrees and template B does not, which a pooled figure hides.
     assert tables["A"].iloc[0]["j_canonical_reframe"] == 1.0
     assert tables["B"].iloc[0]["j_canonical_reframe"] == 0.0
+
+
+def test_an_unknown_template_prints_under_a_name():
+    """B11: the frame is read as text, so a blank arrives as "" not NaN."""
+    frame = rows(
+        {("ascites", 0): ["SYN0001"], ("ascites", 1): ["SYN0001"]},
+        template=lambda report: "A" if report <= "SYN0005" else "",
+    )
+    tables = stability.by_template(frame, ROLES)
+    assert set(tables) == {"all", "A", "(unknown)"}
+
+
+class TestTheUnmeasuredHeadline:
+    """B1: `MIN_POSITIVES` on a pooled Yes count understates what no figure
+    covers.
+
+    A finding reaching 30 positives over both templates may reach 15 in each,
+    and then no template measures it. The 2026-11-14 arm reads 11 unmeasured
+    pooled against 47 of 47 per template.
+    """
+
+    def split(self, report):
+        return "A" if report <= "SYN0050" else "B"
+
+    def test_a_finding_measured_only_in_the_pool_is_reported(self):
+        # 20 positives in each template, so 40 pooled and neither alone
+        # clears 30.
+        frame = rows(
+            {("ascites", 0): ids(1, 20) + ids(51, 70),
+             ("ascites", 1): ids(1, 20) + ids(51, 70)},
+            template=self.split,
+            n_reports=100,
+        )
+        tables = stability.by_template(frame, ROLES)
+        assert tables["all"].iloc[0]["measured"]
+        counts = stability.unmeasured_anywhere(tables)
+        assert counts["pooled"] == 0
+        assert counts["in_no_template"] == 1
+        assert counts["in_some_template"] == 1
+        assert counts["findings"] == ["ascites"]
+
+    def test_a_finding_one_template_measures_keeps_its_hole_visible(self):
+        """40 positives in A and none in B: a figure exists, in one template."""
+        frame = rows(
+            {("ascites", 0): ids(1, 40), ("ascites", 1): ids(1, 40)},
+            template=self.split,
+            n_reports=100,
+        )
+        counts = stability.unmeasured_anywhere(stability.by_template(frame, ROLES))
+        assert counts["in_no_template"] == 0
+        assert counts["in_some_template"] == 1
+
+    def test_a_finding_both_templates_measure_is_reported_nowhere(self):
+        frame = rows(
+            {("ascites", 0): ids(1, 40) + ids(51, 90),
+             ("ascites", 1): ids(1, 40) + ids(51, 90)},
+            template=self.split,
+            n_reports=100,
+        )
+        counts = stability.unmeasured_anywhere(stability.by_template(frame, ROLES))
+        assert counts["in_no_template"] == 0
+        assert counts["in_some_template"] == 0
+
+    def test_without_a_template_column_the_pool_is_the_figure(self):
+        frame = rows({("ascites", 0): ["SYN0001"], ("ascites", 1): []})
+        counts = stability.unmeasured_anywhere(stability.by_template(frame, ROLES))
+        assert counts == {
+            "pooled": 1,
+            "in_no_template": 1,
+            "in_some_template": 1,
+            "findings": ["ascites"],
+        }
 
 
 # --- the summary -----------------------------------------------------------

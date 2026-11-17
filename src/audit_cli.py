@@ -173,13 +173,22 @@ def main(argv=None):
     for name, counts in report["stability"].items():
         _section(f"Wording agreement, template {name}", counts)
 
-    stable = report["stability_per_finding"]["all"]
-    if len(stable):
+    # Per template, never pooled. The module's own docstring forbids a pooled
+    # stability figure, because the two templates differ in which compartments
+    # their reports describe at all, and a pooled table reads a finding as
+    # unstable where one template never mentions it. Pooling also manufactures
+    # no flag: measured over four pilot runs it hid 1 to 4 per run, among them
+    # `liver_laceration` and `hepatic_hemangioma`.
+    tables = report["stability_per_finding"]
+    for name, stable in tables.items():
+        if not len(stable):
+            continue
+        where = "pooled over both templates" if name == "all" else f"template {name}"
         pairs = [c for c in stable.columns if c.startswith("j_")]
         columns = [
-            "finding_id", "n_wordings", "has_synonym",
+            "finding_id", "n_wordings", "wordings_missing", "has_synonym",
             *[c for c in stable.columns if c.startswith("yes_v")],
-            *pairs, "three_way", "ratio", "worst_pair", "measured",
+            *pairs, "three_way", "ratio", "dropped_cells", "worst_pair", "measured",
         ]
         # A flagged finding prints whatever --top says. Ranking by absolute
         # `discordant` and cutting at 15 is what hid every low-prevalence
@@ -187,26 +196,33 @@ def main(argv=None):
         # reports do not use suppresses its own Yes count, which lowers both
         # sort keys.
         flagged = stable[stable["flagged"]]
-        print(f"\nFindings a screen flagged: {len(flagged)} of {len(stable)}, all shown")
+        print(f"\nFindings a screen flagged, {where}: {len(flagged)} of {len(stable)}, all shown")
         print(flagged[columns].to_string(index=False) if len(flagged) else "  none")
 
-        below = stable[stable["fails_target"] & ~stable["flagged"]]
+        queued = stable[stable["in_review_queue"] & ~stable["flagged"]]
         print(
-            f"\nMeasured and below the {stability.PAIRWISE_TARGET} pairwise bar, "
-            f"no screen flagged: {len(below)}, top {args.top}"
+            f"\nReview queue, {where}: measured and below "
+            f"{stability.REVIEW_QUEUE_FLOOR} with no screen flagged, "
+            f"{len(queued)} finding(s), top {args.top}. A pure reframe moves "
+            f"4-8% of a Yes set and 65 of 126 reviewed cells quote one "
+            f"identical sentence, so these are cells to read rather than "
+            f"defects to count"
         )
-        print(below.head(args.top)[columns].to_string(index=False) if len(below) else "  none")
+        print(queued.head(args.top)[columns].to_string(index=False) if len(queued) else "  none")
 
         unmeasured = stable[~stable["measured"]]
         print(
-            f"\nUnmeasured, under {stability.MIN_POSITIVES} positives in every wording: "
-            f"{len(unmeasured)}, top {args.top}"
+            f"\nUnmeasured, {where}: under {stability.MIN_POSITIVES} positives in "
+            f"every wording, or a wording with no rows at all: "
+            f"{len(unmeasured)} of {len(stable)}, top {args.top}"
         )
         print(
             unmeasured.head(args.top)[columns].to_string(index=False)
             if len(unmeasured)
             else "  none"
         )
+
+    _section("Unmeasured across the templates", report["unmeasured"])
 
     defect = report["shared_defect"]
     print(

@@ -170,8 +170,13 @@ def _coverage(frame, wordings):
         {
             "wordings_expected": len(wordings),
             "rows_expected": report["reports"] * len(wordings),
+            # The three sum to `reports`. `reports_over` had been in neither
+            # of the other two, so a run with a duplicated row read as
+            # complete minus the duplicates and a reader could not tell the
+            # difference from a hole.
             "reports_complete": int((per_report == len(wordings)).sum()),
             "reports_short": int((per_report < len(wordings)).sum()),
+            "reports_over": int((per_report > len(wordings)).sum()),
             "never_asked": sorted(f"{finding}_v{index}" for finding, index in wordings - asked),
             "not_in_lock": sorted(f"{finding}_v{index}" for finding, index in asked - wordings),
         }
@@ -485,6 +490,9 @@ def audit(frame, wordings=None, rule="max", lock_path=None, config_path=None):
     votes = aggregate_findings(frame, rule=rule)
 
     table = _sole_per_finding(frame, _per_finding(frame, votes))
+    # Built once. `by_template` groups the whole frame, which is 3M rows at
+    # cohort scale, and the two sections below both read it.
+    per_template = stability.by_template(frame, roles)
     return {
         "coverage": _coverage(frame, wordings),
         "verdicts": _counts(frame["verdict"]),
@@ -532,10 +540,13 @@ def audit(frame, wordings=None, rule="max", lock_path=None, config_path=None):
         # `one_of_three`: a finding with no exact synonym is asked under two
         # wordings, so three is no longer the count.
         "stability": {
-            name: stability.summary(part)
-            for name, part in stability.by_template(frame, roles).items()
+            name: stability.summary(part) for name, part in per_template.items()
         },
-        "stability_per_finding": stability.by_template(frame, roles),
+        "stability_per_finding": per_template,
+        # The headline count of what no figure covers. A pooled Yes count
+        # clears 30 where each template reaches 12, so the pool understates
+        # this threefold.
+        "unmeasured": stability.unmeasured_anywhere(per_template),
         "shared_defect": shared,
         "wording_value": _wording_value(frame),
         "by_category": _by_category(frame),
