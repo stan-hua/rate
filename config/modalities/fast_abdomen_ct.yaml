@@ -140,7 +140,7 @@ categories:
         question: "Is there any abnormality of the bile ducts?"
         variants:
           - "According to the report, is there any abnormality of the bile ducts?"
-        definition: "An abnormality of the bile ducts is defined as any abnormal finding in the bile ducts. This definition includes operative change and a normal anatomical variant. This definition excludes a device where nothing else is abnormal, and it excludes the gallbladder."
+        definition: "An abnormality of the bile ducts is defined as any abnormal finding in the bile ducts. This definition includes operative change and a normal anatomical variant. This definition excludes the gallbladder, and a device where nothing else is abnormal."
         include_terms:
           - "intrahepatic or extrahepatic ductal dilation"
           - "a duct stone or choledocholithiasis"
@@ -207,7 +207,7 @@ categories:
         variants:
           - "Is there a liver hemangioma?"
           - "According to the report, are there any hepatic hemangiomas?"
-        definition: "A hepatic hemangioma is defined as a benign vascular lesion of the liver. Peripheral nodular enhancement with centripetal fill-in is the classic appearance and is not required."
+        definition: "A hepatic hemangioma is defined as a benign vascular lesion of the liver."
       - id: hepatic_adenoma
         question: "Are there any hepatic adenomas?"
         variants:
@@ -309,7 +309,7 @@ categories:
         question: "Is there any abnormality of the liver?"
         variants:
           - "According to the report, is there any abnormality of the liver?"
-        definition: "An abnormality of the liver is defined as any abnormal finding in the liver. This definition includes operative change, a resected part of the liver, a transplanted liver and a normal anatomical variant. This definition excludes a device where nothing else is abnormal, and it excludes the bile ducts and the gallbladder."
+        definition: "An abnormality of the liver is defined as any abnormal finding in the liver. This definition includes operative change, a resected part of the liver, a transplanted liver and a normal anatomical variant. This definition excludes the bile ducts, the gallbladder, and a device where nothing else is abnormal."
         include_terms:
           - "hepatic steatosis or a fatty liver"
           - "a hepatic lesion, cyst or mass"
@@ -335,7 +335,7 @@ categories:
         question: "Are there any choledochal cysts?"
         variants:
           - "According to the report, are there any choledochal cysts?"
-        definition: "A choledochal cyst is defined as a congenital cystic dilation of the bile duct, of any Todani type, including Caroli disease of the intrahepatic ducts. This definition excludes acquired dilation from obstruction, and it excludes a dilated duct beside a stone or a mass."
+        definition: "A choledochal cyst is defined as a congenital cystic dilation of the bile duct, of any Todani type, including Caroli disease of the intrahepatic ducts. This definition excludes acquired dilation from obstruction, and a dilated duct beside a stone or a mass."
       - id: acute_cholecystitis
         question: "Is there acute cholecystitis?"
         variants:
@@ -400,7 +400,7 @@ categories:
         question: "Is there any abnormality of the gallbladder?"
         variants:
           - "According to the report, is there any abnormality of the gallbladder?"
-        definition: "An abnormality of the gallbladder is defined as any abnormal finding in the gallbladder. This definition includes operative change, a surgically absent gallbladder and a normal anatomical variant. This definition excludes a device where nothing else is abnormal, and it excludes the bile ducts."
+        definition: "An abnormality of the gallbladder is defined as any abnormal finding in the gallbladder. This definition includes operative change, a surgically absent gallbladder and a normal anatomical variant. This definition excludes the bile ducts, and a device where nothing else is abnormal."
         include_terms:
           - "gallstones or cholelithiasis"
           - "gallbladder wall thickening"
@@ -566,7 +566,7 @@ categories:
         question: "Is there any abnormality of the kidneys?"
         variants:
           - "According to the report, is there any abnormality of the kidneys?"
-        definition: "An abnormality of a kidney is defined as any abnormal finding in a kidney. This definition includes operative change, a surgically absent or transplanted kidney, and a normal anatomical variant. This definition excludes a device where nothing else is abnormal, and it excludes the ureters and the bladder."
+        definition: "An abnormality of a kidney is defined as any abnormal finding in a kidney. This definition includes operative change, a surgically absent or transplanted kidney, and a normal anatomical variant. This definition excludes the ureters, the bladder, and a device where nothing else is abnormal."
         include_terms:
           - "a renal cyst, hypodensity, mass or angiomyolipoma"
           - "a renal or collecting-system stone"
@@ -623,7 +623,7 @@ categories:
         question: "Is bowel obstruction present?"
         variants:
           - "According to the report, is bowel obstruction present?"
-        definition: "Bowel obstruction is defined as mechanical obstruction of the bowel, with dilated proximal loops and decompressed bowel beyond. A transition point or a named obstructing cause is not required. This definition includes an obstruction attributed to adhesions. This definition excludes dilated loops attributed to ileus, and dilated loops with no obstruction described."
+        definition: "Bowel obstruction is defined as mechanical obstruction of the bowel, with dilated proximal loops and decompressed bowel beyond. This definition includes an obstruction attributed to adhesions, and an obstruction with no transition point or obstructing cause named. This definition excludes dilated loops attributed to ileus, and dilated loops with no obstruction described."
       - id: hiatal_hernia
         question: "Is hiatal hernia present?"
         variants:
@@ -762,7 +762,7 @@ categories:
         question: "Is there any abnormality of the peritoneal cavity?"
         variants:
           - "According to the report, is there any abnormality of the peritoneal cavity?"
-        definition: "An abnormality of the peritoneal cavity is defined as any abnormal finding in the peritoneal cavity. This definition includes operative change and a normal anatomical variant. This definition excludes a device where nothing else is abnormal, and it excludes retroperitoneal fluid or blood."
+        definition: "An abnormality of the peritoneal cavity is defined as any abnormal finding in the peritoneal cavity. This definition includes operative change and a normal anatomical variant. This definition excludes retroperitoneal fluid or blood, and a device where nothing else is abnormal."
         include_terms:
           - "free intraperitoneal fluid, ascites or hemoperitoneum"
           - "free intraperitoneal air"
@@ -1019,7 +1019,7 @@ categories:
         question: "Is there any abnormality of the ureters or bladder?"
         variants:
           - "According to the report, is there any abnormality of the ureters or bladder?"
-        definition: "An abnormality of a ureter or the bladder is defined as any abnormal finding in a ureter or the bladder. This definition includes operative change, a surgically absent bladder, and a normal anatomical variant. This definition excludes a device where nothing else is abnormal, and it excludes the kidneys."
+        definition: "An abnormality of a ureter or the bladder is defined as any abnormal finding in a ureter or the bladder. This definition includes operative change, a surgically absent bladder, and a normal anatomical variant. This definition excludes the kidneys, and a device where nothing else is abnormal."
         include_terms:
           - "ureteral dilation or hydroureter"
           - "a ureteral or bladder stone"
