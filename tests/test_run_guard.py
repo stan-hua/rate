@@ -15,6 +15,7 @@ Every fixture here is synthetic. No row comes from a patient report.
 """
 
 # Standard libraries
+import copy
 import json
 import logging
 import sys
@@ -32,6 +33,7 @@ from src.core.run_guard import (
     MANIFEST_FILENAME,
     assert_decode_is_coherent,
     assert_resume_compatible,
+    configured_guidance,
     configured_wordings,
     decode_fingerprint,
     read_manifest,
@@ -420,3 +422,144 @@ def test_the_resume_guard_refuses_an_incoherent_decode_first(tmp_path):
     with pytest.raises(StorageError, match="structured_output"):
         assert_resume_compatible(tmp_path, both_on, CATEGORIES, "questions")
     assert not (tmp_path / MANIFEST_FILENAME).exists()
+
+
+class TestTheGuidanceBlock:
+    """A definition changes the prompt and nothing else sees it.
+
+    The resume key, the md5 of each wording and the `question_set` digest all
+    stay put when a definition is rewritten, so every other check here passed
+    while the model was shown different guidance. A37 measured one such
+    rewrite moving `hepatic_mass_indeterminate`'s Yes count from 215 to 132.
+    `questions.csv` records the wording of every answer and none of the
+    guidance, so the manifest is the only account of what a stored row saw.
+    """
+
+    def defined(self, definition="Cirrhosis is defined as a cirrhotic liver."):
+        """The two-finding fixture, with a definition on `cirrhosis`."""
+        categories = copy.deepcopy(CATEGORIES)
+        categories["Liver"]["questions"][0]["definition"] = definition
+        return categories
+
+    def filled(self, tmp_path, categories):
+        """A save directory with one stored answer per wording and a manifest."""
+        _questions_csv(
+            tmp_path / "questions.csv", _stored_rows(configured_wordings(categories))
+        )
+        write_manifest(tmp_path, CONFIG, categories)
+        return tmp_path
+
+    def resume(self, save_dir, categories):
+        assert_resume_compatible(
+            save_dir=save_dir,
+            config=CONFIG,
+            findings_categories=categories,
+            stage_name="questions",
+        )
+
+    def test_the_block_is_rendered_as_the_prompt_renders_it(self):
+        guidance = configured_guidance(self.defined())
+        assert set(guidance) == {"cirrhosis"}
+        assert guidance["cirrhosis"] == (
+            "Definition: Cirrhosis is defined as a cirrhotic liver."
+        )
+
+    def test_a_finding_with_no_guidance_is_left_out(self):
+        assert configured_guidance(CATEGORIES) == {}
+
+    def test_every_guidance_field_is_in_the_block(self):
+        categories = copy.deepcopy(CATEGORIES)
+        categories["Liver"]["questions"][0].update(
+            definition="Cirrhosis is defined as a cirrhotic liver.",
+            include_terms=["cirrhotic morphology"],
+            exclude_terms=["hepatic steatosis"],
+            severity_scale="none",
+        )
+        block = configured_guidance(categories)["cirrhosis"]
+        for fragment in ("cirrhotic liver", "cirrhotic morphology",
+                         "hepatic steatosis", "none"):
+            assert fragment in block
+
+    def test_the_manifest_records_it(self, tmp_path):
+        manifest = write_manifest(tmp_path, CONFIG, self.defined())
+        assert manifest["n_guidance"] == 1
+        assert set(manifest["guidance"]) == {"cirrhosis"}
+
+    def test_an_unchanged_definition_resumes(self, tmp_path):
+        categories = self.defined()
+        self.resume(self.filled(tmp_path, categories), categories)
+
+    def test_a_rewritten_definition_refuses_the_resume(self, tmp_path):
+        save_dir = self.filled(tmp_path, self.defined())
+        reworded = self.defined(
+            "Cirrhosis is defined as a nodular, shrunken liver."
+        )
+        with pytest.raises(StorageError) as raised:
+            self.resume(save_dir, reworded)
+        assert "guidance block moved" in str(raised.value)
+        assert "cirrhosis: definition or terms rewritten" in str(raised.value)
+
+    def test_a_dropped_definition_refuses_the_resume(self, tmp_path):
+        save_dir = self.filled(tmp_path, self.defined())
+        with pytest.raises(StorageError, match="guidance dropped"):
+            self.resume(save_dir, copy.deepcopy(CATEGORIES))
+
+    def test_a_definition_added_mid_run_refuses_the_resume(self, tmp_path):
+        save_dir = self.filled(tmp_path, copy.deepcopy(CATEGORIES))
+        with pytest.raises(StorageError, match="guidance added"):
+            self.resume(save_dir, self.defined())
+
+    def test_a_changed_term_list_refuses_the_resume(self, tmp_path):
+        categories = self.defined()
+        categories["Liver"]["questions"][0]["include_terms"] = ["cirrhotic morphology"]
+        save_dir = self.filled(tmp_path, categories)
+        widened = copy.deepcopy(categories)
+        widened["Liver"]["questions"][0]["include_terms"] = [
+            "cirrhotic morphology", "nodular contour"
+        ]
+        with pytest.raises(StorageError, match="definition or terms rewritten"):
+            self.resume(save_dir, widened)
+
+    def test_a_manifest_without_the_field_warns_and_gets_it(self, tmp_path, caplog):
+        """An older directory cannot say what its rows were shown."""
+        categories = self.defined()
+        save_dir = self.filled(tmp_path, categories)
+        manifest = read_manifest(save_dir)
+        del manifest["guidance"]
+        del manifest["n_guidance"]
+        (save_dir / MANIFEST_FILENAME).write_text(json.dumps(manifest))
+
+        logger = logging.getLogger("test_guidance_backfill")
+        with caplog.at_level(logging.WARNING, logger=logger.name):
+            assert_resume_compatible(
+                save_dir=save_dir,
+                config=CONFIG,
+                findings_categories=self.defined("Cirrhosis is defined as anything."),
+                stage_name="questions",
+                logger=logger,
+            )
+        assert "guidance block" in caplog.text
+        written = read_manifest(save_dir)
+        assert written["guidance_backfilled"] is True
+        assert set(written["guidance"]) == {"cirrhosis"}
+
+    def test_a_repeat_resume_then_checks_the_backfilled_block(self, tmp_path):
+        categories = self.defined()
+        save_dir = self.filled(tmp_path, categories)
+        manifest = read_manifest(save_dir)
+        del manifest["guidance"]
+        (save_dir / MANIFEST_FILENAME).write_text(json.dumps(manifest))
+        backfilled = self.defined("Cirrhosis is defined as anything.")
+        self.resume(save_dir, backfilled)
+        with pytest.raises(StorageError, match="guidance block moved"):
+            self.resume(save_dir, categories)
+
+    def test_another_stage_is_not_checked(self, tmp_path):
+        """The guidance block is in the questions prompt alone."""
+        save_dir = self.filled(tmp_path, self.defined())
+        assert_resume_compatible(
+            save_dir=save_dir,
+            config=CONFIG,
+            findings_categories=self.defined("Cirrhosis is defined as anything."),
+            stage_name="findings",
+        )

@@ -38,6 +38,20 @@ arrived on 2026-11-16, when `any_retroperitoneum` left the set a day into the
 cohort run and the guard refused a resume over 304 rows of a tier C question
 nothing reads.
 
+**The guidance block is guarded too, from the manifest.** A finding's
+definition, its include and exclude terms and its severity scale go into the
+prompt under the question, and `questions.csv` records none of them -- so the
+manifest is the only account of what a stored answer was shown. A definition
+changes no resume key, no md5 and no `question_set` digest, so a rewritten one
+passed every check above while changing the prompt. A37 measured one such
+rewrite moving `hepatic_mass_indeterminate`'s Yes count from 215 to 132, 39%,
+on a change whose author recorded the clinical content as unchanged. This
+raises, for the same reason a reworded question does.
+
+A manifest written before that field cannot say what its rows were shown, so
+the check applies from the first manifest that has it. An older directory
+warns, gets the field recorded and is marked `guidance_backfilled`.
+
 A third check runs ahead of both and compares the configuration against
 itself: `assert_decode_is_coherent` refuses a run with thinking and the answer
 schema both on. That pairing answers almost nothing and reports no error, so
@@ -60,6 +74,7 @@ import pandas as pd
 
 # Custom libraries
 from .exceptions import StorageError
+from .findings_schema import question_guidance
 
 MANIFEST_FILENAME = "run_manifest.json"
 
@@ -166,6 +181,43 @@ def configured_wordings(findings_categories: Dict[str, Any]) -> Dict[str, str]:
     return wordings
 
 
+def configured_guidance(findings_categories: Dict[str, Any]) -> Dict[str, str]:
+    """Return the guidance block each finding's prompt shows, keyed by finding.
+
+    The block holds the definition, the include and exclude terms and the
+    severity scale, rendered by the same function the prompt builder calls, so
+    the guard compares what the model is shown rather than a subset of it.
+
+    A definition is not a wording: it changes no resume key, no md5 and no
+    annotation, and the `question_set` digest does not move with it. So a
+    rewritten definition passed every check here while changing the prompt,
+    and A37 measured one such rewrite moving `hepatic_mass_indeterminate`'s
+    Yes count from 215 to 132.
+
+    Parameters
+    ----------
+    findings_categories : dict
+        The modality config's categories, as the engine loads them.
+
+    Returns
+    -------
+    dict
+        The rendered guidance, keyed by finding id. A finding with no guidance
+        at all is left out, so adding the first definition to a finding reads
+        as an addition rather than as a change.
+    """
+    guidance: Dict[str, str] = {}
+    for category in (findings_categories or {}).values():
+        for question in category.get("questions") or []:
+            finding_id = question.get("id")
+            if not finding_id:
+                continue
+            block = question_guidance(question)
+            if block:
+                guidance[finding_id] = block
+    return guidance
+
+
 def stored_wordings(questions_path: Path) -> Dict[str, str]:
     """Return the wording each resume key was asked under, from a stored run.
 
@@ -253,12 +305,18 @@ def write_manifest(
     save_dir = Path(save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
     wordings = configured_wordings(findings_categories)
+    guidance = configured_guidance(findings_categories)
     manifest = {
         "decode": decode_fingerprint(config),
         "modality_config": str(config.get("modality-config", "")),
         "question_set_digest": question_set_digest,
         "wordings": {key: wording_md5(text) for key, text in wordings.items()},
         "n_wordings": len(wordings),
+        # The rest of the prompt. `questions.csv` stores the wording of every
+        # answer and nothing of the guidance block, so the manifest is the
+        # only record of what the stored rows were shown.
+        "guidance": {key: wording_md5(text) for key, text in guidance.items()},
+        "n_guidance": len(guidance),
     }
     path = save_dir / MANIFEST_FILENAME
     with open(path, "w") as handle:
@@ -335,6 +393,27 @@ def _wording_differences(stored: Dict[str, str], current: Dict[str, str]) -> lis
                 f"configured {wording_md5(current[key])!r} "
                 f"-- {current[key]!r}"
             )
+    return lines
+
+
+def _guidance_differences(stored: Dict[str, str], current: Dict[str, str]) -> list:
+    """Return one line per finding whose guidance block moved.
+
+    `stored` holds the md5 of each block as the manifest recorded it, so a
+    line names the finding and never the text.
+    """
+    lines = []
+    for finding_id in sorted(set(stored) | set(current)):
+        was = stored.get(finding_id)
+        now = wording_md5(current[finding_id]) if finding_id in current else None
+        if was == now:
+            continue
+        if was is None:
+            lines.append(f"    {finding_id}: guidance added")
+        elif now is None:
+            lines.append(f"    {finding_id}: guidance dropped")
+        else:
+            lines.append(f"    {finding_id}: definition or terms rewritten")
     return lines
 
 
@@ -429,8 +508,9 @@ def assert_resume_compatible(
     Raises
     ------
     StorageError
-        When the decode configuration is incoherent, or when a stored wording
-        or a guarded decode field differs from the configuration in hand.
+        When the decode configuration is incoherent, or when a stored wording,
+        a guarded decode field or a finding's guidance block differs from the
+        configuration in hand.
     """
     assert_decode_is_coherent(config)
 
@@ -470,6 +550,38 @@ def assert_resume_compatible(
             "  stored answers were asked under a different wording:\n"
             + "\n".join(wording_lines)
         )
+
+    # The guidance block, which the stored rows do not record. A manifest
+    # written before this field cannot say what they were shown, so the
+    # check applies from the manifest that has it onward.
+    if stage_name == "questions" and "guidance" in manifest:
+        guidance_lines = _guidance_differences(
+            manifest.get("guidance") or {}, configured_guidance(findings_categories)
+        )
+        if guidance_lines:
+            problems.append(
+                "  the guidance block moved, so an unchanged wording may answer "
+                "differently:\n" + "\n".join(guidance_lines)
+            )
+    elif stage_name == "questions" and stored_text:
+        # The backfill runs whether or not a caller passed a logger, so the
+        # next resume checks the block rather than skipping it again.
+        if logger is not None:
+            logger.warning(
+                "%s was opened before %s recorded the guidance block, so "
+                "whether the stored answers were given under the definitions "
+                "in hand cannot be checked. Recording them now.",
+                save_dir,
+                MANIFEST_FILENAME,
+            )
+        manifest["guidance"] = {
+            key: wording_md5(text)
+            for key, text in configured_guidance(findings_categories).items()
+        }
+        manifest["n_guidance"] = len(manifest["guidance"])
+        manifest["guidance_backfilled"] = True
+        with open(save_dir / MANIFEST_FILENAME, "w") as handle:
+            json.dump(manifest, handle, indent=2, sort_keys=True)
 
     withdrawn = _withdrawn_wordings(stored_text, current_wordings)
     if withdrawn:
