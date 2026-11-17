@@ -870,18 +870,20 @@ categories:
         variants:
           - "Is the prostate enlarged, or is there benign prostatic hyperplasia?"
           - "According to the report, is there prostatomegaly or prostatic hyperplasia?"
-        definition: "Prostatomegaly is defined as an enlarged prostate, including benign prostatic hyperplasia. This definition excludes a prostatic mass and a malignancy. Answer No for an unenlarged prostate. Answer not_assessed for a female pelvis, where there is no prostate to assess, and for a prostate that has been removed."
+        definition: "Prostatomegaly is defined as an enlarged prostate, including benign prostatic hyperplasia. This definition excludes a prostatic mass and a malignancy."
+        answer_rule: "Answer not_assessed where the patient has no prostate to assess: a female pelvis, or a prostate that has been removed."
 
       - id: any_male_pelvis
         question: "Is there any abnormality of the prostate or scrotum?"
         variants:
           - "According to the report, is there any abnormality of the prostate or scrotum?"
-        definition: "An abnormality of the prostate or the scrotum is defined as any abnormal finding in the prostate or the scrotum. This definition includes operative change, a surgically absent prostate or testis, and a normal anatomical variant. The scrotum lies at or below the inferior margin of a routine acquisition. Judge the prostate alone where the scrotum is not imaged. This definition excludes a device where nothing else is abnormal."
+        definition: "An abnormality of the prostate or the scrotum is defined as any abnormal finding in the prostate or the scrotum. This definition includes operative change, a surgically absent prostate or testis, and a normal anatomical variant. This definition excludes a device where nothing else is abnormal."
         include_terms:
           - "prostatic enlargement or prostatomegaly"
           - "a prostatic mass or calcification"
           - "a testicular or scrotal abnormality"
           - "a hydrocele or inguinoscrotal hernia"
+        answer_rule: "A routine acquisition often stops above the scrotum. Judge the prostate alone where the scrotum is not imaged, and answer not_assessed for a female pelvis, where there is neither a prostate nor a scrotum to assess."
   Female pelvis:
     description: "Female pelvic findings"
     questions:
@@ -897,6 +899,7 @@ categories:
           - "fibroid"
           - "leiomyomatous uterus"
           - "broad ligament myoma"
+        answer_rule: "Answer not_assessed where the patient has no uterus to assess: a male pelvis, or a uterus that has been removed."
       - id: post_hysterectomy
         question: "Is there a prior hysterectomy?"
         variants:
@@ -915,6 +918,7 @@ categories:
           - "an ovarian, adnexal or uterine mass"
           - "free pelvic fluid of gynaecologic origin"
           - "a surgically absent uterus or ovary"
+        answer_rule: "Answer not_assessed for a male pelvis, where there is no uterus, ovary or adnexa to assess."
   Musculoskeletal:
     description: "Musculoskeletal findings"
     questions:

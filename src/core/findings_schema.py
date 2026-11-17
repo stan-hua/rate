@@ -78,8 +78,9 @@ RESPONSE_SCHEMA = {
                 "mentioning the finding -- a report records abnormalities, so "
                 "silence about a finding in an organ it describes means absent. "
                 "not_assessed only when this report could not have answered: the "
-                "anatomy is outside the imaged volume, or the report hands the "
-                "question to another study."
+                "anatomy is outside the imaged volume, the patient does not have "
+                "the organ the question names, or the report hands the question "
+                "to another study."
             ),
         },
         "evidence": {
@@ -437,10 +438,15 @@ def _graded(record, structured, phrase_reached=True):
     return record
 
 
+# `answer_rule` holds an instruction about the answer rather than a fact about
+# the finding, which is why it is a field of its own. A definition that ended
+# on "Answer not_assessed for a female pelvis" mixed the two, and a reader
+# looking for what prostatomegaly is had to step over how to answer it.
 _GUIDANCE_FIELDS = (
     ("definition", "Definition"),
     ("include_terms", "Counts as this finding"),
     ("exclude_terms", "Does not count"),
+    ("answer_rule", "How to answer"),
     ("severity_scale", "Severity to quote, if the report gives one"),
 )
 

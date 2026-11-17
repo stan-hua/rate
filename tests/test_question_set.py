@@ -104,7 +104,7 @@ def test_every_config_parses_and_has_the_documented_shape(path):
     """
     allowed = (
         {"question", "id", "variants", "definition", "include_terms", "exclude_terms",
-         "severity_scale"}
+         "answer_rule", "severity_scale"}
         if path == FAST_ABDOMEN
         else {"question"}
     )

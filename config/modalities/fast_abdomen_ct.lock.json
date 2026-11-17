@@ -1,6 +1,6 @@
 {
   "digest": {
-    "file": "4f8a88dabfecf292",
+    "file": "1b2dc1bfc3b7ecbd",
     "question_set": "d7109acebac015d3"
   },
   "findings": {
@@ -2533,7 +2533,7 @@
       "window": "RUQ/LUQ"
     }
   },
-  "generated": "2026-11-16",
+  "generated": "2026-11-17",
   "modality": "fast_abdominal_ct",
   "retired": [
     {

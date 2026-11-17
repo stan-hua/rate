@@ -360,6 +360,40 @@ class TestTheGuidanceBlock:
         assert "Does not count: simple cyst, characterised hemangioma" in rendered
         assert len(rendered.splitlines()) == 3
 
+    def test_the_answer_rule_renders_under_its_own_heading(self):
+        """How to answer is not part of what the finding is.
+
+        `prostatomegaly_bph`'s definition had ended on "Answer not_assessed
+        for a female pelvis, where there is no prostate to assess", which
+        mixed an instruction into a clinical definition. The field holds it
+        now, between the terms and the severity scale.
+        """
+        rendered = question_guidance(
+            {
+                "question": "Is there prostatomegaly?",
+                "definition": "An enlarged prostate.",
+                "answer_rule": "Answer not_assessed for a female pelvis.",
+                "severity_scale": "mild, moderate or marked",
+            }
+        )
+        assert rendered.splitlines() == [
+            "Definition: An enlarged prostate.",
+            "How to answer: Answer not_assessed for a female pelvis.",
+            "Severity to quote, if the report gives one: mild, moderate or marked",
+        ]
+
+    def test_the_answer_axis_names_an_organ_the_patient_does_not_have(self):
+        """The schema's own rule, which no per-finding field can carry.
+
+        It had read "the anatomy is outside the imaged volume, or the report
+        hands the question to another study", and neither covers a female
+        patient's prostate: the pelvis is imaged and the organ does not
+        exist. The model decided that for itself on 22 of 300 cells in the
+        2026-11-14 arm.
+        """
+        described = RESPONSE_SCHEMA["properties"]["answer"]["description"]
+        assert "the patient does not have the organ the question names" in described
+
 
 class TestTheGradedColumns:
     """The level beside each quoted phrase, which the lexicon computes."""
