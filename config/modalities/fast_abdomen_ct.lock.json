@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "72e16479ed63a2c6",
-    "question_set": "2f64a00e72c5dc13"
+    "file": "dfee2c58cc199cc1",
+    "question_set": "d7109acebac015d3"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -54,6 +54,27 @@
       ],
       "window": "LUQ"
     },
+    "active_extravasation_kidney": {
+      "added": true,
+      "category": "Kidney",
+      "covariate": false,
+      "tier": "B",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "ff9928d2",
+          "question": "Are there any sites of active extravasation in the kidney?",
+          "role": "canonical"
+        },
+        {
+          "index": 1,
+          "md5": "3b61665d",
+          "question": "According to the report, are there any sites of active extravasation in the kidney?",
+          "role": "sourced"
+        }
+      ],
+      "window": "RUQ/LUQ"
+    },
     "active_extravasation_liver": {
       "category": "Liver",
       "covariate": false,
@@ -79,6 +100,27 @@
         }
       ],
       "window": "RUQ"
+    },
+    "active_extravasation_spleen": {
+      "added": true,
+      "category": "Spleen",
+      "covariate": false,
+      "tier": "B",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "82ef70fd",
+          "question": "Are there any sites of active extravasation in the spleen?",
+          "role": "canonical"
+        },
+        {
+          "index": 1,
+          "md5": "08ccd7d7",
+          "question": "According to the report, are there any sites of active extravasation in the spleen?",
+          "role": "sourced"
+        }
+      ],
+      "window": "LUQ"
     },
     "acute_cholecystitis": {
       "category": "Gallbladder",
@@ -1294,6 +1336,27 @@
       ],
       "window": "RUQ"
     },
+    "hepatic_subcapsular_hemorrhage": {
+      "added": true,
+      "category": "Liver",
+      "covariate": false,
+      "tier": "B",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "2a0db38e",
+          "question": "Are there any hepatic subcapsular hematomas or hemorrhages?",
+          "role": "canonical"
+        },
+        {
+          "index": 1,
+          "md5": "e6814803",
+          "question": "According to the report, are there any hepatic subcapsular hematomas or hemorrhages?",
+          "role": "sourced"
+        }
+      ],
+      "window": "RUQ"
+    },
     "hepatocellular_carcinoma_hcc": {
       "category": "Liver",
       "covariate": false,
@@ -1480,6 +1543,27 @@
         }
       ],
       "window": "RUQ"
+    },
+    "kidney_absent": {
+      "added": true,
+      "category": "Kidney",
+      "covariate": false,
+      "tier": "A",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "53473b1d",
+          "question": "Is either kidney absent?",
+          "role": "canonical"
+        },
+        {
+          "index": 1,
+          "md5": "16f22e02",
+          "question": "According to the report, is either kidney absent?",
+          "role": "sourced"
+        }
+      ],
+      "window": "RUQ/LUQ"
     },
     "liver_laceration": {
       "category": "Liver",
@@ -2307,6 +2391,27 @@
           "index": 1,
           "md5": "272e6eac",
           "question": "According to the report, are there any splenic pseudocysts?",
+          "role": "sourced"
+        }
+      ],
+      "window": "LUQ"
+    },
+    "splenic_subcapsular_hemorrhage": {
+      "added": true,
+      "category": "Spleen",
+      "covariate": false,
+      "tier": "B",
+      "variants": [
+        {
+          "index": 0,
+          "md5": "d646207a",
+          "question": "Are there any splenic subcapsular hematomas or hemorrhages?",
+          "role": "canonical"
+        },
+        {
+          "index": 1,
+          "md5": "c6d5378b",
+          "question": "According to the report, are there any splenic subcapsular hematomas or hemorrhages?",
           "role": "sourced"
         }
       ],

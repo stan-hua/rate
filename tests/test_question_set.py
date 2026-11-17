@@ -483,7 +483,7 @@ class TestTheFastConfigAndItsLock:
         assert len(covariates) == 9
 
     def test_the_set_is_the_size_the_plan_fixed(self):
-        """106 findings over 241 wordings, so 241 requests per report.
+        """111 findings over 251 wordings, so 251 requests per report.
 
         82 visible findings with a positive in the cohort, 9 tier C questions
         kept as covariates, 5 findings the source never asked about, and one
@@ -526,13 +526,27 @@ class TestTheFastConfigAndItsLock:
         2026-11-15 settled the last two, which brings a cohort run to
         3,056,121 requests. `any_retroperitoneum` left the set and
         `hepatic_mass_indeterminate` became a covariate.
+
+        2026-11-16 added five findings, which takes a cohort run to 3,182,931
+        requests. Two independent clinical reviews found the same asymmetry
+        from opposite directions: the upstream set asked one organ-agnostic
+        "Are there any subcapsular hemorrhages?" and the FAST set scoped it to
+        the kidney, so the spleen and the liver lost a subcapsular hematoma to
+        a rewording rather than to a decision, and active extravasation was
+        asked of the liver alone. `splenic_subcapsular_hemorrhage`,
+        `hepatic_subcapsular_hemorrhage`, `active_extravasation_spleen` and
+        `active_extravasation_kidney` close that, and `kidney_absent` gives
+        the kidney the absence finding the spleen, the gallbladder and the
+        uterus already had -- `post_nephrectomy` asks for the operative change
+        and excludes a bare absence, so an unexplained absent kidney had
+        answered only its compartment question.
         """
         findings = LOCK["findings"]
         wordings = sum(len(b["variants"]) for b in findings.values())
         added = [i for i, b in findings.items() if b.get("added")]
-        assert len(findings) == 106
-        assert wordings == 241
-        assert len(added) == 20
+        assert len(findings) == 111
+        assert wordings == 251
+        assert len(added) == 25
 
     def test_a_rescoped_finding_records_the_change(self):
         """`ifast`'s QC sheet reads this to flag the rows needing a re-read.
