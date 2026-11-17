@@ -25,6 +25,17 @@ cohort because a penetrating atherosclerotic ulcer is a standard aorta
 phrase, and `trauma` 15,418 times because the findings discuss it. Inside the
 indication they fall to 62 and 2,640.
 
+**Three terms matched a medical phrase rather than a mechanism**, each one
+verified: `accident` on a cerebrovascular accident, `shot` on a flu shot, and
+`restrained` on a patient in restraints. `_NOT_TRAUMA` removes the first two
+phrases before the terms run, the way it already removed `acute kidney
+injury`, and the vehicle sense of `restrained` now needs its noun. Measured
+over the pilot's 2,195 reports the three are latent: one indication dictates a
+bare `restrained`, no indication names a cerebrovascular accident or a shot of
+anything, and no report's flag moves. The cohort is five times that sample and
+the terms are in the group an analysis would trust, so the repair lands before
+the figure is quoted rather than after.
+
 **No clause demotes a remote history, deliberately.** In these indications
 `history of` almost always attaches to a comorbidity while the trauma in the
 same sentence is the acute event, and `status post` names the index event --
@@ -70,7 +81,12 @@ TRAUMA_PATTERNS = {
         r"\bmotor vehicle\b|\bmvc\b|\bmva\b|\bmcc\b|\bmotorcycle\b|\bmoped\b"
         r"|\bscooter\b|\bbicycle\b|\bbike\b|\bpedestrian\b|\bpva\b"
         r"|\bstruck by\b|\bhit by\b|\bcollision\b|\bcrash\b|\baccident\b"
-        r"|\brollover\b|\brolled over\b|\brestrained\b|\bunrestrained\b"
+        r"|\brollover\b|\brolled over\b"
+        # The vehicle sense needs its noun. A patient in physical restraints
+        # is dictated "restrained" too, and that is not a mechanism. An
+        # indication naming the crash itself matches `mvc` or `collision`
+        # anyway.
+        r"|\b(?:un)?restrained (?:driver|passenger|occupant|front|rear|back)\b"
         r"|\bairbag\b|\bseat ?belt\b|\bejected\b|\bentrapment\b|\bhelmet\b"
     ),
     "fall": r"\bfall\b|\bfalls\b|\bfell\b|\bglf\b|\bjumped\b|\bstairs\b",
@@ -88,9 +104,23 @@ TRAUMA_PATTERNS = {
 
 _COMPILED = {name: re.compile(pattern, re.IGNORECASE) for name, pattern in TRAUMA_PATTERNS.items()}
 
-# `acute kidney injury` is the one measured collision with `injury`, in 3
-# reports of the cohort. It is removed before the terms run.
-_NOT_AN_INJURY = re.compile(r"\b(?:acute\s+)?kidney\s+injur(?:y|ies)\b|\baki\b", re.IGNORECASE)
+# The phrases a term matches and should not, removed before the terms run.
+# Each one is a medical phrase that contains a mechanism word:
+#
+# - `acute kidney injury` collides with `injury`, measured in 3 reports.
+# - `cerebrovascular accident` is a stroke, and it collides with `accident`.
+# - a `flu shot` is not a `shot`, nor is a shot of anything else.
+#
+# All three are in the established-mechanism group an analysis would trust,
+# which is why they are repaired rather than left to the `nonspecific` split.
+_NOT_TRAUMA = re.compile(
+    r"\b(?:acute\s+)?kidney\s+injur(?:y|ies)\b|\baki\b"
+    r"|\bcerebro[\s-]?vascular\s+accidents?\b"
+    r"|\b(?:flu|influenza|tetanus|tdap|vaccin\w*|allergy|cortisone|steroid"
+    r"|b[\s-]?12|insulin|pain)\s+shots?\b"
+    r"|\bshots?\s+of\b",
+    re.IGNORECASE,
+)
 
 
 def indication_text(raw_text):
@@ -134,7 +164,7 @@ def trauma_categories(raw_text):
     body = indication_text(raw_text)
     if not body:
         return TRAUMA_UNKNOWN, ()
-    cleaned = _NOT_AN_INJURY.sub(" ", body)
+    cleaned = _NOT_TRAUMA.sub(" ", body)
     found = tuple(sorted(name for name, pattern in _COMPILED.items() if pattern.search(cleaned)))
     return (TRAUMA_YES if found else TRAUMA_NO), found
 

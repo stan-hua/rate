@@ -19,6 +19,18 @@ for comparison, so matching it anywhere would turn a third of the thoracic
 answers into `not_assessed`. The narrow patterns below, matched inside the
 compartment's own section, fire on 475 reports -- 3.75%.
 
+**An aside does not end a section.** `HEADING` accepts any capitalised run
+under 38 characters before a colon, so "Recommendation:", "Note:" and
+"Comment:" opened a section of their own, and a deferral dictated after one
+was attributed to a section that owns no compartment. `PSEUDO_HEADINGS` names
+them and `split_sections` runs the enclosing section through them.
+
+Measured over the pilot's 2,195 reports the defect is latent: 15 reports
+dictate an aside, `note` in 14 and `within these limitations` in 8, and no
+report's deferral set moves. `recommendation` and `comment` appear in none of
+them, so the 2.30% recorded above is a floor rather than a figure the repair
+has been shown to raise.
+
 **It only ever moves a No.** A report that describes the finding and also
 defers the compartment has answered the question, and `not_assessed` would
 discard a real positive.
@@ -36,6 +48,36 @@ import re
 
 # A heading, at the start of a line or after a sentence, as one is dictated.
 HEADING = re.compile(r"(?:^|\n|\. )[ \t]*([A-Z][A-Za-z0-9 ,/()&'-]{1,38}?)[ \t]*:")
+
+# A capitalised run before a colon that opens an aside rather than a section.
+# `HEADING` accepts any such run under 38 characters, so "Recommendation:"
+# ended the section it was dictated inside, and a deferral after it landed in
+# a section that owns no compartment: "Visualized lung bases: Limited
+# evaluation. Recommendation: dedicated CT chest" lost the deferral
+# altogether. These continue the section they are in, which is what a reader
+# does with them.
+#
+# A top-level section stays a heading -- `impression`, `findings`,
+# `technique`, `comparison` -- because a deferral under one of those concerns
+# the study rather than the compartment above it.
+PSEUDO_HEADINGS = frozenset({
+    "recommendation",
+    "recommendations",
+    "note",
+    "notes",
+    "comment",
+    "comments",
+    "correlation",
+    "attention",
+    "caveat",
+    "limitation",
+    "limitations",
+    "addendum note",
+    # Measured in 8 of the pilot's 2,195 reports, and the clause a deferral
+    # is most often dictated into: "Within these limitations: the lung bases
+    # are not well evaluated".
+    "within these limitations",
+})
 
 # Each compartment's section heading, in the spellings this cohort uses. Two
 # templates divide the cohort and spell several of them differently, and a
@@ -128,7 +170,13 @@ def split_sections(raw_text):
     """
     if not raw_text:
         return {}
-    matches = list(HEADING.finditer(raw_text))
+    # An aside does not open a section, so the section it is dictated inside
+    # runs through it.
+    matches = [
+        match
+        for match in HEADING.finditer(raw_text)
+        if match.group(1).strip().lower() not in PSEUDO_HEADINGS
+    ]
     sections = {}
     for position, match in enumerate(matches):
         start = match.end()

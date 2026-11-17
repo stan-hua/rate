@@ -92,6 +92,44 @@ def test_acute_kidney_injury_is_not_an_injury():
     assert flag("Indication: AKI.") == TRAUMA_NO
 
 
+class TestAMechanismWordInAMedicalPhrase:
+    """B8: three terms matched a phrase rather than a mechanism.
+
+    All three are in the established-mechanism group, which an analysis would
+    trust over `nonspecific`. Measured over the pilot's 2,195 reports one
+    indication dictates a bare `restrained` and no flag moves, so the repair
+    lands before the figure is quoted rather than after.
+    """
+
+    def test_a_cerebrovascular_accident_is_not_an_accident(self):
+        assert flag("Indication: Cerebrovascular accident, evaluate source.") == TRAUMA_NO
+        assert flag("Indication: Cerebro-vascular accident.") == TRAUMA_NO
+
+    def test_a_motor_vehicle_accident_still_fires(self):
+        assert flag("Indication: Motor vehicle accident.") == TRAUMA_YES
+        assert flag("Indication: Accident at work, crush injury.") == TRAUMA_YES
+
+    def test_a_flu_shot_is_not_a_shot(self):
+        assert flag("Indication: Status post flu shot, now febrile.") == TRAUMA_NO
+        assert flag("Indication: Shot of cortisone last week, hip pain.") == TRAUMA_NO
+
+    def test_a_gunshot_still_fires(self):
+        assert flag("Indication: Shot in the chest.") == TRAUMA_YES
+        assert flag("Indication: GSW to the flank.") == TRAUMA_YES
+
+    def test_a_patient_in_restraints_is_not_a_restrained_driver(self):
+        assert flag("Indication: Agitated, restrained, abdominal pain.") == TRAUMA_NO
+
+    def test_the_vehicle_sense_keeps_its_noun(self):
+        assert flag("Indication: Unrestrained driver, high speed.") == TRAUMA_YES
+        assert flag("Indication: Restrained passenger.") == TRAUMA_YES
+        assert flag("Indication: Unrestrained front seat occupant.") == TRAUMA_YES
+
+    def test_the_crash_itself_is_reached_another_way(self):
+        """A bare `restrained` beside a mechanism loses nothing."""
+        assert trauma_categories("Indication: Unrestrained, MVC.")[1] == ("vehicle",)
+
+
 def test_the_local_abbreviations_fire():
     """Three abbreviations account for eight of ten misses in a read sample.
 

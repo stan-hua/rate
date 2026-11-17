@@ -97,6 +97,52 @@ def test_a_chest_ct_named_as_a_prior_study_defers_nothing():
     assert deferred_compartments(PRIOR_STUDY_ONLY) == {}
 
 
+class TestAnAsideDoesNotEndASection:
+    """B9: a capitalised run before a colon had opened a section.
+
+    "Visualized lung bases: Patchy opacity. Recommendation: see dedicated CT
+    chest" put the deferral in a `recommendation` section, which owns no
+    compartment, so the rule lost it. Measured over the pilot's 2,195 reports
+    the defect is latent -- 15 reports dictate an aside and no deferral set
+    moves -- so the 2.30% is a floor.
+    """
+
+    def test_a_recommendation_keeps_the_deferral_in_its_section(self):
+        text = (
+            "Liver: Normal.\n"
+            "Visualized lung bases: Patchy opacity at the left base.\n"
+            "Recommendation: see dedicated CT chest.\n"
+        )
+        assert set(deferred_compartments(text)) == {"Pleura and lung bases"}
+
+    def test_the_aside_opens_no_section_of_its_own(self):
+        text = "Visualized lung bases: Patchy opacity.\nNote: see dedicated CT chest.\n"
+        assert "note" not in split_sections(text)
+        assert "see dedicated ct chest" in split_sections(text)["visualized lung bases"].lower()
+
+    def test_the_clause_this_cohort_dictates_is_one(self):
+        """`Within these limitations` is in 8 of the pilot's 2,195 reports."""
+        text = (
+            "Visualized lung bases: Patchy opacity.\n"
+            "Within these limitations: the lung bases are not well evaluated.\n"
+        )
+        assert set(deferred_compartments(text)) == {"Pleura and lung bases"}
+
+    def test_a_top_level_section_still_splits(self):
+        """A deferral in the impression concerns the study, not the section."""
+        text = "Visualized lung bases: Patchy opacity.\nIMPRESSION: Not well evaluated.\n"
+        assert "impression" in split_sections(text)
+        assert deferred_compartments(text) == {}
+
+    def test_the_next_compartment_still_splits(self):
+        text = (
+            "Visualized lung bases: Patchy opacity.\n"
+            "Note: compare with the prior.\n"
+            "Spleen: Not well evaluated.\n"
+        )
+        assert set(deferred_compartments(text)) == {"Spleen"}
+
+
 def test_a_deferral_outside_any_known_section_defers_nothing():
     text = "IMPRESSION: Limited evaluation of the upper abdomen."
     assert deferred_compartments(text) == {}
