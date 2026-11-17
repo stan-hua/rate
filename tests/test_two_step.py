@@ -17,12 +17,16 @@ import pytest
 
 # Custom libraries
 from src.core.two_step import (
+    MISS_FLOOR,
     category_of_finding,
     category_yield,
+    clopper_pearson_upper,
     compartment_question_by_category,
     finding_sizes,
+    positives_for_bound,
     read_summaries,
     read_verdicts,
+    recall_by_finding,
     two_step_counts,
 )
 
@@ -55,8 +59,9 @@ def sizes(lock):
         finding_id: {str(v["index"]) for v in entry["variants"]}
         for finding_id, entry in LOCK["findings"].items()
     }
-    sizes, not_in_lock = finding_sizes(category_of_finding(lock), seen)
+    sizes, not_in_lock, not_in_file = finding_sizes(category_of_finding(lock), seen)
     assert not_in_lock == []
+    assert not_in_file == []
     return sizes
 
 
@@ -208,12 +213,148 @@ def test_a_compartment_with_a_positive_finding_is_not_a_coverage_cell(sizes, que
 
 def test_a_finding_in_the_file_and_not_the_lock_is_reported(lock):
     seen = {"ascites": {"0", "1"}, "a_retired_finding": {"0"}}
-    sizes, not_in_lock = finding_sizes(category_of_finding(lock), seen)
+    sizes, not_in_lock, _ = finding_sizes(category_of_finding(lock), seen)
     assert not_in_lock == ["a_retired_finding"]
     assert "a_retired_finding" not in sizes
 
 
 def test_the_wording_count_comes_from_the_file_not_the_lock(lock):
     # The lock declares two wordings for ascites and this run asked one.
-    sizes, _ = finding_sizes(category_of_finding(lock), {"ascites": {"0"}})
+    sizes, _, _ = finding_sizes(category_of_finding(lock), {"ascites": {"0"}})
     assert sizes["ascites"] == ("Liver", 1)
+
+
+class TestAFindingTheLockHasAndTheFileDoesNot:
+    """B6: the reverse direction had been silent.
+
+    A lock finding the run never asked dropped out of the measurement without
+    a word, and where that finding is a compartment question, every positive
+    in its compartment counted as missed -- because the question that would
+    have kept them can never answer Yes.
+    """
+
+    def test_it_is_reported(self, lock):
+        seen = {"ascites": {"0", "1"}}
+        _, _, not_in_file = finding_sizes(category_of_finding(lock), seen)
+        assert not_in_file == [
+            "a_clip", "any_liver", "any_spleen", "cirrhosis", "splenomegaly"
+        ]
+
+    def test_a_missing_compartment_question_does_not_read_as_a_miss(self, lock):
+        """Liver's question is absent, so its positives are outside both counts."""
+        seen = {"ascites": {"0", "1"}, "any_spleen": {"0"}, "splenomegaly": {"0"}}
+        sizes, _, not_in_file = finding_sizes(category_of_finding(lock), seen)
+        assert "any_liver" in not_in_file
+        questions = compartment_question_by_category(lock)
+        counts = two_step_counts({("r1", "ascites")}, ["r1"], sizes, questions)
+        assert counts["questions_unasked"] == ["any_liver"]
+        assert counts["compartments_without_a_question"] == ["Liver"]
+        assert counts["positives_unmeasurable"] == 1
+        assert counts["positives_hidden"] == 0
+        liver = next(r for r in counts["per_category"] if r["category"] == "Liver")
+        assert liver["question_asked"] is False
+
+    def test_an_asked_question_reads_as_asked(self, sizes, questions):
+        counts = two_step_counts(set(), ["r1"], sizes, questions)
+        assert counts["questions_unasked"] == []
+        liver = next(r for r in counts["per_category"] if r["category"] == "Liver")
+        assert liver["question_asked"] is True
+
+
+class TestTheCompartmentBound:
+    """B5 (A47 Q4, Q10): the bar sits on the compartment, with an interval.
+
+    The share this run missed is a sample. Another institution's cohort draws
+    a different one, so the transferable claim is a one-sided upper bound on
+    the missed share rather than the figure this run measured.
+    """
+
+    def test_nothing_missed_needs_299_positives(self):
+        assert positives_for_bound(0) == 299
+        assert clopper_pearson_upper(0, 299) < MISS_FLOOR
+        assert clopper_pearson_upper(0, 298) > MISS_FLOOR
+
+    def test_one_missed_needs_473_and_two_need_628(self):
+        assert positives_for_bound(1) == 473
+        assert positives_for_bound(2) == 628
+        assert clopper_pearson_upper(1, 472) > MISS_FLOOR
+        assert clopper_pearson_upper(2, 627) > MISS_FLOOR
+
+    def test_a_perfect_run_on_few_positives_is_not_bounded(self):
+        """The reason the bar belongs on a compartment: 28 of 91 findings
+        clear 299."""
+        assert clopper_pearson_upper(0, 50) == pytest.approx(0.0582, abs=1e-4)
+
+    def test_a_compartment_with_no_positive_admits_no_bound(self):
+        assert clopper_pearson_upper(0, 0) is None
+
+    def test_everything_missed_bounds_at_one(self):
+        assert clopper_pearson_upper(3, 3) == 1.0
+
+    def test_the_bound_is_in_the_per_compartment_table(self, sizes, questions):
+        # Spleen's question answers No on every report, so its one finding's
+        # positives are all hidden.
+        reports = [f"r{n}" for n in range(1, 11)]
+        yes = {(r, "splenomegaly") for r in reports} | {(r, "any_liver") for r in reports}
+        counts = two_step_counts(yes, reports, sizes, questions)
+        spleen = next(r for r in counts["per_category"] if r["category"] == "Spleen")
+        assert spleen["positives"] == 10
+        assert spleen["hidden"] == 10
+        assert spleen["recall"] == 0.0
+        assert spleen["missed_upper_95"] == 1.0
+        assert spleen["bounded_under_1pct"] is False
+
+    def test_a_clean_compartment_over_the_threshold_is_bounded(self, sizes, questions):
+        reports = [f"r{n}" for n in range(1, 400)]
+        yes = {(r, "splenomegaly") for r in reports} | {(r, "any_spleen") for r in reports}
+        counts = two_step_counts(yes, reports, sizes, questions)
+        spleen = next(r for r in counts["per_category"] if r["category"] == "Spleen")
+        assert spleen["hidden"] == 0
+        assert spleen["positives"] == 399
+        assert spleen["bounded_under_1pct"] is True
+
+    def test_the_same_compartment_under_the_threshold_is_not(self, sizes, questions):
+        reports = [f"r{n}" for n in range(1, 100)]
+        yes = {(r, "splenomegaly") for r in reports} | {(r, "any_spleen") for r in reports}
+        counts = two_step_counts(yes, reports, sizes, questions)
+        spleen = next(r for r in counts["per_category"] if r["category"] == "Spleen")
+        assert spleen["hidden"] == 0
+        assert spleen["recall"] == 1.0, "the census is perfect"
+        assert spleen["bounded_under_1pct"] is False, "and 99 positives cannot say so"
+        assert spleen["positives_for_bound"] == 299
+
+
+class TestThePerFindingCensus:
+    """B5: per finding the run is a census, so the recall takes no interval."""
+
+    def test_a_finding_losing_positives_is_named(self, sizes, questions):
+        yes = {("r1", "splenomegaly"), ("r1", "ascites"), ("r1", "any_liver")}
+        counts = two_step_counts(yes, ["r1"], sizes, questions)
+        rows = recall_by_finding(counts, sizes)
+        by_id = {row["finding_id"]: row for row in rows}
+        assert by_id["splenomegaly"]["hidden"] == 1
+        assert by_id["splenomegaly"]["recall"] == 0.0
+        assert by_id["splenomegaly"]["category"] == "Spleen"
+        assert by_id["ascites"]["hidden"] == 0
+        assert by_id["ascites"]["recall"] == 1.0
+
+    def test_a_finding_with_no_positive_is_left_out(self, sizes, questions):
+        counts = two_step_counts({("r1", "ascites"), ("r1", "any_liver")}, ["r1"],
+                                 sizes, questions)
+        rows = recall_by_finding(counts, sizes)
+        assert [row["finding_id"] for row in rows] == ["ascites"]
+
+    def test_the_findings_losing_most_come_first(self, sizes, questions):
+        reports = [f"r{n}" for n in range(1, 11)]
+        yes = {(r, "splenomegaly") for r in reports} | {("r1", "cirrhosis")}
+        counts = two_step_counts(yes, reports, sizes, questions)
+        rows = recall_by_finding(counts, sizes)
+        assert rows[0]["finding_id"] == "splenomegaly"
+        assert rows[0]["hidden"] == 10
+
+    def test_an_exempt_finding_keeps_its_positives(self, sizes, questions):
+        yes = {("r1", "splenomegaly")}
+        counts = two_step_counts(yes, ["r1"], sizes, questions, exempt=["splenomegaly"])
+        rows = recall_by_finding(counts, sizes)
+        assert rows[0]["hidden"] == 0
+        assert rows[0]["recall"] == 1.0

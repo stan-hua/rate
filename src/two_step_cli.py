@@ -35,9 +35,12 @@ from pathlib import Path
 
 from .core.audit import expected_wordings, manifest_wordings
 from .core.two_step import (
+    MISS_FLOOR,
     category_of_finding,
     category_yield,
     finding_sizes,
+    positives_for_bound,
+    recall_by_finding,
     two_step_counts,
     compartment_question_by_category,
     read_summaries,
@@ -65,6 +68,12 @@ def parse_args(argv=None):
         help="findings always asked, whatever their question answered, comma separated",
     )
     parser.add_argument("--out", default=None, help="write the per-compartment table here")
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=25,
+        help="how many findings to print in the per-finding recall table",
+    )
     return parser.parse_args(argv)
 
 
@@ -102,7 +111,7 @@ def main(argv=None):
         return 1
 
     yes, complete, short, wordings_seen = read_verdicts(path, expected)
-    findings, not_in_lock = finding_sizes(categories, wordings_seen)
+    findings, not_in_lock, not_in_file = finding_sizes(categories, wordings_seen)
     print(f"{path}")
     print(
         f"{len(complete):,} complete report(s) at {expected} wording(s); "
@@ -111,6 +120,12 @@ def main(argv=None):
     if not_in_lock:
         print(f"{len(not_in_lock)} finding(s) in the file and not the lock, left out: "
               f"{not_in_lock}", file=sys.stderr)
+    # Both directions. A lock finding the run never asked had dropped out
+    # without a word, and a compartment question among them takes every
+    # positive in its compartment with it.
+    if not_in_file:
+        print(f"{len(not_in_file)} finding(s) in the lock and not the file: "
+              f"{not_in_file}", file=sys.stderr)
     if not complete:
         print("no complete report yet", file=sys.stderr)
         return 1
@@ -130,10 +145,67 @@ def main(argv=None):
             "recall": counts["recall"],
         },
     )
-    if counts["hidden_by_finding"]:
-        print("\nPositives a two-step extraction would miss, per finding")
-        for finding, count in counts["hidden_by_finding"].items():
-            print(f"  {count:>6,}  {finding}")
+    if counts["questions_unasked"]:
+        print(
+            f"\n{len(counts['questions_unasked'])} compartment question(s) the lock "
+            f"asks and this run did not: {counts['questions_unasked']}. Their "
+            f"compartments admit no figure, so "
+            f"{counts['positives_unmeasurable']:,} positive(s) are outside both "
+            f"the kept and the hidden count: "
+            f"{counts['compartments_without_a_question']}",
+            file=sys.stderr,
+        )
+
+    # Per compartment, with the bound. The share this run missed is a sample,
+    # and the bound is what another institution's cohort can be told.
+    print(
+        "\nPer compartment: the missed share, and a one-sided 95% upper bound on it"
+    )
+    header = (
+        f"  {'compartment':<22}  {'positives':>9}  {'missed':>6}  {'recall':>7}  "
+        f"{'upper 95%':>9}  {'under 1%':>8}  {'positives needed':>16}"
+    )
+    print(header)
+    for row in sorted(counts["per_category"], key=lambda r: -(r["positives"] or 0)):
+        if not row["question"]:
+            continue
+        bound = row["missed_upper_95"]
+        recall = row["recall"]
+        verdict = "yes" if row["bounded_under_1pct"] else "unbounded"
+        print(
+            f"  {row['category']:<22}  {row['positives']:>9,}  {row['hidden']:>6,}  "
+            f"{'--' if recall is None else f'{recall:>7.4f}'}  "
+            f"{'--' if bound is None else f'{bound:>9.4f}'}  {verdict:>8}  "
+            f"{row['positives_for_bound']:>16,}"
+        )
+    bounded = [r for r in counts["per_category"] if r["question"] and r["bounded_under_1pct"]]
+    with_question = [r for r in counts["per_category"] if r["question"]]
+    print(
+        f"\n{len(bounded)} of {len(with_question)} compartment(s) bound the missed "
+        f"share under {MISS_FLOOR:.0%} at 95% one-sided. A compartment reading "
+        f"unbounded is not passing: with nothing missed the bound needs "
+        f"{positives_for_bound(0)} positives, {positives_for_bound(1)} with one "
+        f"missed and {positives_for_bound(2)} with two."
+    )
+
+    per_finding = recall_by_finding(counts, findings)
+    losing = [row for row in per_finding if row["hidden"]]
+    print(
+        f"\nPer finding, a census over the run, so the recall is exact and takes "
+        f"no interval: {len(losing)} of {len(per_finding)} finding(s) with a "
+        f"positive lose one, top {args.top}"
+    )
+    print(f"  {'finding':<36}  {'positives':>9}  {'missed':>6}  {'recall':>7}")
+    for row in per_finding[: args.top]:
+        print(
+            f"  {row['finding_id']:<36}  {row['positives']:>9,}  "
+            f"{row['hidden']:>6,}  {row['recall']:>7.4f}"
+        )
+    print(
+        "\nA finding this table shows being missed is a candidate for --exempt, "
+        "which is how `free_intraperitoneal_fluid` and `hepatic_steatosis` left "
+        "the method. A rare finding is not exempted for being rare."
+    )
 
     if args.category_findings:
         summaries = Path(args.category_findings)
@@ -167,6 +239,9 @@ def main(argv=None):
         out = Path(args.out)
         pd.DataFrame(counts["per_category"]).to_csv(out, index=False)
         print(f"\nPer-compartment table written to {out}")
+        beside = out.with_name(f"{out.stem}-per-finding{out.suffix}")
+        pd.DataFrame(recall_by_finding(counts, findings)).to_csv(beside, index=False)
+        print(f"Per-finding recall table written to {beside}")
         if args.category_findings:
             beside = out.with_name(f"{out.stem}-coverage{out.suffix}")
             pd.DataFrame(coverage["per_category"]).to_csv(beside, index=False)

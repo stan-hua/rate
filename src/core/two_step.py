@@ -19,6 +19,21 @@ extraction still finds, summed over that compartment's specific findings. A
 finding in a category with no compartment question is always asked, as is a
 finding named in `exempt`.
 
+**The bar sits on the compartment and the census sits on the finding.** Per
+finding the run is a census, so `recall_by_finding` reports the exact share
+kept and no interval. Per compartment `clopper_pearson_upper` reports a
+one-sided 95% upper bound on the missed share, which is the claim that
+transfers to another institution's cohort, and the 1% bar applies to that
+bound. Proving under 1% needs 299 positives with nothing missed, 473 with one
+and 628 with two, and 28 of 91 findings clear 299, which is why a finding
+carries no bound. A compartment under its own threshold is reported unbounded
+at 1% rather than passing, and `positives_for_bound` prints the denominator
+that would settle it.
+
+**An exemption comes from the census.** A finding the run shows being missed
+leaves the two-step method, the way `free_intraperitoneal_fluid` and
+`hepatic_steatosis` already do. A rare finding is not exempted for being rare.
+
 `category_yield` reads `category_findings` against the compartment questions.
 A compartment whose summary names something while every specific question
 answered No is a finding the question set missed, which is the coverage audit.
@@ -48,6 +63,7 @@ Everything here returns counts.
 """
 
 import json
+import math
 import re
 from collections import Counter
 from pathlib import Path
@@ -68,6 +84,11 @@ UNINFORMATIVE = {
 
 QUESTION_COLUMNS = ["report_id", "finding_id", "variant_index", "verdict"]
 
+# The compartment bound's confidence, and the share of a compartment's
+# positives the method is allowed to miss.
+CONFIDENCE = 0.95
+MISS_FLOOR = 0.01
+
 # A marker that a summary names something wrong, rather than restating that
 # the organ is normal. A screen for reading order, in the shape of
 # `deferral.py`'s patterns, and not a classifier: a measurement, a diagnosis
@@ -82,6 +103,110 @@ ABNORMAL = re.compile(
     r"|inflamm|edema|anasarca|carcinom|metasta|diverticul",
     re.I,
 )
+
+
+def _binomial_tail(n, x, p):
+    """Return P(X <= x) for X ~ Binomial(n, p), summed in log space.
+
+    The terms are built from `lgamma` rather than from `comb` and a power,
+    because a compartment has thousands of positives and `p ** k` underflows
+    long before the sum does.
+    """
+    if x >= n:
+        return 1.0
+    log_p, log_q = math.log(p), math.log1p(-p)
+    log_n = math.lgamma(n + 1)
+    total = 0.0
+    for k in range(x + 1):
+        log_term = (
+            log_n
+            - math.lgamma(k + 1)
+            - math.lgamma(n - k + 1)
+            + k * log_p
+            + (n - k) * log_q
+        )
+        total += math.exp(log_term)
+    return min(total, 1.0)
+
+
+def clopper_pearson_upper(missed, positives, confidence=CONFIDENCE):
+    """Return the one-sided upper bound on the share a method misses.
+
+    The exact binomial bound, which is the transferable claim: the share this
+    run missed is a sample, and another institution's cohort draws a different
+    one. `positives` is the denominator, so the bound answers "how high could
+    the missed share be in the population this compartment's positives were
+    drawn from".
+
+    Implemented by bisection on the binomial tail, which is monotone in `p`,
+    rather than through `scipy.stats.beta.ppf`. Neither `rate` environment has
+    scipy, and adding it to a solve for one inverse is a poor trade.
+
+    Parameters
+    ----------
+    missed : int
+        The positives a two-step extraction would not reach.
+    positives : int
+        The positives a flat extraction found, which is the denominator.
+    confidence : float, optional
+        One-sided, 0.95 by default.
+
+    Returns
+    -------
+    float or None
+        The upper bound, or None where the compartment has no positive and so
+        admits no statement at all.
+    """
+    if positives <= 0:
+        return None
+    if missed >= positives:
+        return 1.0
+    alpha = 1.0 - confidence
+    if missed == 0:
+        # The tail closes to (1 - p) ** n, so the bound is exact.
+        return round(1.0 - alpha ** (1.0 / positives), 6)
+    low, high = 0.0, 1.0
+    for _ in range(200):
+        middle = (low + high) / 2
+        if _binomial_tail(positives, missed, middle) > alpha:
+            low = middle
+        else:
+            high = middle
+    return round((low + high) / 2, 6)
+
+
+def positives_for_bound(missed, floor=MISS_FLOOR, confidence=CONFIDENCE):
+    """Return the positives needed to bound a miss count under `floor`.
+
+    At 95% one-sided and a 1% floor: 299 positives with nothing missed, 473
+    with one, 628 with two. That is why the bar belongs on a compartment
+    rather than on a finding -- 28 of 91 findings clear 299.
+
+    Parameters
+    ----------
+    missed : int
+        The positives missed, which does not change as the denominator grows.
+    floor : float, optional
+    confidence : float, optional
+
+    Returns
+    -------
+    int
+        The smallest denominator whose bound falls under the floor.
+    """
+    n = max(missed, 1)
+    while clopper_pearson_upper(missed, n, confidence) >= floor:
+        n *= 2
+        if n > 10 ** 9:
+            raise ValueError(f"no denominator bounds {missed} missed under {floor}")
+    low, high = max(missed, 1), n
+    while low < high:
+        middle = (low + high) // 2
+        if clopper_pearson_upper(missed, middle, confidence) < floor:
+            high = middle
+        else:
+            low = middle + 1
+    return low
 
 
 def compartment_question_by_category(lock_path):
@@ -140,15 +265,28 @@ def finding_sizes(categories, wordings_seen):
     Returns
     -------
     tuple
-        Finding id to `(category, n_wordings)` for the findings in both, and
-        the sorted findings the file has and the lock does not.
+        Finding id to `(category, n_wordings)` for the findings in both, the
+        sorted findings the file has and the lock does not, and the sorted
+        findings the lock has and the file does not.
+
+    Notes
+    -----
+    Both directions are reported. The reverse one had been silent, so a lock
+    finding the run never asked dropped out of the measurement without a word
+    -- and where that finding is a compartment question, every positive in
+    its compartment then counts as missed, because the question that would
+    have kept them can never answer Yes.
     """
     sizes = {
         finding_id: (categories[finding_id], len(indices))
         for finding_id, indices in wordings_seen.items()
         if finding_id in categories
     }
-    return sizes, sorted(set(wordings_seen) - set(categories))
+    return (
+        sizes,
+        sorted(set(wordings_seen) - set(categories)),
+        sorted(set(categories) - set(wordings_seen)),
+    )
 
 
 def read_verdicts(path, expected_rows, chunksize=500_000):
@@ -240,6 +378,19 @@ def two_step_counts(yes, reports, findings, questions, exempt=()):
     exempt = set(exempt)
     specific = {f: v for f, v in findings.items() if not f.startswith("any_")}
 
+    # A compartment question the run never asked can never answer Yes, so
+    # every finding under it would read as hidden. That is a hole in the run
+    # rather than a cost of the method, and `unasked` keeps the two apart.
+    in_file = set(findings)
+    unasked = sorted(
+        question for question in set(questions.values()) if question not in in_file
+    )
+    without_question = {
+        category
+        for category, question in questions.items()
+        if question in set(unasked)
+    }
+
     compartment_calls = sum(n for f, (_, n) in findings.items() if f.startswith("any_"))
     calls_flat = sum(n for _, n in findings.values()) * len(reports)
     calls_two_step = compartment_calls * len(reports)
@@ -248,6 +399,8 @@ def two_step_counts(yes, reports, findings, questions, exempt=()):
     per_category = Counter()
     asked_by_category = Counter()
     positives_by_category = Counter()
+    positives_by_finding = Counter()
+    unmeasurable = Counter()
 
     for report in reports:
         for finding, (category, wordings) in specific.items():
@@ -255,7 +408,14 @@ def two_step_counts(yes, reports, findings, questions, exempt=()):
             positive = (report, finding) in yes
             if positive:
                 positives_by_category[category] += 1
-            if question is None or finding in exempt or (report, question) in yes:
+                positives_by_finding[finding] += 1
+            if category in without_question:
+                # The question is missing from the file, so this compartment
+                # admits no figure either way.
+                calls_two_step += wordings
+                asked_by_category[category] += wordings
+                unmeasurable[category] += positive
+            elif question is None or finding in exempt or (report, question) in yes:
                 calls_two_step += wordings
                 asked_by_category[category] += wordings
                 kept += positive
@@ -267,18 +427,27 @@ def two_step_counts(yes, reports, findings, questions, exempt=()):
     for category in sorted({c for c, _ in findings.values()}):
         fine = sum(n for f, (c, n) in specific.items() if c == category)
         question = questions.get(category)
+        positives = positives_by_category[category]
+        missed = per_category[category]
+        bound = clopper_pearson_upper(missed, positives)
         rows.append(
             {
                 "category": category,
                 "question": question or "",
+                "question_asked": bool(question) and question not in set(unasked),
                 "compartment_yes_reports": sum(
                     1 for r in reports if question and (r, question) in yes
                 ),
                 "fine_wordings": fine,
                 "calls_flat": fine * len(reports),
                 "calls_two_step": asked_by_category[category],
-                "positives": positives_by_category[category],
-                "hidden": per_category[category],
+                "positives": positives,
+                "hidden": missed,
+                "recall": round((positives - missed) / positives, 4) if positives else None,
+                # The transferable claim, and what the 1% bar applies to.
+                "missed_upper_95": bound,
+                "bounded_under_1pct": bool(bound is not None and bound < MISS_FLOOR),
+                "positives_for_bound": positives_for_bound(missed),
             }
         )
 
@@ -294,8 +463,52 @@ def two_step_counts(yes, reports, findings, questions, exempt=()):
         "positives_hidden": sum(hidden.values()),
         "recall": kept / total_positives if total_positives else 1.0,
         "hidden_by_finding": dict(hidden.most_common()),
+        "positives_by_finding": dict(positives_by_finding.most_common()),
+        # A compartment question the lock has and the run never asked.
+        "questions_unasked": unasked,
+        "compartments_without_a_question": sorted(without_question),
+        "positives_unmeasurable": sum(unmeasurable.values()),
         "per_category": rows,
     }
+
+
+def recall_by_finding(counts, findings):
+    """One row per finding: the positives a two-step extraction would miss.
+
+    A census over the run, so the recall is exact and takes no interval. The
+    bound belongs on the compartment, where the denominator is large enough to
+    carry one.
+
+    Parameters
+    ----------
+    counts : dict
+        As `two_step_counts` returns.
+    findings : dict
+        As `finding_sizes` returns, for the category of each finding.
+
+    Returns
+    -------
+    list of dict
+        `finding_id`, `category`, `positives`, `hidden` and `recall`, the
+        findings losing the most positives first. A finding with no positive
+        is left out, since no figure describes it.
+    """
+    hidden = counts["hidden_by_finding"]
+    rows = []
+    for finding, positives in counts["positives_by_finding"].items():
+        if not positives:
+            continue
+        missed = hidden.get(finding, 0)
+        rows.append(
+            {
+                "finding_id": finding,
+                "category": findings.get(finding, ("", 0))[0],
+                "positives": positives,
+                "hidden": missed,
+                "recall": round((positives - missed) / positives, 4),
+            }
+        )
+    return sorted(rows, key=lambda row: (-row["hidden"], row["finding_id"]))
 
 
 def category_yield(yes, reports, findings, questions, informative, with_marker=None):
