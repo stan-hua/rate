@@ -199,14 +199,23 @@ def enriched_reports(positives, all_report_ids, per_finding=60, sample=300, seed
     tuple of (list, dict)
         The chosen report ids, sorted, and counts: `findings`,
         `findings_without_positives`, `from_positives`, `from_sample`,
-        `reports` and `short_of_target`, which names the findings whose Yes
-        reports fall below `per_finding`.
+        `reports`, `positives_with_no_report` -- the Yes reports the input
+        file has no text for -- and `short_of_target`, which names the
+        findings whose Yes reports fall below `per_finding`.
     """
     generator = random.Random(seed)
+    available = {str(rid) for rid in all_report_ids}
     chosen = set()
     short = {}
+    missing = set()
     for finding_id in sorted(positives):
-        reports = sorted(positives[finding_id])
+        # A report the questions file answered Yes for is only usable where
+        # the input file has its text. Keeping one it does not put a report in
+        # `chosen` that nothing can write, so the printed request budget read
+        # higher than the pilot the command wrote.
+        reports = sorted(str(report) for report in positives[finding_id])
+        missing.update(report for report in reports if report not in available)
+        reports = [report for report in reports if report in available]
         if len(reports) < per_finding:
             short[finding_id] = len(reports)
         if len(reports) > per_finding:
@@ -214,7 +223,7 @@ def enriched_reports(positives, all_report_ids, per_finding=60, sample=300, seed
         chosen.update(reports)
 
     from_positives = len(chosen)
-    remaining = sorted({str(rid) for rid in all_report_ids} - chosen)
+    remaining = sorted(available - chosen)
     if sample and remaining:
         chosen.update(generator.sample(remaining, min(sample, len(remaining))))
 
@@ -224,6 +233,7 @@ def enriched_reports(positives, all_report_ids, per_finding=60, sample=300, seed
         "from_positives": from_positives,
         "from_sample": len(chosen) - from_positives,
         "reports": len(chosen),
+        "positives_with_no_report": len(missing),
         "short_of_target": dict(sorted(short.items(), key=lambda kv: kv[1])),
     }
     return sorted(chosen), counts

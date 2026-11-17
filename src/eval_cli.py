@@ -439,10 +439,74 @@ class QCEvaluator:
         
         return results
     
+    @staticmethod
+    def _has_a_figure(task_data: Dict[str, Any]) -> bool:
+        """
+        Whether a task has an accuracy at all.
+
+        A task nobody annotated has none. `_calculate_metrics` returns NaN for
+        it, and `task_data.get('accuracy', 0)` read a missing key as zero, so
+        the two no-data cases reported as opposite extremes: an unmeasurable
+        task as the worst accuracy in the run, and a NaN one as absent, since
+        `nan < threshold` is False. Neither is a figure, and both belong in
+        their own list.
+
+        Args:
+            task_data: One task's metrics
+
+        Returns:
+            True where the accuracy is a number
+        """
+        accuracy = task_data.get('accuracy')
+        if accuracy is None:
+            return False
+        try:
+            return not np.isnan(float(accuracy))
+        except (TypeError, ValueError):
+            return False
+
+    @staticmethod
+    def _each_task(results: Dict[str, Any]):
+        """
+        Walk every task in an evaluation, whatever its QC type.
+
+        Args:
+            results: Evaluation results from evaluate_all()
+
+        Returns:
+            Yields (qc_type, task_name, task_data, question_text)
+        """
+        for qc_type, qc_results in results.items():
+            if not qc_results:
+                continue
+
+            if qc_type == 'questions':
+                # Questions hold both the consolidated result and each question's
+                for task_name, task_data in qc_results.items():
+                    if task_name == '_CONSOLIDATED':
+                        yield 'questions_consolidated', 'All Questions Combined', task_data, None
+                    else:
+                        yield (
+                            'questions_individual',
+                            task_name,
+                            task_data,
+                            task_data.get('question', task_name),
+                        )
+
+            elif qc_type == 'categories':
+                for category_name, category_data in qc_results.items():
+                    yield 'categories', category_name, category_data, None
+
+            elif qc_type in ['no_comparisons', 'findings']:
+                yield qc_type, qc_type, qc_results, None
+
     def find_imperfect_tasks(self, results: Dict[str, Any], accuracy_threshold: float = 1.0) -> List[Dict[str, Any]]:
         """
         Find tasks with accuracy below the specified threshold.
         
+        A task with no accuracy at all is left out and `find_unmeasured_tasks`
+        reports it, because no figure is not a low figure.
+
         Args:
             results: Evaluation results from evaluate_all()
             accuracy_threshold: Accuracy threshold for identifying imperfect tasks (default: 1.0 for 100%)
@@ -452,67 +516,85 @@ class QCEvaluator:
         """
         imperfect_tasks = []
         
-        # Helper function to add imperfect task
-        def add_imperfect_task(qc_type: str, task_name: str, task_data: Dict[str, Any], question_text: str = None):
-            accuracy = task_data.get('accuracy', 0)
-            if accuracy < accuracy_threshold:
-                task_info = {
-                    'qc_type': qc_type,
-                    'task_name': task_name,
-                    'accuracy': accuracy,
-                    'accuracy_percent': round(accuracy * 100, 1),
-                    'n_samples': task_data.get('n_samples', 0),
-                    'n_annotated': task_data.get('n_annotated', 0),
-                    'evaluation_type': task_data.get('type', 'unknown')
-                }
-                
-                if question_text:
-                    task_info['question_text'] = question_text
-                
-                # Add classification metrics if available
-                for metric in ['precision', 'recall', 'f1_score', 'specificity', 'npv']:
-                    if metric in task_data:
-                        task_info[metric] = task_data[metric]
-                
-                imperfect_tasks.append(task_info)
-        
-        # Check each QC type
-        for qc_type, qc_results in results.items():
-            if not qc_results:
+        for qc_type, task_name, task_data, question_text in self._each_task(results):
+            if not self._has_a_figure(task_data):
                 continue
-                
-            if qc_type == 'questions':
-                # Handle questions results specially (contains both consolidated and individual)
-                for task_name, task_data in qc_results.items():
-                    if task_name == '_CONSOLIDATED':
-                        # Handle consolidated questions result
-                        add_imperfect_task('questions_consolidated', 'All Questions Combined', task_data)
-                    else:
-                        # Handle individual question results
-                        question_text = task_data.get('question', task_name)
-                        add_imperfect_task('questions_individual', task_name, task_data, question_text)
-                        
-            elif qc_type == 'categories':
-                # Handle category results
-                for category_name, category_data in qc_results.items():
-                    add_imperfect_task('categories', category_name, category_data)
-                    
-            elif qc_type in ['no_comparisons', 'findings']:
-                # Handle simple results
-                add_imperfect_task(qc_type, qc_type, qc_results)
-        
+            accuracy = float(task_data['accuracy'])
+            if accuracy >= accuracy_threshold:
+                continue
+            task_info = {
+                'qc_type': qc_type,
+                'task_name': task_name,
+                'accuracy': accuracy,
+                'accuracy_percent': round(accuracy * 100, 1),
+                'n_samples': task_data.get('n_samples', 0),
+                'n_annotated': task_data.get('n_annotated', 0),
+                'evaluation_type': task_data.get('type', 'unknown')
+            }
+
+            if question_text:
+                task_info['question_text'] = question_text
+
+            # Add classification metrics if available
+            for metric in ['precision', 'recall', 'f1_score', 'specificity', 'npv']:
+                if metric in task_data:
+                    task_info[metric] = task_data[metric]
+
+            imperfect_tasks.append(task_info)
+
         return imperfect_tasks
+
+    def find_unmeasured_tasks(self, results: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Find the tasks no annotation measures.
+
+        Args:
+            results: Evaluation results from evaluate_all()
+
+        Returns:
+            List of dictionaries, one per task with no accuracy
+        """
+        unmeasured = []
+        for qc_type, task_name, task_data, question_text in self._each_task(results):
+            if self._has_a_figure(task_data):
+                continue
+            task_info = {
+                'qc_type': qc_type,
+                'task_name': task_name,
+                'n_samples': task_data.get('n_samples', 0),
+                'n_annotated': task_data.get('n_annotated', 0),
+                'evaluation_type': task_data.get('type', 'unknown')
+            }
+            if question_text:
+                task_info['question_text'] = question_text
+            unmeasured.append(task_info)
+        return unmeasured
     
-    def print_imperfect_tasks_summary(self, imperfect_tasks: List[Dict[str, Any]]) -> None:
+    def print_imperfect_tasks_summary(self, imperfect_tasks: List[Dict[str, Any]],
+                                      unmeasured_tasks: List[Dict[str, Any]] = None) -> None:
         """
         Print a summary of imperfect tasks in a user-friendly format.
         
         Args:
             imperfect_tasks: List of imperfect tasks from find_imperfect_tasks()
+            unmeasured_tasks: List from find_unmeasured_tasks(), printed apart
         """
+        unmeasured_tasks = unmeasured_tasks or []
+        if unmeasured_tasks:
+            print(f"\n{len(unmeasured_tasks)} task(s) have no accuracy, because "
+                  f"nothing in them is annotated:")
+            for task in unmeasured_tasks:
+                print(f"  • {task['qc_type']}: {task['task_name']} "
+                      f"({task['n_annotated']}/{task['n_samples']} annotated)")
+            print("   No figure is not a low figure, so these are outside the "
+                  "accuracy summary below.")
+
         if not imperfect_tasks:
-            print("\n🎉 ALL TASKS ACHIEVED 100% ACCURACY!")
-            print("No tasks need attention.")
+            if unmeasured_tasks:
+                print("\nEvery task with an accuracy reached 100%.")
+            else:
+                print("\n🎉 ALL TASKS ACHIEVED 100% ACCURACY!")
+                print("No tasks need attention.")
             return
         
         print(f"\n{'='*60}")
@@ -767,7 +849,8 @@ def main():
         
         # Find and display imperfect tasks
         imperfect_tasks = evaluator.find_imperfect_tasks(evaluation_results, args.accuracy_threshold)
-        evaluator.print_imperfect_tasks_summary(imperfect_tasks)
+        unmeasured_tasks = evaluator.find_unmeasured_tasks(evaluation_results)
+        evaluator.print_imperfect_tasks_summary(imperfect_tasks, unmeasured_tasks)
         
         # Export imperfect tasks to CSV if requested
         if args.imperfect_csv:

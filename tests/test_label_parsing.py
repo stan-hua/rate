@@ -123,3 +123,75 @@ class TestAColumnPandasTypedAsText:
 
     def test_the_words_still_read(self, convert, from_csv):
         assert list(convert(from_csv(["yes", "no", "Correct"]))) == [1, 0, 1]
+
+
+class TestTheTwoNoDataCases:
+    """B11: they had reported as opposite extremes.
+
+    `find_imperfect_tasks` read a missing accuracy as zero, so a task nobody
+    annotated appeared as the worst in the run, while `_calculate_metrics`
+    returns NaN for the same case and `nan < threshold` is False, so that one
+    vanished. No figure is not a low figure, and both belong in their own
+    list.
+    """
+
+    @pytest.fixture
+    def evaluator(self):
+        return QCEvaluator(qc_dir=".")
+
+    def results(self, **tasks):
+        """One `questions` QC type holding the named tasks."""
+        return {"questions": tasks}
+
+    def test_a_task_with_no_accuracy_key_is_not_called_zero(self, evaluator):
+        results = self.results(ascites={"n_samples": 30, "n_annotated": 0})
+        assert evaluator.find_imperfect_tasks(results) == []
+        unmeasured = evaluator.find_unmeasured_tasks(results)
+        assert [task["task_name"] for task in unmeasured] == ["ascites"]
+        assert unmeasured[0]["n_annotated"] == 0
+
+    def test_a_nan_accuracy_is_reported_rather_than_dropped(self, evaluator):
+        results = self.results(
+            ascites={"accuracy": np.nan, "n_samples": 30, "n_annotated": 0}
+        )
+        assert evaluator.find_imperfect_tasks(results) == []
+        assert len(evaluator.find_unmeasured_tasks(results)) == 1
+
+    def test_the_two_no_data_cases_report_the_same_way(self, evaluator):
+        results = self.results(
+            nothing_stored={"n_samples": 30, "n_annotated": 0},
+            nothing_parsed={"accuracy": np.nan, "n_samples": 30, "n_annotated": 0},
+        )
+        assert evaluator.find_imperfect_tasks(results) == []
+        assert len(evaluator.find_unmeasured_tasks(results)) == 2
+
+    def test_a_measured_task_below_the_bar_is_still_found(self, evaluator):
+        results = self.results(
+            ascites={"accuracy": 0.9, "n_samples": 30, "n_annotated": 30}
+        )
+        found = evaluator.find_imperfect_tasks(results)
+        assert [task["accuracy_percent"] for task in found] == [90.0]
+        assert evaluator.find_unmeasured_tasks(results) == []
+
+    def test_a_perfect_task_is_in_neither_list(self, evaluator):
+        results = self.results(
+            ascites={"accuracy": 1.0, "n_samples": 30, "n_annotated": 30}
+        )
+        assert evaluator.find_imperfect_tasks(results) == []
+        assert evaluator.find_unmeasured_tasks(results) == []
+
+    def test_the_summary_does_not_claim_a_run_of_no_figures_is_perfect(self, evaluator):
+        results = self.results(ascites={"n_samples": 30, "n_annotated": 0})
+        captured = io.StringIO()
+        held, sys.stdout = sys.stdout, captured
+        try:
+            evaluator.print_imperfect_tasks_summary(
+                evaluator.find_imperfect_tasks(results),
+                evaluator.find_unmeasured_tasks(results),
+            )
+        finally:
+            sys.stdout = held
+        printed = captured.getvalue()
+        assert "ALL TASKS ACHIEVED 100%" not in printed
+        assert "no accuracy" in printed
+        assert "ascites" in printed

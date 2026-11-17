@@ -216,6 +216,13 @@ def main(argv=None):
     print(f"  {'below --per-finding':<27}  {len(short):,}")
     for finding_id, found in short.items():
         print(f"      {finding_id} {found}")
+    if counts["positives_with_no_report"]:
+        print(
+            f"  {'positives with no report':<27}  "
+            f"{counts['positives_with_no_report']:,}"
+        )
+    # Every report counted here has text in the input file, so this is the
+    # pilot the command writes rather than a budget above it.
     print(
         f"\n{counts['reports']:,} report(s) x {config_counts['wordings']:,} "
         f"wording(s) = {counts['reports'] * config_counts['wordings']:,} request(s)"
@@ -233,7 +240,14 @@ def main(argv=None):
     config_out = out_dir / "pilot_config.yaml"
     with open(config_out, 'w') as handle:
         yaml.safe_dump(narrowed, handle, sort_keys=False, width=1000)
+    written = subset[accession_col].astype(str).nunique()
     print(f"\nWritten {len(subset):,} report row(s) to {reports_path}")
+    if written != counts["reports"]:
+        print(
+            f"{written:,} of the {counts['reports']:,} chosen report(s) have a "
+            f"row, so the request count above is not what this pilot asks",
+            file=sys.stderr,
+        )
     print(f"Written {config_out}")
 
     if narrowed_lock is not None:

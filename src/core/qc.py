@@ -243,25 +243,30 @@ class QCGenerator:
         
         samples = []
         
-        # Sample positive examples using stratified sampling
-        if questions_with_pos and positive_budget > 0:
-            for _ in range(positive_budget):
-                # First, randomly select a question that has positive examples
-                selected_question = np.random.choice(questions_with_pos)
-                # Then, randomly select a positive example from that question
-                positive_examples = question_examples[selected_question]["positive"]
-                selected_example = np.random.choice(positive_examples)
-                samples.append(selected_example)
-        
-        # Sample negative examples using stratified sampling
-        if questions_with_neg and negative_budget > 0:
-            for _ in range(negative_budget):
-                # First, randomly select a question that has negative examples
-                selected_question = np.random.choice(questions_with_neg)
-                # Then, randomly select a negative example from that question
-                negative_examples = question_examples[selected_question]["negative"]
-                selected_example = np.random.choice(negative_examples)
-                samples.append(selected_example)
+        # Sample each stratum without replacement. Both levels of the draw had
+        # been with replacement, so one example could be drawn several times
+        # and a per-question accuracy counted it twice -- and a question with
+        # one example could fill several of its stratum's rows with it. A
+        # question drops out of the draw once its examples are spent.
+        for stratum, stratum_budget in (("positive", positive_budget),
+                                        ("negative", negative_budget)):
+            eligible = [
+                question for question, examples in question_examples.items()
+                if examples[stratum]
+            ]
+            drawn = 0
+            while eligible and drawn < stratum_budget:
+                selected_question = eligible[int(np.random.randint(len(eligible)))]
+                pool = question_examples[selected_question][stratum]
+                samples.append(pool.pop(int(np.random.randint(len(pool)))))
+                drawn += 1
+                if not pool:
+                    eligible.remove(selected_question)
+            if drawn < stratum_budget:
+                logger.warning(
+                    f"Drew {drawn} {stratum} example(s) of the {stratum_budget} "
+                    f"asked for; the run has no more to draw without repeating one"
+                )
         
         # Shuffle the samples to mix positive and negative examples
         np.random.shuffle(samples)

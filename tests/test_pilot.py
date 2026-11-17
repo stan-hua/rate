@@ -115,6 +115,48 @@ def test_two_findings_sharing_a_report_choose_it_once():
     assert counts["reports"] == 2
 
 
+class TestAPositiveTheInputFileHasNoTextFor:
+    """B11: the printed request budget could exceed what the pilot asks.
+
+    A report that answered Yes in the questions file is only usable where the
+    input file has its text, and `enriched_reports` had kept it either way. So
+    `reports` counted an id nothing could write and the budget printed from it
+    read higher than the run the command produced.
+    """
+
+    def test_it_is_left_out_and_counted(self):
+        positives = {"ascites": {"SYN0001", "SYN9999"}}
+        chosen, counts = enriched_reports(
+            positives, [f"SYN{n:04d}" for n in range(1, 50)], per_finding=60, sample=0,
+        )
+        assert chosen == ["SYN0001"]
+        assert counts["reports"] == 1
+        assert counts["positives_with_no_report"] == 1
+
+    def test_it_does_not_count_towards_the_per_finding_cap(self):
+        positives = {"ascites": {f"SYN{n:04d}" for n in range(1, 21)} | {"SYN9999"}}
+        chosen, counts = enriched_reports(
+            positives, [f"SYN{n:04d}" for n in range(1, 21)], per_finding=20, sample=0,
+        )
+        assert len(chosen) == 20
+        assert counts["short_of_target"] == {}
+
+    def test_a_finding_short_once_the_missing_are_dropped_is_reported(self):
+        positives = {"ascites": {"SYN0001", "SYN9998", "SYN9999"}}
+        _, counts = enriched_reports(
+            positives, ["SYN0001"], per_finding=3, sample=0,
+        )
+        assert counts["short_of_target"] == {"ascites": 1}
+        assert counts["positives_with_no_report"] == 2
+
+    def test_a_run_with_every_report_present_counts_none(self):
+        positives = {"ascites": {"SYN0001"}}
+        _, counts = enriched_reports(
+            positives, [f"SYN{n:04d}" for n in range(1, 50)], per_finding=60, sample=0,
+        )
+        assert counts["positives_with_no_report"] == 0
+
+
 def test_the_random_sample_reaches_reports_no_wording_flagged():
     """A repaired wording answers Yes where the old ones did not, and only the
     sample can report that."""
