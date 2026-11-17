@@ -162,9 +162,12 @@ def test_an_inherited_canonical_is_byte_for_byte_the_abdomen_set_s():
     the reports do not dictate. `prior_liver_resection` followed on
     2026-11-12, because "Are there any hepatic changes post-resection?"
     presupposed the resection and the pilot answered `not_assessed` 1,473
-    times. The lock marks all 19 `replaced` and records the source wording,
-    and `retired` has it too, so the wording is findable and the answers it
-    produced are known to be answers to a different question.
+    times. `extrahepatic_duct_dilation` followed on 2026-11-16, for the one
+    typographical reason in the set: the source writes "is there any
+    extrahepatic biliary ductal dilation?", the only wording of 241 that does
+    not open on a capital. The lock marks each one `replaced` and records the
+    source wording, and `retired` has it too, so the wording is findable and
+    the answers it produced are known to be answers to a different question.
     """
     abdomen = {question for _, question in questions_of(ABDOMEN)}
     replaced = {
@@ -172,7 +175,7 @@ def test_an_inherited_canonical_is_byte_for_byte_the_abdomen_set_s():
         for b in LOCK["findings"].values()
         if b.get("replaced")
     }
-    assert len(replaced) == 22
+    assert len(replaced) == 23
     assert CANONICAL_WORDINGS - replaced <= abdomen
     for identifier, body in LOCK["findings"].items():
         if body.get("replaced"):

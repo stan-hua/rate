@@ -111,7 +111,7 @@ categories:
           - "According to the report, is there any intrahepatic biliary ductal dilation?"
         definition: "Intrahepatic biliary ductal dilation is defined as dilated, prominent or obstructed intrahepatic bile ducts. This definition excludes a dilated extrahepatic duct beside normal intrahepatic ducts."
       - id: extrahepatic_duct_dilation
-        question: "is there any extrahepatic biliary ductal dilation?"
+        question: "Is there any extrahepatic biliary ductal dilation?"
         variants:
           - "According to the report, is there any extrahepatic biliary ductal dilation?"
         definition: "Extrahepatic biliary ductal dilation is defined as dilation of the common hepatic duct, the common bile duct, or both. This definition includes a dilated duct after a cholecystectomy. It excludes a dilated intrahepatic duct beside a normal common duct."

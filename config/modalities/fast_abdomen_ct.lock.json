@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "d518ad3503b3a99a",
-    "question_set": "f950cefadbcb2c2f"
+    "file": "db7cd10b86137b8d",
+    "question_set": "f103281db46d11e0"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -836,12 +836,14 @@
       "category": "Biliary Tree",
       "change": "scope_change",
       "covariate": false,
+      "replaced": true,
+      "source_question": "is there any extrahepatic biliary ductal dilation?",
       "tier": "B",
       "variants": [
         {
           "index": 0,
-          "md5": "49e69866",
-          "question": "is there any extrahepatic biliary ductal dilation?",
+          "md5": "e5baadee",
+          "question": "Is there any extrahepatic biliary ductal dilation?",
           "role": "canonical"
         },
         {
@@ -2533,6 +2535,13 @@
       "md5": "638e66ca",
       "question": "Is the spleen surgically absent? Are there any post-splenectomy changes?",
       "replaced_by": "59557a78"
+    },
+    {
+      "category": "Biliary Tree",
+      "id": "extrahepatic_duct_dilation",
+      "md5": "49e69866",
+      "question": "is there any extrahepatic biliary ductal dilation?",
+      "replaced_by": "e5baadee"
     },
     {
       "category": "Biliary Tree",
