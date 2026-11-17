@@ -294,35 +294,140 @@ class StorageManager:
         """Get set of request IDs already processed for complex stages."""
         return self.get_processed_ids(stage_name, 'request')
 
-    def save_final_results(self, results: Dict[str, Dict]) -> None:
+    def _final_record(self, result: Dict, answers: Dict = None) -> Dict:
+        """One report's entry in `final_results.json`."""
+        if "error" in result:
+            return {
+                "error": result["error"],
+                "processing_time": result["processing_time"],
+            }
+        return {
+            "raw_text": result.get("raw_text", ""),
+            "no_comparison_text": result.get("no_comparison_text", ""),
+            "findings_text": result.get("findings", ""),
+            "category_findings": result.get("category_findings", {}),
+            "qa_results": result.get("answers", {}) if answers is None else answers,
+            "processing_time": result["processing_time"],
+        }
+
+    def save_final_results(self, results: Dict[str, Dict], answers_from_file: bool = False) -> None:
         """Save final results to JSON format.
         
         Args:
             results: Dictionary mapping report_id to final results
+            answers_from_file: Read `qa_results` from `questions.csv` as the
+                file is written, rather than from `results`. The caller then
+                never holds the answers: at 12,681 reports they are 3.08M rows,
+                and a nested dict of them costs about 3 GiB resident and 73
+                seconds to build on every resume.
         """
-        final_results = {}
-        for report_id, result in results.items():
-            if "error" in result:
-                final_results[report_id] = {
-                    "error": result["error"],
-                    "processing_time": result["processing_time"]
-                }
-            else:
-                final_results[report_id] = {
-                    "raw_text": result.get("raw_text", ""),
-                    "no_comparison_text": result.get("no_comparison_text", ""),
-                    "findings_text": result.get("findings", ""),
-                    "category_findings": result.get("category_findings", {}),
-                    "qa_results": result.get("answers", {}),
-                    "processing_time": result["processing_time"]
-                }
-        
         # Not indented. At 12,681 reports this file holds every raw report and
         # all 3.06M answers, so the indentation was gigabytes of spaces on the
         # last write of a ten-day run. Every reader uses `json.load`, which
         # does not care.
-        with open(self.save_dir / "final_results.json", "w") as f:
-            json.dump(final_results, f)
+        path = self.save_dir / "final_results.json"
+        if not answers_from_file:
+            final_results = {
+                report_id: self._final_record(result)
+                for report_id, result in results.items()
+            }
+            with open(path, "w") as f:
+                json.dump(final_results, f)
+            return
+
+        # Both sides are in report-id order, so the answers arrive beside the
+        # report they belong to and one report's worth is held at a time.
+        stored = self.iter_stored_answers()
+        pending_id, pending_answers = next(stored, (None, None))
+        orphaned = 0
+        with open(path, "w") as f:
+            f.write("{")
+            for position, report_id in enumerate(sorted(results)):
+                while pending_id is not None and pending_id < report_id:
+                    orphaned += 1
+                    pending_id, pending_answers = next(stored, (None, None))
+                if pending_id == report_id:
+                    answers = pending_answers
+                    pending_id, pending_answers = next(stored, (None, None))
+                else:
+                    answers = {}
+                if position:
+                    f.write(", ")
+                f.write(json.dumps(str(report_id)))
+                f.write(": ")
+                json.dump(self._final_record(results[report_id], answers), f)
+            f.write("}")
+        orphaned += sum(1 for _ in stored) + (1 if pending_id is not None else 0)
+        if orphaned:
+            logger.warning(
+                "%d report(s) have stored answers and no report record, so "
+                "their answers are not in final_results.json",
+                orphaned,
+            )
+
+    # The six columns of an answer that `final_results.json` keeps. The stage
+    # file has twenty, and the other fourteen are the graded columns, which
+    # `questions.csv` is the record of.
+    _ANSWER_FIELDS = (
+        "report_id", "category", "finding_id", "variant_index", "question", "answer",
+    )
+
+    def iter_stored_answers(self, file_path: Path = None):
+        """Yield each report's stored answers, in report-id order.
+
+        Reads the six columns `final_results.json` keeps rather than all
+        twenty, sorts once, and yields a report at a time, so nothing holds
+        the 3.08M-row nested dict `load_questions` builds.
+
+        Args:
+            file_path: The stage file, defaulting to `questions.csv` in the
+                save directory.
+
+        Returns:
+            Yields (report_id, {category: [answer, ...]}). Nothing where the
+            file does not exist.
+        """
+        config = self._get_stage_config('questions')
+        path = Path(file_path) if file_path else self.save_dir / config['filename']
+        if not path.exists():
+            return
+        available = set(pd.read_csv(path, nrows=0).columns)
+        missing = [c for c in config['required_columns'] if c not in available]
+        if missing:
+            raise ValueError(
+                f"{path} has no {missing} column(s), which a reader needs. "
+                f"It has {sorted(available)}."
+            )
+        frame = pd.read_csv(
+            path,
+            dtype=str,
+            usecols=[c for c in self._ANSWER_FIELDS if c in available],
+        ).fillna("")
+        frame = frame.sort_values(
+            ["report_id", "category", "finding_id", "variant_index"],
+            kind="stable",
+        )
+        unreadable_variant = 0
+        for report_id, rows in frame.groupby("report_id", sort=True):
+            grouped = {}
+            for row in rows.itertuples(index=False):
+                variant = row.variant_index
+                try:
+                    variant = int(variant)
+                except (TypeError, ValueError):
+                    unreadable_variant += 1
+                grouped.setdefault(row.category, []).append({
+                    "finding_id": row.finding_id,
+                    "variant_index": variant,
+                    "question": row.question,
+                    "answer": row.answer,
+                })
+            yield str(report_id), grouped
+        if unreadable_variant:
+            logger.warning(
+                "%d stored row(s) have no readable variant_index",
+                unreadable_variant,
+            )
 
     # Helper methods
     def _get_stage_config(self, stage_name: str) -> Dict:

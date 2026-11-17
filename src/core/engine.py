@@ -130,6 +130,12 @@ class Engine:
             stages: List of stage names to run
             reports: Raw report data as list of (report_id, text) tuples
             input_files: Dict mapping stage names to input file paths
+
+        Returns:
+            One entry per report. `answers` holds what this invocation asked
+            and nothing more, because the stored answers stay on disk:
+            `questions.csv` is the record of them and `final_results.json` is
+            written from it.
         """
         start_time = time.time()
         
@@ -141,8 +147,28 @@ class Engine:
         }
         
         try:
-            # Load all existing results first to ensure proper data flow
+            # Load the stored results a stage about to run needs as its input,
+            # and nothing else.
+            #
+            # All four were loaded on every invocation, whichever stages were
+            # selected. For `questions` that is a full read of a 1.4 GB file
+            # and an `iterrows` into a nested dict: measured, 3.08M answers
+            # cost about 73 seconds and 3 GiB resident, on every resume, and
+            # this run has restarted four times. The only reader of that dict
+            # was `final_results.json`, which `save_final_results` now streams
+            # from the stage file itself -- and the file is the better source,
+            # since every batch is appended to it before this point.
+            #
+            # `category_findings` is small, one row per report and compartment,
+            # and the final JSON holds it per report, so it is read here.
+            needed = {'category_findings'}
+            if 'extract-findings' in stages and 'input-no-comparisons' not in (input_files or {}):
+                needed.add('no_comparisons')
+            if 'map-categories' in stages and 'input-findings' not in (input_files or {}):
+                needed.add('findings')
             for stage_name in ['no_comparisons', 'findings', 'category_findings', 'questions']:
+                if stage_name not in needed:
+                    continue
                 existing_results = self._load_existing_results(stage_name)
                 if existing_results:
                     results[stage_name] = existing_results
@@ -208,7 +234,9 @@ class Engine:
                         start_time
                     )
             
-            self.storage.save_final_results(final_results)
+            # The answers come from `questions.csv` as the file is written,
+            # so nothing above holds 3.08M of them.
+            self.storage.save_final_results(final_results, answers_from_file=True)
             return final_results
             
             
@@ -229,6 +257,12 @@ class Engine:
             for result_dict in [no_comparisons, findings_results, category_findings, question_results]:
                 if result_dict:
                     all_report_ids.update(result_dict.keys())
+            # The questions stage's stored results are no longer loaded, so
+            # its report ids come from the key column of the stage file. A
+            # report in that file and in none of the dicts above would
+            # otherwise leave `final_results.json` and its answers would be
+            # reported as orphaned.
+            all_report_ids.update(self.storage.get_processed_report_ids('questions'))
             
             # Create results for every report id seen
             for report_id in all_report_ids:
@@ -501,9 +535,13 @@ class Engine:
                 if req_id not in processed_ids
             ]
         
-        # Early return if all work is done
+        # Early return if all work is done. The stored results stay on disk:
+        # the final JSON reads the answers from the stage file, so reloading
+        # 3.08M rows here only to hand them back had no reader.
         if not requests:
             self.logger.info(f"All requests already processed for {stage_name}")
+            if stage_name == 'questions':
+                return {}
             return self._load_existing_results(stage_name)
         
         # Process requests in batches with improved error handling

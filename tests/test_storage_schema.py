@@ -373,3 +373,150 @@ class TestAFileWrittenBeforeAColumnWasAdded:
         )
 
         assert len(pd.read_csv(path, dtype=str)) == 1
+
+
+# --- the final JSON, written without holding the answers -------------------
+
+
+def answers_for(report_ids, categories=("Liver", "Spleen"), wordings=2):
+    """Synthetic stored answers in the shape `save_questions` takes."""
+    stored = {}
+    for report_id in report_ids:
+        stored[report_id] = {}
+        for category in categories:
+            finding = f"any_{category.lower()}"
+            stored[report_id][category] = [
+                {
+                    "finding_id": finding,
+                    "variant_index": index,
+                    "question": f"Is the {category.lower()} abnormal? v{index}",
+                    "answer": '{"answer": "no"}',
+                }
+                for index in range(wordings)
+            ]
+    return stored
+
+
+def records_for(report_ids, answers=None):
+    """What `_combine_results` hands the writer, one entry per report."""
+    return {
+        report_id: {
+            "raw_text": f"{report_id} text",
+            "no_comparison_text": f"{report_id} no comparisons",
+            "findings": f"{report_id} findings",
+            "category_findings": {"Liver": "Normal."},
+            "answers": (answers or {}).get(report_id, {}),
+            "processing_time": 1.5,
+        }
+        for report_id in report_ids
+    }
+
+
+class TestTheFinalJsonStreamsTheAnswers:
+    """A2: the answers had been held in memory twice over to write this file.
+
+    `run_stages` loaded every stage's stored results on every invocation, and
+    for `questions` that is a full read of a 1.4 GB file into a nested dict --
+    measured at 73 seconds and about 3 GiB resident at 3.08M answers, on every
+    resume. Its one reader was this file. Every batch is appended to
+    `questions.csv` before the final write, so the file is both the cheaper
+    source and the more complete one.
+    """
+
+    @pytest.fixture
+    def filled(self, tmp_path):
+        """A save directory with three reports' answers stored."""
+        storage = StorageManager(str(tmp_path))
+        storage.save_questions(answers_for(["SYN0001", "SYN0002", "SYN0003"]))
+        return storage
+
+    def read(self, storage):
+        import json
+        return json.loads((storage.save_dir / "final_results.json").read_text())
+
+    def test_it_writes_what_the_in_memory_path_wrote(self, filled, tmp_path):
+        import json
+        stored = answers_for(["SYN0001", "SYN0002", "SYN0003"])
+        held = StorageManager(str(tmp_path / "held"))
+        held.save_final_results(records_for(stored, stored))
+        in_memory = json.loads((held.save_dir / "final_results.json").read_text())
+
+        filled.save_final_results(records_for(stored), answers_from_file=True)
+        assert self.read(filled) == in_memory
+
+    def test_a_report_with_no_stored_answer_gets_an_empty_map(self, filled):
+        records = records_for(["SYN0001", "SYN0009"])
+        filled.save_final_results(records, answers_from_file=True)
+        written = self.read(filled)
+        assert written["SYN0009"]["qa_results"] == {}
+        assert written["SYN0001"]["qa_results"] != {}
+
+    def test_a_stored_answer_with_no_report_record_is_counted(self, filled, caplog):
+        filled.save_final_results(records_for(["SYN0002"]), answers_from_file=True)
+        assert set(self.read(filled)) == {"SYN0002"}
+        assert "no report record" in caplog.text
+
+    def test_the_other_columns_still_come_from_the_caller(self, filled):
+        filled.save_final_results(records_for(["SYN0001"]), answers_from_file=True)
+        entry = self.read(filled)["SYN0001"]
+        assert entry["raw_text"] == "SYN0001 text"
+        assert entry["no_comparison_text"] == "SYN0001 no comparisons"
+        assert entry["findings_text"] == "SYN0001 findings"
+        assert entry["category_findings"] == {"Liver": "Normal."}
+
+    def test_an_error_record_keeps_its_shape(self, filled):
+        records = records_for(["SYN0001"])
+        records["SYN0001"] = {"error": "the batch was lost", "processing_time": 0.1}
+        filled.save_final_results(records, answers_from_file=True)
+        assert self.read(filled)["SYN0001"] == {
+            "error": "the batch was lost",
+            "processing_time": 0.1,
+        }
+
+    def test_a_leading_zero_report_id_stays_text(self, tmp_path):
+        storage = StorageManager(str(tmp_path))
+        storage.save_questions(answers_for(["0012345"]))
+        storage.save_final_results(records_for(["0012345"]), answers_from_file=True)
+        written = self.read(storage)
+        assert list(written) == ["0012345"]
+        assert written["0012345"]["qa_results"]["Liver"][0]["finding_id"] == "any_liver"
+
+    def test_no_stage_file_writes_the_records_with_no_answers(self, tmp_path):
+        storage = StorageManager(str(tmp_path))
+        storage.save_final_results(records_for(["SYN0001"]), answers_from_file=True)
+        assert self.read(storage)["SYN0001"]["qa_results"] == {}
+
+
+class TestIteratingTheStoredAnswers:
+    def test_each_report_comes_once_in_order(self, tmp_path):
+        storage = StorageManager(str(tmp_path))
+        storage.save_questions(answers_for(["SYN0003", "SYN0001", "SYN0002"]))
+        seen = [report_id for report_id, _ in storage.iter_stored_answers()]
+        assert seen == ["SYN0001", "SYN0002", "SYN0003"]
+
+    def test_the_answers_are_grouped_by_category(self, tmp_path):
+        storage = StorageManager(str(tmp_path))
+        storage.save_questions(answers_for(["SYN0001"]))
+        _, grouped = next(storage.iter_stored_answers())
+        assert set(grouped) == {"Liver", "Spleen"}
+        assert [row["variant_index"] for row in grouped["Liver"]] == [0, 1]
+
+    def test_a_blank_wording_index_does_not_stop_the_read(self, tmp_path):
+        storage = StorageManager(str(tmp_path))
+        storage.save_questions(answers_for(["SYN0001"]))
+        path = storage.save_dir / "questions.csv"
+        frame = pd.read_csv(path, dtype=str)
+        frame.loc[0, "variant_index"] = ""
+        frame.to_csv(path, index=False)
+        _, grouped = next(storage.iter_stored_answers())
+        indices = [row["variant_index"] for rows in grouped.values() for row in rows]
+        assert "" in indices
+
+    def test_a_file_missing_a_needed_column_names_it(self, tmp_path):
+        storage = StorageManager(str(tmp_path))
+        storage.save_questions(answers_for(["SYN0001"]))
+        path = storage.save_dir / "questions.csv"
+        frame = pd.read_csv(path, dtype=str).drop(columns=["finding_id"])
+        frame.to_csv(path, index=False)
+        with pytest.raises(ValueError, match="finding_id"):
+            list(storage.iter_stored_answers())
