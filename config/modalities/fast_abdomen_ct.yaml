@@ -432,9 +432,9 @@ categories:
           - "According to the report, is there xanthogranulomatous pyelonephritis?"
         definition: "Xanthogranulomatous pyelonephritis is defined as chronic destructive infection of the kidney, with a staghorn calculus and inflammatory masses replacing the parenchyma."
       - id: renal_stones_nephrolithiasis
-        question: "Are there any renal stones / nephrolithiasis?"
+        question: "Are there any renal stones or nephrolithiasis?"
         variants:
-          - "According to the report, are there any renal stones / nephrolithiasis?"
+          - "According to the report, are there any renal stones or nephrolithiasis?"
         definition: "A renal stone is defined as a calculus in the kidney, including the renal pelvis, obstructing or not. This definition excludes a stone in a ureter or in the bladder."
         include_terms:
           - "nephrolithiasis"

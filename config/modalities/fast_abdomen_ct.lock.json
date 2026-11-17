@@ -1,7 +1,7 @@
 {
   "digest": {
-    "file": "db7cd10b86137b8d",
-    "question_set": "f103281db46d11e0"
+    "file": "11869ed7bafcd134",
+    "question_set": "2f64a00e72c5dc13"
   },
   "findings": {
     "abdominal_aortic_aneurysm_aaa": {
@@ -2096,19 +2096,22 @@
     },
     "renal_stones_nephrolithiasis": {
       "category": "Kidney",
+      "change": "paraphrase",
       "covariate": false,
+      "replaced": true,
+      "source_question": "Are there any renal stones / nephrolithiasis?",
       "tier": "A",
       "variants": [
         {
           "index": 0,
-          "md5": "a1ffec17",
-          "question": "Are there any renal stones / nephrolithiasis?",
+          "md5": "1de86968",
+          "question": "Are there any renal stones or nephrolithiasis?",
           "role": "canonical"
         },
         {
           "index": 1,
-          "md5": "5853ad0c",
-          "question": "According to the report, are there any renal stones / nephrolithiasis?",
+          "md5": "9804eebd",
+          "question": "According to the report, are there any renal stones or nephrolithiasis?",
           "role": "sourced"
         }
       ],
@@ -2691,6 +2694,13 @@
       "category": "Kidney",
       "md5": "c4350551",
       "question": "Is there nephritis?"
+    },
+    {
+      "category": "Kidney",
+      "id": "renal_stones_nephrolithiasis",
+      "md5": "a1ffec17",
+      "question": "Are there any renal stones / nephrolithiasis?",
+      "replaced_by": "1de86968"
     },
     {
       "category": "Kidney",
@@ -4005,6 +4015,13 @@
       "id": "renal_stones_nephrolithiasis",
       "md5": "4d751f3d",
       "question": "Is there a renal calculus or a kidney stone?"
+    },
+    {
+      "category": "Kidney",
+      "dropped_role": "sourced",
+      "id": "renal_stones_nephrolithiasis",
+      "md5": "5853ad0c",
+      "question": "According to the report, are there any renal stones / nephrolithiasis?"
     },
     {
       "category": "Kidney",
