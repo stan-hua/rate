@@ -31,18 +31,18 @@ categories:
         variants:
           - "Is the spleen enlarged?"
           - "According to the report, is there splenomegaly?"
-        definition: "Splenomegaly is defined as an enlarged spleen, as the radiologist judges it. No single CT measurement defines it, so a spleen called normal in size does not count, whatever its measurement."
+        definition: "Splenomegaly is defined as an enlarged spleen. No single CT measurement defines it. A spleen called normal in size does not count, whatever its measurement."
         severity_scale: "mild, moderate or marked"
       - id: epithelial_splenic_cysts
         question: "Are there any epithelial splenic cysts?"
         variants:
           - "According to the report, are there any epithelial splenic cysts?"
-        definition: "An epithelial splenic cyst is defined as a true splenic cyst with an epithelial lining, congenital or epidermoid, thin-walled and of fluid attenuation. A lesion identified only as a splenic cyst, with no cause given, counts here. It excludes a post-traumatic, post-infarction or post-infectious cyst."
+        definition: "An epithelial splenic cyst is defined as a true splenic cyst with an epithelial lining, congenital or epidermoid, thin-walled and of fluid attenuation. A splenic cyst with no cause given counts here. It excludes a post-traumatic, post-infarction or post-infectious cyst."
       - id: splenic_pseudocyst
         question: "Are there any splenic pseudocysts?"
         variants:
           - "According to the report, are there any splenic pseudocysts?"
-        definition: "A splenic pseudocyst is defined as a splenic cyst with no epithelial lining, following trauma, infarction or infection. It excludes a congenital or epidermoid cyst, and a cyst described only as a splenic cyst with no cause given."
+        definition: "A splenic pseudocyst is defined as a splenic cyst with no epithelial lining, following trauma, infarction or infection. It excludes a congenital or epidermoid cyst, and a splenic cyst with no cause given."
       - id: splenic_lymphoma
         question: "Is splenic lymphoma present?"
         variants:
@@ -153,7 +153,7 @@ categories:
         question: "Is there hepatomegaly?"
         variants:
           - "According to the report, is there hepatomegaly?"
-        definition: "Hepatomegaly is defined as an enlarged liver, as the radiologist judges it. No single CT measurement defines it, so a liver called normal in size does not count, whatever its measurement."
+        definition: "Hepatomegaly is defined as an enlarged liver. No single CT measurement defines it. A liver called normal in size does not count, whatever its measurement."
         severity_scale: "mild, moderate or marked"
       - id: hepatic_steatosis
         question: "Is there hepatic steatosis, fatty liver or focal fatty infiltration?"
@@ -176,7 +176,7 @@ categories:
         question: "Is there portal hypertension?"
         variants:
           - "According to the report, is there portal hypertension?"
-        definition: "Portal hypertension is defined as raised portal venous pressure, shown by a portosystemic collateral, including esophageal, gastric, splenorenal or mesenteric varices, or by a recanalized paraumbilical vein. Splenomegaly alone, ascites alone, and a dilated portal vein alone do not count."
+        definition: "Portal hypertension is defined as raised portal venous pressure, with a portosystemic collateral: esophageal, gastric, splenorenal or mesenteric varices, or a recanalized paraumbilical vein. Splenomegaly alone, ascites alone, and a dilated portal vein alone do not count."
         include_terms:
           - "portal hypertension"
           - "portosystemic collaterals"
@@ -201,13 +201,13 @@ categories:
         variants:
           - "Are there any liver cysts?"
           - "According to the report, are there any hepatic cysts?"
-        definition: "A simple hepatic cyst is defined as a thin-walled hepatic cyst of fluid attenuation, with no septation, no calcification and no solid component. A lesion identified as a hepatic cyst and described no further counts as simple. This definition excludes an abscess, a cystic metastasis, a complex cystic lesion and polycystic liver disease."
+        definition: "A simple hepatic cyst is defined as a thin-walled hepatic cyst of fluid attenuation, with no septation, no calcification and no solid component. A hepatic cyst with no further description counts as simple. This definition excludes an abscess, a cystic metastasis, a complex cystic lesion and polycystic liver disease."
       - id: hepatic_hemangioma
         question: "Are there any hepatic hemangiomas?"
         variants:
           - "Is there a liver hemangioma?"
           - "According to the report, are there any hepatic hemangiomas?"
-        definition: "A hepatic hemangioma is defined as a benign vascular lesion of the liver. Peripheral nodular enhancement with centripetal fill-in is the classic appearance, and a single-phase study need not show it."
+        definition: "A hepatic hemangioma is defined as a benign vascular lesion of the liver. Peripheral nodular enhancement with centripetal fill-in is the classic appearance and is not required."
       - id: hepatic_adenoma
         question: "Are there any hepatic adenomas?"
         variants:
@@ -262,7 +262,7 @@ categories:
         variants:
           - "Is there a prior hepatectomy?"
           - "According to the report, is there a prior liver resection?"
-        definition: "A prior liver resection is defined as surgical removal of part of the liver, shown by a resection margin or surgical plane, clips or sutures at the cut surface, a post-surgical cavity or seroma, or hypertrophy of the remnant. This definition includes a segmentectomy, a partial hepatectomy and a lobectomy alike. It excludes a small or atrophic liver with no sign of surgery, and it excludes a transplanted liver."
+        definition: "A prior liver resection is defined as surgical removal of part of the liver: a resection margin or surgical plane, clips or sutures at the cut surface, a post-surgical cavity or seroma, or hypertrophy of the remnant. This definition includes a segmentectomy, a partial hepatectomy and a lobectomy alike. It excludes a small or atrophic liver with no sign of surgery, and it excludes a transplanted liver."
       - id: post_liver_transplant
         question: "Are there any hepatic changes post-transplantation?"
         variants:
@@ -335,7 +335,7 @@ categories:
         question: "Are there any choledochal cysts?"
         variants:
           - "According to the report, are there any choledochal cysts?"
-        definition: "A choledochal cyst is defined as a congenital cystic dilation of the bile duct, of any Todani type, including Caroli disease of the intrahepatic ducts. This definition excludes acquired dilation from obstruction, so a dilated duct beside a stone or a mass does not count."
+        definition: "A choledochal cyst is defined as a congenital cystic dilation of the bile duct, of any Todani type, including Caroli disease of the intrahepatic ducts. This definition excludes acquired dilation from obstruction. A dilated duct beside a stone or a mass does not count."
       - id: acute_cholecystitis
         question: "Is there acute cholecystitis?"
         variants:
@@ -434,7 +434,7 @@ categories:
         question: "Are there any simple renal cysts?"
         variants:
           - "According to the report, are there any simple renal cysts?"
-        definition: "A simple renal cyst is defined as a renal cyst with no internal complexity. A lesion identified as a renal cyst and described no further counts as simple. This definition excludes a cyst that is complex, septated, calcified, thick-walled, enhancing or solid. It excludes a hypodensity left uncharacterized."
+        definition: "A simple renal cyst is defined as a renal cyst with no internal complexity. A renal cyst with no further description counts as simple. This definition excludes a cyst that is complex, septated, calcified, thick-walled, enhancing or solid. It excludes a hypodensity left uncharacterized."
       - id: complex_renal_cyst
         question: "Are there any complex renal cysts?"
         variants:
@@ -623,7 +623,7 @@ categories:
         question: "Is bowel obstruction present?"
         variants:
           - "According to the report, is bowel obstruction present?"
-        definition: "Bowel obstruction is defined as mechanical obstruction of the bowel, with dilated proximal loops and decompressed bowel beyond. A transition point or a named obstructing cause supports it and is not required, and an obstruction attributed to adhesions counts. This definition excludes dilated loops attributed to ileus, and dilated loops with no obstruction described."
+        definition: "Bowel obstruction is defined as mechanical obstruction of the bowel, with dilated proximal loops and decompressed bowel beyond. A transition point or a named obstructing cause is not required. An obstruction attributed to adhesions counts. This definition excludes dilated loops attributed to ileus, and dilated loops with no obstruction described."
       - id: hiatal_hernia
         question: "Is hiatal hernia present?"
         variants:
@@ -732,7 +732,7 @@ categories:
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
         variants:
           - "According to the report, is there hemoperitoneum or free intraperitoneal blood?"
-        definition: "Hemoperitoneum is defined as blood in the peritoneal cavity, shown by high-attenuation free fluid or by free fluid attributed to an injury. High attenuation means roughly 30 HU or more, against simple fluid near 0 to 15 HU. Ascites on its own does not count, and blood described within or alongside ascites does. It excludes fluid left uncharacterized."
+        definition: "Hemoperitoneum is defined as blood in the peritoneal cavity: high-attenuation free fluid, or free fluid attributed to an injury. High attenuation means roughly 30 HU or more, against simple fluid near 0 to 15 HU. Ascites on its own does not count, and blood described within or alongside ascites does. It excludes fluid left uncharacterized."
         include_terms:
           - "hemoperitoneum"
           - "intraperitoneal blood"
@@ -839,7 +839,7 @@ categories:
         question: "Is there metastatic disease?"
         variants:
           - "According to the report, is there metastatic disease?"
-        definition: "Metastatic disease is defined as a metastatic deposit anywhere in the imaged volume. This definition includes a skeletal or a nodal metastasis on its own. A history of malignancy, or an indication naming metastatic disease, does not count where no deposit is described in the imaged volume."
+        definition: "Metastatic disease is defined as a metastatic deposit anywhere in the imaged volume. This definition includes a skeletal or a nodal metastasis on its own. The deposit has to be in the imaged volume: a history of malignancy, or an indication naming metastatic disease, does not count on its own."
         include_terms:
           - "metastatic"
           - "metastasis"
@@ -870,13 +870,13 @@ categories:
         variants:
           - "Is the prostate enlarged, or is there benign prostatic hyperplasia?"
           - "According to the report, is there prostatomegaly or prostatic hyperplasia?"
-        definition: "Prostatomegaly is defined as an enlarged prostate, including benign prostatic hyperplasia. This definition excludes a prostatic mass and a malignancy. A patient with a prostate answers No where no enlargement is described. A female pelvis answers not_assessed, since there is no prostate to assess, and so does a patient whose prostate has been removed."
+        definition: "Prostatomegaly is defined as an enlarged prostate, including benign prostatic hyperplasia. This definition excludes a prostatic mass and a malignancy. Answer No for an unenlarged prostate. Answer not_assessed for a female pelvis, where there is no prostate to assess, and for a prostate that has been removed."
 
       - id: any_male_pelvis
         question: "Is there any abnormality of the prostate or scrotum?"
         variants:
           - "According to the report, is there any abnormality of the prostate or scrotum?"
-        definition: "An abnormality of the prostate or the scrotum is defined as any abnormal finding in the prostate or the scrotum. Operative change and a surgically absent prostate or testis count, and a normal anatomical variant counts as well. The scrotum lies at or below the inferior margin of a routine acquisition, so a study that does not include it answers on the prostate alone. It excludes a device where nothing else is abnormal."
+        definition: "An abnormality of the prostate or the scrotum is defined as any abnormal finding in the prostate or the scrotum. Operative change and a surgically absent prostate or testis count, and a normal anatomical variant counts as well. The scrotum lies at or below the inferior margin of a routine acquisition. Judge the prostate alone where the scrotum is not imaged. It excludes a device where nothing else is abnormal."
         include_terms:
           - "prostatic enlargement or prostatomegaly"
           - "a prostatic mass or calcification"
@@ -901,7 +901,7 @@ categories:
         question: "Is there a prior hysterectomy?"
         variants:
           - "According to the report, is there a prior hysterectomy?"
-        definition: "A prior hysterectomy is defined as surgical removal of the uterus, shown by a surgically absent uterus, or by an absent uterus with a vaginal cuff. This definition includes a supracervical hysterectomy with the cervix retained. It excludes a uterus present but abnormal, and an oophorectomy with the uterus in place."
+        definition: "A prior hysterectomy is defined as surgical removal of the uterus: a surgically absent uterus, or an absent uterus with a vaginal cuff. This definition includes a supracervical hysterectomy with the cervix retained. It excludes a uterus present but abnormal, and an oophorectomy with the uterus in place."
   
 
       - id: any_female_pelvis
@@ -1010,7 +1010,7 @@ categories:
         variants:
           - "Is there bladder perforation?"
           - "According to the report, is there bladder rupture?"
-        definition: "Bladder rupture is defined as a breach of the bladder wall, with contrast or urine leaking intraperitoneally or extraperitoneally. A wall defect with adjacent extravesical fluid counts where no cystogram was performed."
+        definition: "Bladder rupture is defined as a breach of the bladder wall, with contrast or urine leaking intraperitoneally or extraperitoneally. A demonstrated leak is not required: a wall defect with adjacent extravesical fluid counts."
       - id: any_urinary_tract
         question: "Is there any abnormality of the ureters or bladder?"
         variants:
