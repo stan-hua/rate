@@ -9,7 +9,7 @@ categories:
         question: "Is there acute pancreatitis?"
         variants:
           - "According to the report, is there acute pancreatitis?"
-        definition: "Acute pancreatitis is defined as an acutely inflamed pancreas: peripancreatic fat stranding or fluid, glandular enlargement, a non-enhancing segment, or acute pancreatitis the report names. This definition includes an acute episode on a chronic background. It excludes chronic pancreatitis alone, whose signs -- atrophy, parenchymal or ductal calcification, a dilated duct -- the pancreas compartment question covers."
+        definition: "Acute pancreatitis is defined as an acutely inflamed pancreas: peripancreatic fat stranding or fluid, glandular enlargement, a non-enhancing segment, or acute pancreatitis the report names. This definition includes an acute episode on a chronic background. It excludes chronic pancreatitis alone, whose signs are atrophy, parenchymal or ductal calcification, and a dilated duct. The pancreas compartment question covers those signs."
       
 
       - id: any_pancreas
@@ -35,12 +35,12 @@ categories:
         question: "Are there any epithelial splenic cysts?"
         variants:
           - "According to the report, are there any epithelial splenic cysts?"
-        definition: "An epithelial splenic cyst is defined as a true splenic cyst with an epithelial lining, congenital or epidermoid, thin-walled and fluid-density. This definition excludes a cyst the report attributes to trauma, infarction or infection, which the splenic pseudocyst question covers."
+        definition: "An epithelial splenic cyst is defined as a true splenic cyst with an epithelial lining, congenital or epidermoid, thin-walled and fluid-density. This definition excludes a cyst the report attributes to trauma, infarction or infection. The splenic pseudocyst question covers that cyst."
       - id: splenic_pseudocyst
         question: "Are there any splenic pseudocysts?"
         variants:
           - "According to the report, are there any splenic pseudocysts?"
-        definition: "A splenic pseudocyst is defined as a splenic cyst with no epithelial lining, which the report attributes to prior trauma, infarction or infection. This definition excludes a congenital or epidermoid cyst, which the epithelial splenic cyst question covers."
+        definition: "A splenic pseudocyst is defined as a splenic cyst with no epithelial lining, which the report attributes to prior trauma, infarction or infection. This definition excludes a congenital or epidermoid cyst. The epithelial splenic cyst question covers that cyst."
       - id: splenic_lymphoma
         question: "Is splenic lymphoma present?"
         variants:
@@ -61,7 +61,7 @@ categories:
         question: "Is the spleen absent?"
         variants:
           - "According to the report, is the spleen absent?"
-        definition: "An absent spleen is defined as no spleen in the splenic fossa, for any reason: a splenectomy, congenital asplenia, or an autosplenectomy. This definition excludes the operative change a splenectomy leaves behind, which the post-splenectomy question covers."
+        definition: "An absent spleen is defined as no spleen in the splenic fossa, for any reason: a splenectomy, congenital asplenia, or an autosplenectomy. This definition excludes the operative change a splenectomy leaves behind. The post-splenectomy question covers that change."
         include_terms:
           - "splenectomy"
           - "surgically absent spleen"
@@ -75,13 +75,13 @@ categories:
         variants:
           - "Is there a splenule?"
           - "According to the report, are there any accessory spleens?"
-        definition: "An accessory spleen is defined as a splenule, a small round nodule of splenic tissue near the splenic hilum or in the splenic ligaments. This definition excludes splenosis after a splenectomy, which the post-splenectomy question covers."
+        definition: "An accessory spleen is defined as a splenule, a small round nodule of splenic tissue near the splenic hilum or in the splenic ligaments. This definition excludes splenosis after a splenectomy. The post-splenectomy question covers that."
 
       - id: post_splenectomy_changes
         question: "Are there any post-splenectomy changes in the splenic bed?"
         variants:
           - "According to the report, are there any post-splenectomy changes in the splenic bed?"
-        definition: "Post-splenectomy change is defined as operative change from a splenectomy that the report describes: clips or sutures in the splenic bed, a surgical bed or cavity, or splenosis. This definition excludes an absent spleen with no operative change described, which the spleen-absent question covers."
+        definition: "Post-splenectomy change is defined as operative change from a splenectomy that the report describes: clips or sutures in the splenic bed, a surgical bed or cavity, or splenosis. This definition excludes an absent spleen with no operative change described. The spleen-absent question covers that."
         include_terms:
           - "post-splenectomy change"
           - "splenectomy clips"
@@ -157,7 +157,7 @@ categories:
         question: "Is there portal hypertension?"
         variants:
           - "According to the report, is there portal hypertension?"
-        definition: "Portal hypertension is defined as portal hypertension the report states, or a portosystemic collateral or a recanalised paraumbilical vein it names. This definition excludes splenomegaly alone and varices alone, which the splenomegaly and varices questions cover."
+        definition: "Portal hypertension is defined as portal hypertension the report states, or a portosystemic collateral or a recanalised paraumbilical vein it names. This definition excludes splenomegaly alone and varices alone. The splenomegaly and varices questions cover those."
         include_terms:
           - "portal hypertension"
           - "portosystemic collaterals"
@@ -166,7 +166,7 @@ categories:
         question: "Are there any esophageal or gastric varices?"
         variants:
           - "According to the report, are there any esophageal or gastric varices?"
-        definition: "Gastroesophageal varices are defined as dilated collateral veins at the oesophagus or the gastric fundus. This definition excludes portosystemic collaterals elsewhere, which the portal hypertension question covers."
+        definition: "Gastroesophageal varices are defined as dilated collateral veins at the oesophagus or the gastric fundus. This definition excludes portosystemic collaterals elsewhere. The portal hypertension question covers those."
       - id: polycystic_liver_disease
         question: "Is polycystic liver disease present?"
         variants:
@@ -201,7 +201,7 @@ categories:
         variants:
           - "Are there any indeterminate liver masses?"
           - "According to the report, are there any indeterminate hepatic masses?"
-        definition: "An indeterminate hepatic mass is defined as a hepatic lesion the report calls a mass or describes as solid and does not characterise further. This definition excludes a cyst, it excludes a lesion the report names, such as a hemangioma, a metastasis or a hepatocellular carcinoma, and it excludes a hypodensity or a low-density lesion the report leaves uncharacterised, which the hepatic hypodensity umbrella question covers."
+        definition: "An indeterminate hepatic mass is defined as a hepatic lesion the report calls a mass or describes as solid and does not characterise further. This definition excludes a cyst. It excludes a lesion the report names, such as a hemangioma, a metastasis or a hepatocellular carcinoma. It excludes a hypodensity or a low-density lesion the report leaves uncharacterised. The hepatic hypodensity umbrella question covers that lesion."
         include_terms:
           - "indeterminate hepatic lesion"
           - "indeterminate liver mass"
@@ -226,7 +226,7 @@ categories:
         variants:
           - "Are there any liver metastases?"
           - "According to the report, are there any hepatic metastases?"
-        definition: "A hepatic metastasis is defined as a hepatic lesion the report calls a metastasis or a secondary deposit. This definition excludes an uncharacterised solid lesion, which the indeterminate hepatic mass question covers."
+        definition: "A hepatic metastasis is defined as a hepatic lesion the report calls a metastasis or a secondary deposit. This definition excludes an uncharacterised solid lesion. The indeterminate hepatic mass question covers that lesion."
       - id: liver_laceration
         question: "Are there any liver lacerations?"
         variants:
@@ -262,7 +262,7 @@ categories:
         variants:
           - "Is there portal venous air?"
           - "According to the report, is there any portal venous gas?"
-        definition: "Portal venous gas is defined as gas in the portal vein or its intrahepatic branches, extending to the periphery of the liver. This definition excludes gas in the bile ducts, which stays central and which the pneumobilia question covers."
+        definition: "Portal venous gas is defined as gas in the portal vein or its intrahepatic branches, extending to the periphery of the liver. This definition excludes gas in the bile ducts, which is central and does not extend to the periphery. The pneumobilia question covers that gas."
       
       
       - id: hepatic_hypodensities
@@ -312,7 +312,7 @@ categories:
         question: "Is there acute cholecystitis?"
         variants:
           - "According to the report, is there acute cholecystitis?"
-        definition: "Acute cholecystitis is defined as an acutely inflamed gallbladder: wall thickening with pericholecystic fluid or fat stranding, mural hyperenhancement, or acute cholecystitis the report names. This definition includes an acute episode on a chronic background. It excludes gallstones alone, and it excludes chronic cholecystitis alone, whose signs -- a contracted, thick-walled gallbladder with stones -- the wall thickening and gallstone questions cover."
+        definition: "Acute cholecystitis is defined as an acutely inflamed gallbladder: wall thickening with pericholecystic fluid or fat stranding, mural hyperenhancement, or acute cholecystitis the report names. This definition includes an acute episode on a chronic background. It excludes gallstones alone. It excludes chronic cholecystitis alone, whose signs are a contracted, thick-walled gallbladder with stones. The wall thickening and gallstone questions cover those signs."
       - id: cholecystitis_with_rupture
         question: "Is there acute cholecystitis with rupture?"
         variants:
@@ -323,7 +323,7 @@ categories:
         question: "Is there emphysematous cholecystitis?"
         variants:
           - "According to the report, is there emphysematous cholecystitis?"
-        definition: "Emphysematous cholecystitis is defined as acute cholecystitis with gas in the gallbladder wall or lumen. This definition excludes gas in the bile ducts alone, which the pneumobilia question covers."
+        definition: "Emphysematous cholecystitis is defined as acute cholecystitis with gas in the gallbladder wall or lumen. This definition excludes gas in the bile ducts alone. The pneumobilia question covers that."
       - id: porcelain_gallbladder
         question: "Is there porcelain gallbladder?"
         variants:
@@ -406,7 +406,7 @@ categories:
         question: "Are there any simple renal cysts?"
         variants:
           - "According to the report, are there any simple renal cysts?"
-        definition: "A simple renal cyst is defined as a renal cyst the report names without describing any internal complexity. Naming a lesion a renal cyst is itself the characterisation, so a report that describes no more than that counts. This definition excludes a cyst the report calls complex, septated, calcified, thick-walled, enhancing or solid, which the complex-cyst question covers, and it excludes a hypodensity the report leaves uncharacterised, which the renal hypodensity umbrella question covers."
+        definition: "A simple renal cyst is defined as a renal cyst the report names without describing any internal complexity. Naming a lesion a renal cyst is itself the characterisation, so a report that describes no more than that counts. This definition excludes a cyst the report calls complex, septated, calcified, thick-walled, enhancing or solid. It excludes a hypodensity the report leaves uncharacterised. The complex-cyst question covers a complex cyst, and the renal hypodensity umbrella question covers an uncharacterised hypodensity."
       - id: complex_renal_cyst
         question: "Are there any complex renal cysts?"
         variants:
@@ -495,7 +495,7 @@ categories:
         question: "Are there any post-nephrectomy changes in the renal fossa?"
         variants:
           - "According to the report, are there any post-nephrectomy changes in the renal fossa?"
-        definition: "Post-nephrectomy change is defined as operative change from a nephrectomy: a surgical bed or cavity in the renal fossa, clips or sutures, or a parenchymal defect from a partial nephrectomy. This definition includes a partial and a total nephrectomy alike, and a kidney the report states was surgically removed. It excludes an absent kidney alone -- congenital absence, agenesis, or an absence the report does not explain -- it excludes a renal allograft, and it excludes operative change from the removal of another organ, which the splenectomy, cholecystectomy and hysterectomy questions cover."
+        definition: "Post-nephrectomy change is defined as operative change from a nephrectomy: a surgical bed or cavity in the renal fossa, clips or sutures, or a parenchymal defect from a partial nephrectomy. This definition includes a partial and a total nephrectomy alike, and a kidney the report states was surgically removed. It excludes an absent kidney alone, whether from congenital absence, from agenesis, or from an absence the report does not explain. It excludes a renal allograft. It excludes operative change from the removal of another organ. The splenectomy, cholecystectomy and hysterectomy questions cover that change."
       - id: post_renal_transplant
         question: "Are there any post-renal transplantation changes?"
         variants:
@@ -575,7 +575,7 @@ categories:
         question: "Is bowel obstruction present?"
         variants:
           - "According to the report, is bowel obstruction present?"
-        definition: "Bowel obstruction is defined as mechanically obstructed bowel: dilated loops with a transition point or a named cause, or an obstruction the report names. This definition excludes dilated loops with no transition point, which the ileus question covers."
+        definition: "Bowel obstruction is defined as mechanically obstructed bowel: dilated loops with a transition point or a named cause, or an obstruction the report names. This definition excludes dilated loops with no transition point. The ileus question covers those."
       - id: hiatal_hernia
         question: "Is hiatal hernia present?"
         variants:
@@ -585,7 +585,7 @@ categories:
         question: "Is there ileus?"
         variants:
           - "According to the report, is there ileus?"
-        definition: "Ileus is defined as dilated bowel without a mechanical obstruction, where the report names ileus or describes the bowel as adynamic or paralytic. This definition excludes a transition point or a named obstructing cause, which the bowel obstruction question covers."
+        definition: "Ileus is defined as dilated bowel without a mechanical obstruction, where the report names ileus or describes the bowel as adynamic or paralytic. This definition excludes a transition point or a named obstructing cause. The bowel obstruction question covers those."
       - id: inguinal_hernias
         question: "Are there any inguinal hernias?"
         variants:
@@ -620,7 +620,7 @@ categories:
         question: "Is there any ascites?"
         variants:
           - "According to the report, is there any ascites?"
-        definition: "Ascites is defined as free peritoneal fluid the report calls ascites, or attributes to cirrhosis, malignancy or heart failure. This definition excludes free blood, which the hemoperitoneum question covers; fluid the report places by location alone, such as trace free fluid in a dependent space, which the free-fluid umbrella question covers; and a section the report heads \"Ascites\" and then fills with fluid it calls blood or of unclear etiology."
+        definition: "Ascites is defined as free peritoneal fluid the report calls ascites, or attributes to cirrhosis, malignancy or heart failure. This definition excludes free blood. It excludes fluid the report places by location alone, such as trace free fluid in a dependent space. It excludes a section the report heads \"Ascites\" and then fills with fluid it calls blood or of unclear etiology. The hemoperitoneum question covers the blood, and the free-fluid umbrella question covers the fluid placed by location alone."
         include_terms:
           - "ascites"
           - "ascitic fluid"
@@ -648,7 +648,7 @@ categories:
         question: "Is there peritoneal carcinomatosis?"
         variants:
           - "According to the report, is there peritoneal carcinomatosis?"
-        definition: "Peritoneal carcinomatosis is defined as tumour deposits studding the peritoneum as nodules or plaques. This definition excludes an infiltrated omentum, which the omental caking question covers."
+        definition: "Peritoneal carcinomatosis is defined as tumour deposits studding the peritoneum as nodules or plaques. This definition excludes an infiltrated omentum. The omental caking question covers that."
         include_terms:
           - "peritoneal carcinomatosis"
           - "peritoneal implants"
@@ -677,7 +677,7 @@ categories:
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
         variants:
           - "According to the report, is there hemoperitoneum or free intraperitoneal blood?"
-        definition: "Hemoperitoneum is defined as free intraperitoneal fluid the report calls blood, by that word, by its density, or by the injury it attributes the fluid to. This definition excludes fluid the report leaves uncharacterised, which the free-fluid umbrella question covers."
+        definition: "Hemoperitoneum is defined as free intraperitoneal fluid the report calls blood, by that word, by its density, or by the injury it attributes the fluid to. This definition excludes fluid the report leaves uncharacterised. The free-fluid umbrella question covers that fluid."
         include_terms:
           - "hemoperitoneum"
           - "intraperitoneal blood"
@@ -695,7 +695,7 @@ categories:
         question: "Is there omental caking?"
         variants:
           - "According to the report, is there omental caking?"
-        definition: "Omental caking is defined as soft tissue replacing the fat of the omentum, as a thickened, nodular or infiltrated omental mass. This definition excludes discrete peritoneal nodules or plaques elsewhere, which the peritoneal carcinomatosis question covers."
+        definition: "Omental caking is defined as soft tissue replacing the fat of the omentum, as a thickened, nodular or infiltrated omental mass. This definition excludes discrete peritoneal nodules or plaques elsewhere. The peritoneal carcinomatosis question covers those."
         include_terms:
           - "omental caking"
           - "omental cake"
