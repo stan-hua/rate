@@ -147,7 +147,7 @@ categories:
           - "fatty liver"
           - "fatty infiltration"
           - "hepatic fat"
-        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
+        severity_scale: "mild, moderate or marked"
       - id: cirrhosis
         question: "Is there cirrhosis?"
         variants:
@@ -161,7 +161,6 @@ categories:
         include_terms:
           - "portal hypertension"
           - "portosystemic collaterals"
-          - "varices"
       - id: gastroesophageal_varices
         question: "Are there any esophageal or gastric varices?"
         variants:
@@ -276,7 +275,7 @@ categories:
           - "hypoattenuating hepatic lesion"
           - "low-density hepatic lesion"
           - "too small to characterize"
-        severity_scale: "the size the report gives, in centimetres"
+        severity_scale: "the size in centimetres"
       - id: any_liver
         question: "Is there any abnormality of the liver?"
         variants:
@@ -351,7 +350,7 @@ categories:
         exclude_terms:
           - "adenomyomatosis"
           - "Rokitansky-Aschoff"
-        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
+        severity_scale: "mild, moderate or marked"
       - id: gallbladder_adenomyomatosis
         question: "Is there gallbladder adenomyomatosis?"
         variants:
@@ -396,7 +395,7 @@ categories:
           - "hydroureter"
           - "ureterectasis"
           - "ureteral dilation"
-        severity_scale: "the grade the report gives, such as mild, moderate or severe"
+        severity_scale: "mild, moderate or severe"
       - id: renal_hypodensities
         question: "Are there any renal hypodensities?"
         variants:
@@ -420,7 +419,7 @@ categories:
         exclude_terms:
           - "simple cyst"
           - "simple renal cyst"
-        severity_scale: "the Bosniak category, if the report gives one"
+        severity_scale: "the Bosniak category"
       - id: renal_abscess
         question: "Are there any renal abscesses?"
         variants:
@@ -570,7 +569,7 @@ categories:
           - "appendicolith"
           - "post-appendectomy"
           - "appendectomy"
-        severity_scale: "the magnitude word the report uses, and whether it describes perforation"
+        severity_scale: "mild, moderate or marked"
       - id: bowel_obstruction
         question: "Is bowel obstruction present?"
         variants:
@@ -627,7 +626,7 @@ categories:
         exclude_terms:
           - "hemoperitoneum"
           - "hemorrhagic fluid"
-        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
+        severity_scale: "trace, small, moderate or large"
       - id: free_air_pneumoperitoneum
         question: "Is there any free air or pneumoperitoneum?"
         variants:
@@ -638,7 +637,7 @@ categories:
           - "free air"
           - "free intraperitoneal air"
           - "mesenteric free air"
-        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
+        severity_scale: "trace, small, moderate or large"
       - id: pseudomyxoma_peritonei
         question: "Is there pseudomyxoma peritonei?"
         variants:
@@ -672,7 +671,7 @@ categories:
           - "pelvic free fluid"
           - "hemoperitoneum"
           - "ascites"
-        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
+        severity_scale: "trace, small, moderate or large"
       - id: hemoperitoneum
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
         variants:
@@ -690,7 +689,7 @@ categories:
           - "simple fluid"
           - "low-density fluid"
           - "ascites"
-        severity_scale: "the volume word the report uses, such as trace, small, moderate or large"
+        severity_scale: "trace, small, moderate or large"
       - id: omental_caking
         question: "Is there omental caking?"
         variants:
@@ -707,7 +706,7 @@ categories:
           - "peritoneal carcinomatosis"
           - "peritoneal implants"
           - "peritoneal nodularity"
-        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
+        severity_scale: "mild, moderate or marked"
       - id: any_peritoneum
         question: "Is there any abnormality of the peritoneal cavity?"
         variants:
@@ -738,7 +737,7 @@ categories:
           - "atherosclerosis"
           - "thoracic aortic aneurysm"
           - "iliac aneurysm"
-        severity_scale: "the maximum diameter the report gives, in centimetres"
+        severity_scale: "the maximum diameter in centimetres"
       - id: aortic_atherosclerosis
         question: "Is there aortic atherosclerosis?"
         variants:
@@ -756,7 +755,7 @@ categories:
           - "ectasia"
           - "dissection"
           - "mural thrombus"
-        severity_scale: "the magnitude word the report uses, such as mild, moderate or extensive"
+        severity_scale: "mild, moderate or extensive"
 
       - id: any_great_vessels
         question: "Is there any abnormality of the aorta or its branches?"
@@ -811,7 +810,7 @@ categories:
           - "generalized edema"
           - "diffuse subcutaneous edema"
           - "third spacing"
-        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
+        severity_scale: "mild, moderate or marked"
 
   Male Pelvis:
     description: "Male pelvic findings"
@@ -848,7 +847,7 @@ categories:
           - "fibroid"
           - "leiomyomatous uterus"
           - "broad ligament myoma"
-        severity_scale: "the magnitude word the report uses, such as mild, moderate or marked"
+        severity_scale: "the size in centimetres"
       - id: post_hysterectomy
         question: "Is there a prior hysterectomy?"
         variants:
