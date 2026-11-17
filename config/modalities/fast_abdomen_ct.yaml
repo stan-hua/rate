@@ -271,7 +271,7 @@ categories:
         question: "Are there any hepatic hypodensities?"
         variants:
           - "According to the report, are there any hepatic hypodensities?"
-        definition: "A hepatic hypodensity is defined as a hypoattenuating lesion in the liver, of any cause. This definition includes a simple cyst, an indeterminate mass and a hypodensity left uncharacterized. It excludes a lesion described as hyperdense or isodense, and a lesion described only as a solid enhancing mass with no low-attenuation component."
+        definition: "A hepatic hypodensity is defined as a hypoattenuating lesion in the liver, of any cause. This definition includes a simple cyst, an indeterminate mass, a hypodensity left uncharacterized, and any lesion described as hypodense or hypoattenuating whatever name it is given. It excludes a lesion described as hyperdense or isodense, and a lesion described only as a solid enhancing mass with no low-attenuation component."
         include_terms:
           - "hepatic hypodensity"
           - "hypodensity in the liver"
@@ -313,7 +313,7 @@ categories:
         question: "Is there acute cholecystitis?"
         variants:
           - "According to the report, is there acute cholecystitis?"
-        definition: "Acute cholecystitis is defined as acute inflammation of the gallbladder, with wall thickening and pericholecystic fluid or fat stranding, or mural hyperenhancement. This definition includes an acute episode on a chronic background. It excludes gallstones alone. It excludes chronic cholecystitis alone, whose signs are a contracted, thick-walled gallbladder with stones."
+        definition: "Acute cholecystitis is defined as acute inflammation of the gallbladder: wall thickening together with pericholecystic fluid or fat stranding, or mural hyperenhancement, or gallbladder distension with a stone impacted at the neck. Acalculous cholecystitis counts. This definition includes an acute episode on a chronic background. It excludes gallstones alone. It excludes chronic cholecystitis alone, whose signs are a contracted, thick-walled gallbladder with stones."
       - id: cholecystitis_with_rupture
         question: "Is there acute cholecystitis with rupture?"
         variants:
@@ -397,7 +397,7 @@ categories:
           - "hydroureter"
           - "ureterectasis"
           - "ureteral dilation"
-        severity_scale: "mild, moderate or severe"
+        severity_scale: "mild, moderate or severe, or the SFU grade"
       - id: renal_hypodensities
         question: "Are there any renal hypodensities?"
         variants:
@@ -572,7 +572,7 @@ categories:
           - "an appendicolith with no inflammatory change"
           - "a normal appendix"
           - "a prior appendectomy"
-        severity_scale: "mild, moderate or marked"
+        severity_scale: "the periappendiceal inflammatory change: mild, moderate or marked"
       - id: bowel_obstruction
         question: "Is bowel obstruction present?"
         variants:
@@ -669,7 +669,7 @@ categories:
         question: "Is there any free intraperitoneal fluid?"
         variants:
           - "According to the report, is there any free intraperitoneal fluid?"
-        definition: "Free intraperitoneal fluid is defined as fluid lying free in the peritoneal cavity, of any kind. This definition includes blood, ascites, bile, urine, enteric content, and fluid of undetermined nature."
+        definition: "Free intraperitoneal fluid is defined as fluid lying free in the peritoneal cavity, of any kind. This definition includes blood, ascites, bile, urine, enteric content, and fluid of undetermined nature. It excludes a loculated or walled-off collection, an abscess, a pseudocyst, and fluid inside a hollow organ."
         include_terms:
           - "free fluid"
           - "free intraperitoneal fluid"
@@ -686,7 +686,7 @@ categories:
         question: "Is there hemoperitoneum or free intraperitoneal blood?"
         variants:
           - "According to the report, is there hemoperitoneum or free intraperitoneal blood?"
-        definition: "Hemoperitoneum is defined as blood in the peritoneal cavity, shown by high-attenuation free fluid or by free fluid attributed to an injury. Ascites on its own does not count, and blood described within or alongside ascites does. It excludes fluid left uncharacterized."
+        definition: "Hemoperitoneum is defined as blood in the peritoneal cavity, shown by high-attenuation free fluid or by free fluid attributed to an injury. High attenuation means roughly 30 HU or more, against simple fluid near 0 to 15 HU. Ascites on its own does not count, and blood described within or alongside ascites does. It excludes fluid left uncharacterized."
         include_terms:
           - "hemoperitoneum"
           - "intraperitoneal blood"

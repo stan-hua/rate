@@ -17,6 +17,7 @@ version: 1
 levels:
   trace:
     - trace
+    - minute
     - tiny
     - minimal
     - minimally
@@ -26,6 +27,7 @@ levels:
 
   mild:
     - minimal to mild
+    - minimal-to-mild
     - mild
     - mildly
     - small
@@ -47,7 +49,9 @@ levels:
 
   marked:
     - moderate to large
+    - moderate-to-large
     - moderate to severe
+    - moderate-to-severe
     - copious
     - abundant
     - marked
