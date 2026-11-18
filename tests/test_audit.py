@@ -65,7 +65,6 @@ def row(report="R001", finding="ascites", index="0", verdict="yes", **overrides)
         "attribution": "unknown" if verdict == "yes" else "unspecified",
         "named_outright": "True" if verdict == "yes" else "",
         # Empty on every run with A50's arm off, which is the shipped set.
-        "definition_match": "",
         "truncated": "False",
         "unquoted": "",
     }

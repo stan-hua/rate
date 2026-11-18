@@ -101,12 +101,6 @@ GUARDED_MODEL_FIELDS = (
     "repetition_penalty",
     "presence_penalty",
     "frequency_penalty",
-    # A50's arm asks for one more field, `definition_match`, so it changes the
-    # prompt for every finding. Flipping it mid-run would resume a directory
-    # whose rows were asked for fewer fields, and the column would then be
-    # empty on part of the run and graded on the rest with nothing saying
-    # where the boundary is.
-    "graded_match",
 )
 
 QUESTIONS_FILENAME = "questions.csv"

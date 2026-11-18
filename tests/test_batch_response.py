@@ -388,8 +388,26 @@ class TestWhatTheReaderCountsRatherThanDrops:
         assert "liver" not in got["r1"]
 
 
-class TestA50sGradedArm:
-    """One more field, asked only where the flag is on."""
+class TestTheGradedMatchFieldIsGone:
+    """A50 asked the model to grade how much of a definition a report
+    describes, and A53 removed the field. Two arms over the same 1,955 reports
+    measured it: the marginal distribution reproduced to within 2% while 6,222
+    of 17,151 cells moved band, 36.3%, and 592 cells went from 0.00 to 1.00
+    while 598 went the other way. The 1,726 No rows still grading 1.00 quote
+    denials the block names as zero in its own text.
+
+    What stays is the prompt. The field was a placeholder the flag
+    interpolated, so the cohort run's prompt never had it, and removing the
+    field may not move a byte of it.
+    """
+
+    # The prompt every answer on disk was asked under, rendered with the three
+    # fields filled by their names. A54's two-step pass and any later arm are
+    # compared against answers asked this way, so a change here invalidates
+    # them rather than merely differing from them.
+    PROMPT_SHA256 = "e417526e80d5433a8d911150e6967674295c2b002d44b5d823ea9e15a71ae285"
+
+    FIELDS = {"report": "<REPORT>", "question": "<QUESTION>", "guidance": "<GUIDANCE>"}
 
     def config(self):
         import yaml
@@ -398,25 +416,20 @@ class TestA50sGradedArm:
             (Path(__file__).resolve().parents[1] / "config" / "default_config.yaml").read_text()
         )
 
-    def rendered(self, graded):
-        templates = self.config()["prompt_templates"]
-        block = "\n" + templates["graded_match_block"].rstrip() + "\n" if graded else ""
-        return templates["findings_question"].format(
-            report="<REPORT>", question="<QUESTION>", guidance="<GUIDANCE>", graded=block
-        )
+    def rendered(self):
+        return self.config()["prompt_templates"]["findings_question"].format(**self.FIELDS)
 
-    def test_the_arm_is_off_in_the_committed_config(self):
-        """The cohort run asks the fields it has always asked."""
-        assert self.config()["model"]["graded_match"] is False
+    def test_the_prompt_is_the_one_the_cohort_run_asks(self):
+        """The one check that would catch an accidental edit anywhere in the
+        template, including the blank line the placeholder left behind."""
+        import hashlib
 
-    def test_the_flag_off_leaves_the_prompt_as_it_was(self):
-        """The whole reason the block is a placeholder rather than a second
-        template: an arm that changes the shipped prompt by existing would
-        make every answer on disk incomparable with the next one.
+        got = hashlib.sha256(self.rendered().encode()).hexdigest()
+        assert got == self.PROMPT_SHA256
 
-        This compares against the committed prompt itself, so the check holds
-        whatever else the template gains.
-        """
+    def test_removing_the_field_left_the_prompt_alone(self):
+        """Against the committed config rather than a constant, so the check
+        reads as a diff of the rendering and not of the file."""
         import subprocess
 
         head = subprocess.run(
@@ -430,57 +443,33 @@ class TestA50sGradedArm:
         import yaml
 
         before = yaml.safe_load(head.stdout)["prompt_templates"]["findings_question"]
-        fields = {"report": "<REPORT>", "question": "<QUESTION>", "guidance": "<GUIDANCE>"}
+        fields = dict(self.FIELDS)
         if "{graded}" in before:
             fields["graded"] = ""
-        assert self.rendered(graded=False) == before.format(**fields)
+        assert self.rendered() == before.format(**fields)
 
-    def test_the_flag_on_asks_for_the_graded_figure(self):
-        text = self.rendered(graded=True)
-        assert "`definition_match`" in text
+    def test_the_blank_line_the_placeholder_left_is_still_there(self):
+        """Deleting it is the one edit the sha256 cannot be read off."""
+        assert "related sign.\n\nReport:" in self.rendered()
 
-    def test_the_block_anchors_zero_on_a_denial(self):
-        """The arm's first run graded 1,755 No rows at 1.00, and every one of
-        the 20 cells read was a denial -- "No bowel obstruction.", "Liver:
-        Unremarkable", "Ascites: Absent". The model had been grading how
-        cleanly it answered, which the scale puts at 0. The block's only
-        worked example had been a positive one, so the repair states the
-        negative anchor first and works three of them.
-        """
-        text = self.rendered(graded=True)
-        assert "grades the report and never your own answer" in text
-        assert "No bowel obstruction." in text
+    def test_the_config_asks_for_no_grade(self):
+        config = self.config()
+        assert "graded_match" not in config["model"]
+        assert "graded_match_block" not in config["prompt_templates"]
+        assert "definition_match" not in config["prompt_templates"]["findings_question"]
 
-    def test_the_block_lets_the_figure_contradict_the_answer(self):
-        """A `no` carrying a figure at or above 0.5 is the cell this field
-        exists to find, so the block may not tie the two together. The first
-        version closed on "keep `answer` consistent with the figure: 0.5 and
-        above is a `yes`", which made the axis restate the verdict: no Yes row
-        in the arm graded below 0.50.
-        """
-        text = self.rendered(graded=True)
-        assert "need not agree" in text
-        assert "0.5 and above is a `yes`" not in text
-        assert "Grade from 0 to 1" in text
-        # Ahead of the report, with the other field descriptions.
-        assert text.index("`definition_match`") < text.index("<REPORT>")
+    def test_the_field_is_in_neither_the_schema_nor_the_columns(self):
+        from src.core.findings_schema import ANSWER_COLUMNS, RESPONSE_SCHEMA
 
-    def test_the_block_tells_the_model_what_it_is_not(self):
-        """The field it would otherwise duplicate.
+        assert "definition_match" not in RESPONSE_SCHEMA["properties"]
+        assert "definition_match" not in ANSWER_COLUMNS
 
-        `certainty_phrase` records the hedge the radiologist put on the
-        finding. This one grades the description against the definition, and a
-        report can describe a whole definition flatly while naming none of it,
-        which is the case A50 exists for.
-        """
-        text = self.rendered(graded=True)
-        assert "`certainty_phrase` records" in text
-        assert "never writes cirrhosis" in text
+    def test_a_stored_grade_is_read_past_rather_than_refused(self):
+        """Both arms' `questions.csv` have the column, and `regrade` and the
+        audit still read those files. `required_columns` is the narrow subset
+        for that reason."""
+        from src.core.storage import STAGE_CONFIGS
 
-    def test_the_flag_is_guarded(self):
-        """It changes the prompt for every finding, so a mid-run flip has to
-        refuse the resume. A48 found the three sampling penalties forwarded
-        and unguarded, which is the same defect."""
-        from src.core.run_guard import GUARDED_MODEL_FIELDS
-
-        assert "graded_match" in GUARDED_MODEL_FIELDS
+        questions = STAGE_CONFIGS["questions"]
+        assert "definition_match" not in questions["columns"]
+        assert "definition_match" not in questions["required_columns"]

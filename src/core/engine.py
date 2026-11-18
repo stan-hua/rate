@@ -403,16 +403,6 @@ class Engine:
         requests = []
         id_mapping = {}
 
-        # A50's arm, resolved once rather than per report. Off, the prompt is
-        # byte-identical to every run before 2026-11-17, so the flag cannot
-        # change the cohort run by being present.
-        templates = self.config['prompt_templates']
-        graded_block = (
-            "\n" + templates['graded_match_block'].rstrip() + "\n"
-            if self.config.get('model', {}).get('graded_match')
-            else ""
-        )
-
         for report_id, raw_text in reports_data.items():
             # Read where the raw text is in hand. A15 puts this at the stage
             # that first reads a report; `process-questions` reads the raw text
@@ -437,7 +427,6 @@ class Engine:
                             report=raw_text,
                             question=question_text,
                             guidance=question_guidance(question),
-                            graded=graded_block,
                         )
                         if request_id in id_mapping:
                             # One request id for two questions means one

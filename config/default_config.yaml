@@ -58,21 +58,6 @@ model:
   # whichever way this goes -- sgl-project #6675 and #9282.
   enable_thinking: true
 
-  # A50's arm, off for the cohort run. On, the prompt asks for one more field,
-  # `definition_match`, graded 0 to 1: how far what the report describes meets
-  # the definition. The axes record the report's hedge (`certainty`) and
-  # whether the report named the finding (`named_outright`), and neither
-  # records the extraction's own call where a report describes the picture and
-  # never names it -- `hepatic_mass_indeterminate` has `named_agreed` 0.26 and
-  # `stated_agreed` 0.049 against 0.967 for the run, so it answers from signs
-  # throughout and nothing says how close the call was. `human_label` grades
-  # that band and the extraction has no counterpart, so a reader's 0.3 can
-  # only be compared against a hard Yes.
-  #
-  # It changes the prompt for every finding, so it is guarded: flipping it
-  # mid-run would resume a directory whose rows were asked for fewer fields.
-  graded_match: false
-
   # Greedy, since 2026-11-09. This ran at Qwen3's non-thinking 0.7 / 0.8 /
   # 20, and the comment here said a lower temperature was defensible if the
   # answers varied too much between wordings. Two 20-report runs measured
@@ -184,6 +169,11 @@ prompt_templates:
   # way round -- report, question, then the instructions -- nothing after the
   # question can be cached, and a live run showed 57% of the prompt cached and
   # 9.3 requests a second, against 96% and 19.6 on this ordering.
+  # The blank line before `Report:` is part of the prompt. A50's `{graded}`
+  # placeholder stood there and rendered to nothing, so deleting the line
+  # changes every answer in a run that cannot then be compared with the ones
+  # before it. A53 removed the field and kept the line, and
+  # `test_the_prompt_is_the_one_the_cohort_run_asks` pins the rendering.
   findings_question: |
     Given a radiology text report, you will be asked about the presence of a
     specific imaging finding and asked to extract verbatim the evidence for your
@@ -231,7 +221,7 @@ prompt_templates:
     `named_outright`
       true when the report uses this finding's name or a synonym for it, and
       false when your answer rests on a related sign.
-    {graded}
+
     Report:
     {report}
 
@@ -239,34 +229,6 @@ prompt_templates:
     {guidance}
     Answer with a JSON object and nothing else.
 
-  # Interpolated into `findings_question` as `{graded}`, and the empty string
-  # where `graded_match` is off, so one template serves both and neither can
-  # drift from the other. The first line takes the template's own indent.
-  graded_match_block: |-
-    `definition_match`
-      Grade from 0 to 1 how much of the definition above the report's own
-      words describe. This grades the report and never your own answer. A
-      clean, confident `no` takes 0.
-
-      0 where the report denies the finding or calls the anatomy normal, as
-      "Liver: unremarkable", "No bowel obstruction." and "No evidence of
-      acute cholecystitis." all do, however plainly each one settles the
-      question. Below 0.5 where the report describes a related sign that is
-      not this finding. 0.5 to 0.9 where the report describes the finding
-      without naming it, or names it as trace, mild or hedged. 1 where the
-      report names this finding or a synonym for it.
-
-      Grade the words against the definition rather than how confident the
-      radiologist sounds, which is what `certainty_phrase` records. A report
-      reading "nodular hepatic contour with caudate hypertrophy" that
-      never writes cirrhosis describes most of that definition, so it grades
-      high while `named_outright` is false. A report calling the ascites
-      hyperdense, asked about hemoperitoneum, describes about half of that
-      definition and grades near 0.5.
-
-      The figure and `answer` need not agree. Grade what the report describes
-      even where you answer `no`, which is the case this field exists to
-      record.
 
   map_category_findings: |
     Given the following findings from a radiology report:

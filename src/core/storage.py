@@ -82,7 +82,7 @@ STAGE_CONFIGS = {
             'trauma_indication', 'trauma_terms',
             'verdict', 'evidence',
             'certainty_phrase', 'certainty', 'severity_phrase', 'severity',
-            'attribution', 'named_outright', 'definition_match',
+            'attribution', 'named_outright',
             'truncated', 'unquoted',
         ],
         # What a reader needs, which is a subset of what a writer produces.
@@ -367,8 +367,8 @@ class StorageManager:
             )
 
     # The six columns of an answer that `final_results.json` keeps. The stage
-    # file has twenty, and the other fourteen are the graded columns, which
-    # `questions.csv` is the record of.
+    # file has more, and the rest are the covariates and the graded columns,
+    # which `questions.csv` is the record of.
     _ANSWER_FIELDS = (
         "report_id", "category", "finding_id", "variant_index", "question", "answer",
     )
