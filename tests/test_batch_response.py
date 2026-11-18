@@ -438,6 +438,29 @@ class TestA50sGradedArm:
     def test_the_flag_on_asks_for_the_graded_figure(self):
         text = self.rendered(graded=True)
         assert "`definition_match`" in text
+
+    def test_the_block_anchors_zero_on_a_denial(self):
+        """The arm's first run graded 1,755 No rows at 1.00, and every one of
+        the 20 cells read was a denial -- "No bowel obstruction.", "Liver:
+        Unremarkable", "Ascites: Absent". The model had been grading how
+        cleanly it answered, which the scale puts at 0. The block's only
+        worked example had been a positive one, so the repair states the
+        negative anchor first and works three of them.
+        """
+        text = self.rendered(graded=True)
+        assert "grades the report and never your own answer" in text
+        assert "No bowel obstruction." in text
+
+    def test_the_block_lets_the_figure_contradict_the_answer(self):
+        """A `no` carrying a figure at or above 0.5 is the cell this field
+        exists to find, so the block may not tie the two together. The first
+        version closed on "keep `answer` consistent with the figure: 0.5 and
+        above is a `yes`", which made the axis restate the verdict: no Yes row
+        in the arm graded below 0.50.
+        """
+        text = self.rendered(graded=True)
+        assert "need not agree" in text
+        assert "0.5 and above is a `yes`" not in text
         assert "Grade from 0 to 1" in text
         # Ahead of the report, with the other field descriptions.
         assert text.index("`definition_match`") < text.index("<REPORT>")

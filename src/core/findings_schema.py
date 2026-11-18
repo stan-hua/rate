@@ -143,15 +143,15 @@ RESPONSE_SCHEMA = {
             "minimum": 0,
             "maximum": 1,
             "description": (
-                "How far what the report describes meets this definition, on "
-                "the scale a human annotator uses. 1 the report names the "
-                "finding or a synonym. 0.5 to 0.9 the report describes the "
+                "How much of this definition the report's own words describe, "
+                "on the scale a human annotator uses. This grades the report "
+                "and never the answer, so a clean `no` takes 0. 0 where the "
+                "report denies the finding or calls the anatomy normal. Below "
+                "0.5 where the report describes a related sign that is not "
+                "this finding. 0.5 to 0.9 where the report describes the "
                 "finding without naming it, or names it as trace, mild or "
-                "hedged. Below 0.5 the report describes a related sign that "
-                "is not this finding. 0 the report denies it, or describes "
-                "the anatomy and leaves it out. A figure near 0.5 is the "
-                "honest answer where the description half meets the "
-                "definition."
+                "hedged. 1 where the report names the finding or a synonym. "
+                "The figure and `answer` need not agree."
             ),
         },
     },
